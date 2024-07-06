@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: stockms
       POSTGRES_DB: stockms
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_stockms:/var/lib/postgresql/data
     ports:
       - "5555:5432"
 
