@@ -73,3 +73,34 @@ export interface ReviewsTable {
 export type Reviews = Selectable<ReviewsTable>;
 export type NewReviews = Insertable<ReviewsTable>;
 export type ReviewsUpdate = Updateable<ReviewsTable>;
+
+export interface RequestTimeoutTable {
+    request_user: number;
+    receive_user: number;
+    expiry_time: ColumnType<Date, string | undefined, never>;
+}
+
+export type RequestTimeout = Selectable<RequestTimeoutTable>;
+export type NewRequestTimeout = Insertable<RequestTimeout>;
+export type RequestTimeoutUpdate = Updateable<RequestTimeout>;
+
+export interface InvestmentsTable {
+    portfolio_id: number;
+    stock_symbol: string;
+    stock_date: ColumnType<Date, string | undefined, never>;
+    num_shares: number;
+}
+
+export type Investments = Selectable<InvestmentsTable>;
+export type NewInvestments = Insertable<InvestmentsTable>;
+export type InvestmentsTableUpdate = Updateable<InvestmentsTable>;
+
+export interface ContainsTable {
+    stock_list_id: number;
+    stock_symbol: string;
+    num_shares: number;
+}
+
+export type Contains = Selectable<ContainsTable>;
+export type NewContains = Insertable<ContainsTable>;
+export type ContainsUpdate = Updateable<ContainsTable>;
