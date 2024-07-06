@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:13
-    container_name: postgres
+    container_name: postgres_stockms
     environment:
       POSTGRES_USER: stockms
       POSTGRES_PASSWORD: stockms
