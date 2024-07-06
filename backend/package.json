@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "format": "npx @biomejs/biome format --write ."
+    "format": "npx @biomejs/biome format --write .",
+    "create-tables": "tsx src/migrations/createTables.ts"
   },
   "author": "",
   "license": "ISC",
