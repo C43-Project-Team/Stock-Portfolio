@@ -1,9 +1,11 @@
 import { type Kysely, sql } from "kysely";
 import { db } from "../utils/database";
 
+/* TODO: We should put as a large header comment a summary of what SQL commands we ran here */
+
 class TableManager {
   async createDBTables(db: Kysely<any>): Promise<void> {
-    await db.schema
+    const createUsersTable = db.schema
         .createTable('users')
         .addColumn('id', 'serial', (col) => col.primaryKey())
         .addColumn('username', 'varchar(20)', (col) => col.unique().notNull())
@@ -13,7 +15,7 @@ class TableManager {
         .addColumn('user_created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
         .execute();
 
-    await db.schema
+    const createPortfoliosTable = db.schema
         .createTable('portfolios')
         .addColumn('id', 'serial', (col) => col.primaryKey())
         .addColumn('portfolio_name', 'varchar(30)')
@@ -21,20 +23,22 @@ class TableManager {
         .addColumn('portfolio_created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
         .execute();
 
-    await db.schema
+    const createStocksListTable = db.schema
         .createTable('stocks_list')
         .addColumn('id', 'serial', (col) => col.primaryKey())
         .addColumn('private', 'boolean')
         .addColumn('stock_list_name', 'varchar(30)')
         .execute();
     
-    await db.schema
+    const createStocksTable = db.schema
         .createTable('stocks')
         .addColumn('stock_symbol', 'varchar(10)', (col) => col.primaryKey())
         .addColumn('comapany', 'varchar(20)')
         .execute();
+
+    await Promise.all([createUsersTable, createPortfoliosTable, createStocksListTable, createStocksTable])
     
-    await db.schema
+    const createStocksDailyTable =  db.schema
       .createTable('stocks_daily')
       .addColumn('stock_symbol', 'varchar(10)', (col) => col.notNull())
       .addColumn('stock_date', 'date', (col) => col.notNull())
@@ -47,7 +51,7 @@ class TableManager {
       .addForeignKeyConstraint('stocks_daily_fk_stock_symbol', ['stock_symbol'], 'stocks', ['stock_symbol'])
       .execute();
     
-    await db.schema
+    const createReviewsTable =  db.schema
         .createTable('reviews')
         .addColumn('user_id', 'integer')
         .addColumn('stock_list_id', 'integer')
@@ -59,7 +63,7 @@ class TableManager {
         .addForeignKeyConstraint('review_user_foreign2', ['stock_list_id'], 'stocks_list', ['stock_list_id'])
         .execute();
 
-    await db.schema
+    const createFriendsTable = db.schema
         .createTable('friends')
         .addColumn('friend1', 'integer')
         .addColumn('friend2', 'integer')
@@ -72,7 +76,7 @@ class TableManager {
         .execute();
     
     // Maybe fix the expiry time here or when entering value with the +5 minutes
-    await db.schema
+    const createRequestTimeoutTable = db.schema
         .createTable('request_timeout')
         .addColumn('request_user', 'integer')
         .addColumn('receive_user', 'integer')
@@ -82,7 +86,7 @@ class TableManager {
         .addForeignKeyConstraint('request_user_foreign2', ['receive_user'], 'users', ['id'])
         .execute();
 
-    await db.schema
+    const createOwnsTable = db.schema
         .createTable('owns')
         .addColumn('portfolio_id', 'integer')
         .addColumn('user_id', 'integer')
@@ -91,7 +95,7 @@ class TableManager {
         .addForeignKeyConstraint('owns_foreign2', ['user_id'], 'users', ['id'])
         .execute();
 
-    await db.schema
+    const createInvestmentsTable = db.schema
         .createTable('investments')
         .addColumn('portfolio_id', 'integer')
         .addColumn('stock_symbol', 'varchar(10)')
@@ -102,7 +106,7 @@ class TableManager {
         .addForeignKeyConstraint('investment_foreign2', ['stock_symbol'], 'stocks', ['stock_symbol'])
         .execute();
     
-    await db.schema
+    const createAccessTable = db.schema
         .createTable('access')
         .addColumn('user_id', 'integer')
         .addColumn ('stock_list_id', 'integer')
@@ -112,7 +116,7 @@ class TableManager {
         .addForeignKeyConstraint('access_foreign2', ['stock_list_id'], 'stocks_list', ['id'])
         .execute();
     
-    await db.schema
+    const createContainsTable = db.schema
         .createTable('contains')
         .addColumn('stock_list_id', 'integer')
         .addColumn('stock_symbol', 'varchar(10)')
@@ -121,7 +125,10 @@ class TableManager {
         .addForeignKeyConstraint('contains_foreign1', ['stock_list_id'], 'stocks_list', ['id'])
         .addForeignKeyConstraint('contains_foreign2', ['stock_symbol'], 'stocks', ['stock_symbol'])
         .execute();
+
+    await Promise.all([createStocksDailyTable, createReviewsTable, createFriendsTable, createRequestTimeoutTable, createOwnsTable, createInvestmentsTable, createAccessTable, createContainsTable])
   }
+  
 }
 
 const tableManager =new TableManager();
