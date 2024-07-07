@@ -17,7 +17,7 @@ class TableManager {
         .createTable('portfolios')
         .addColumn('id', 'serial', (col) => col.primaryKey())
         .addColumn('portfolio_name', 'varchar(30)')
-        .addColumn('cash', 'decimal')
+        .addColumn('cash', 'decimal(18, 2)')
         .addColumn('portfolio_created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
         .execute();
 
@@ -35,17 +35,17 @@ class TableManager {
         .execute();
     
     await db.schema
-        .createTable('stocks_daily')
-        .addColumn('stock_symbol', 'varchar(10)')
-        .addColumn('stock_date', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
-        .addColumn('open_price', 'real')
-        .addColumn('close_price', 'real')
-        .addColumn('low', 'real')
-        .addColumn('high', 'real')
-        .addColumn('volume', 'integer')
-        .addPrimaryKeyConstraint('stock_daily_primary', ['stock_symbol', 'stock_date'])
-        .addForeignKeyConstraint('stock_daily_foreign', ['stock_symbol'], 'stocks', ['stock_symbol'])
-        .execute();
+      .createTable('stocks_daily')
+      .addColumn('stock_symbol', 'varchar(10)', (col) => col.notNull())
+      .addColumn('stock_date', 'date', (col) => col.notNull())
+      .addColumn('open_price', 'decimal(18, 2)', (col) => col.notNull())
+      .addColumn('close_price', 'decimal(18, 2)', (col) => col.notNull())
+      .addColumn('low', 'decimal(18, 2)', (col) => col.notNull())
+      .addColumn('high', 'decimal(18, 2)', (col) => col.notNull())
+      .addColumn('volume', 'integer', (col) => col.notNull())
+      .addPrimaryKeyConstraint('stocks_daily_pk', ['stock_symbol', 'stock_date'])
+      .addForeignKeyConstraint('stocks_daily_fk_stock_symbol', ['stock_symbol'], 'stocks', ['stock_symbol'])
+      .execute();
     
     await db.schema
         .createTable('reviews')
@@ -95,7 +95,7 @@ class TableManager {
         .createTable('investments')
         .addColumn('portfolio_id', 'integer')
         .addColumn('stock_symbol', 'varchar(10)')
-        .addColumn('stock_date', 'timestamp')
+        .addColumn('stock_date', 'date')
         .addColumn('num_shares', 'integer')
         .addPrimaryKeyConstraint('investment_primary', ['portfolio_id', 'stock_symbol', 'stock_date'])
         .addForeignKeyConstraint('investment_foreign1', ['portfolio_id'], 'portfolios', ['id'])
