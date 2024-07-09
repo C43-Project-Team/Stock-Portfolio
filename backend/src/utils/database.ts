@@ -1,6 +1,5 @@
 import type { Database } from "../types/db-schema"
-import pg from "pg"
-const { Pool } = pg
+import { Pool } from "pg"
 import { Kysely, PostgresDialect } from 'kysely'
 import "dotenv/config"
 
