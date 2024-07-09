@@ -60,7 +60,7 @@ class TableManager {
         .addColumn('review_last_updated', 'timestamp')
         .addPrimaryKeyConstraint('review_primary', ['user_id', 'stock_list_id'])
         .addForeignKeyConstraint('review_user_foreign1', ['user_id'], 'users', ['id'])
-        .addForeignKeyConstraint('review_user_foreign2', ['stock_list_id'], 'stocks_list', ['stock_list_id'])
+        .addForeignKeyConstraint('review_user_foreign2', ['stock_list_id'], 'stocks_list', ['id'])
         .execute();
 
     const createFriendsTable = db.schema
