@@ -1,4 +1,5 @@
 import { type Kysely, sql } from "kysely";
+import { db } from "../database";
 
 // biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 async function up(db: Kysely<any>): Promise<void> {

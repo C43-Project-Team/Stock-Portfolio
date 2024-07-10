@@ -1,4 +1,4 @@
-import { TableManager } from "../../migrations/TableManager";
+import { TableManager } from "./TableManager";
 import { db } from "./database";
 
 const tableManager = new TableManager();

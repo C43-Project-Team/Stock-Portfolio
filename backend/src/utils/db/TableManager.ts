@@ -1,9 +1,15 @@
-import { type Kysely, sql } from "kysely";
-import { db } from "../utils/db/database";
+import { FileMigrationProvider, type Kysely, Migrator, sql } from "kysely";
+import path, { dirname, join } from "node:path";
+import { promises as fs } from "fs";
+import { db } from "./database";
 import {
 	up as fixUserNamingUp,
 	down as fixUserNamingDown,
-} from "./20240710_fix_user_naming";
+} from "./migrations/20240710_fix_user_naming";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /* TODO: We should put as a large header comment a summary of what SQL commands we ran here */
 
@@ -232,8 +238,48 @@ export class TableManager {
 
 	// biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 	async runMigrations(db: Kysely<any>) {
-		for (const migration of this.migrations) {
-			await migration.up(db);
+		console.log(pathToFileURL(join(__dirname, "migrations")).href);
+		const migrator = new Migrator({
+			db,
+			provider: new FileMigrationProvider({
+				fs,
+				path: {
+					join,
+				},
+				// This needs to be an absolute path.
+				migrationFolder: join(__dirname, "migrations"), // Use absolute path directly
+			}),
+		});
+
+		const { error, results } = await migrator.migrateToLatest();
+
+		if (error) {
+			console.error("failed to migrate");
+			console.error(error);
+			return;
 		}
+
+		if (!results) {
+			console.log("no migrations were executed");
+			return;
+		}
+
+		for (const it of results) {
+			if (it.status === "Success") {
+				console.log(
+					`migration "${it.migrationName}" was executed successfully`,
+				);
+			} else if (it.status === "Error") {
+				console.error(`failed to execute migration "${it.migrationName}"`);
+			}
+		}
+
+		if (error) {
+			console.error("failed to migrate");
+			console.error(error);
+			process.exit(1);
+		}
+
+		await db.destroy();
 	}
 }
