@@ -9,7 +9,8 @@
 		"dev": "nodemon src/app.ts",
 		"format": "npx @biomejs/biome format --write .",
 		"lint": "npx @biomejs/biome lint --write ./src",
-		"create-tables": "tsx src/migrations/TableManager.ts"
+		"create-tables": "tsx src/utils/db/create-tables.ts",
+		"migrations": "tsx src/utils/db/run-migrations.ts"
 	},
 	"author": "",
 	"license": "ISC",
