@@ -10,9 +10,8 @@ export interface UsersTable {
 	id: Generated<number>;
 	username: string;
 	password_hash: string;
-	first_name: string;
-	surname: string;
-	user_created_at: ColumnType<Date, string | undefined, never>;
+	full_name: string;
+	user_created_at: ColumnType<Date, Date, never>;
 }
 
 export type User = Selectable<UsersTable>;

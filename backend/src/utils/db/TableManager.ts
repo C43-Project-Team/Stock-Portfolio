@@ -1,7 +1,6 @@
 import { FileMigrationProvider, type Kysely, Migrator, sql } from "kysely";
 import path, { dirname, join } from "node:path";
 import { promises as fs } from "fs";
-import { db } from "./database";
 import {
 	up as fixUserNamingUp,
 	down as fixUserNamingDown,

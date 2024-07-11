@@ -17,7 +17,10 @@
 	"description": "",
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
+		"@types/bcrypt": "^5.0.2",
+		"@types/cors": "^2.8.17",
 		"@types/express": "^4.17.21",
+		"@types/jsonwebtoken": "^9.0.6",
 		"@types/node": "^20.14.8",
 		"nodemon": "^3.1.4",
 		"tsx": "^4.15.7",
@@ -25,10 +28,13 @@
 	},
 	"dependencies": {
 		"@types/pg": "^8.11.6",
+		"bcrypt": "^5.1.1",
 		"body-parser": "^1.20.2",
+		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
 		"fs": "^0.0.1-security",
+		"jsonwebtoken": "^9.0.2",
 		"kysely": "^0.27.4",
 		"kysely-postgres-js": "^2.0.0",
 		"pg": "^8.12.0"
