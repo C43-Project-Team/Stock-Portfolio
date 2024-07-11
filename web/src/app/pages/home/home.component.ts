@@ -20,10 +20,17 @@ export class HomeComponent implements OnInit {
 	) {}
 
 	ngOnInit(): void {
-		this.isAuthenticated = !!this.authService.getToken();
-		if (this.isAuthenticated) {
-			this.username = "User"; // Replace with actual user info retrieval logic
-		}
+		this.authService.getCredentials().subscribe({
+			next: (user) => {
+				this.isAuthenticated = true;
+				console.log(user);
+				this.username = user.username;
+			},
+			error: () => {
+				this.isAuthenticated = false;
+				this.username = null;
+			},
+		});
 	}
 
 	goToSignIn(): void {

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { userDatabase } from "../database/UserDatabase";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { verifyToken } from "../middleware/auth";
+import { type AuthedRequest, verifyToken } from "../middleware/auth";
 
 export const authRouter = Router();
 
@@ -16,7 +16,12 @@ authRouter.post("/signup", async (req, res) => {
 			passwordHash,
 			fullName,
 		);
-		res.json(newUser);
+		const token = jwt.sign(
+			{ id: newUser.id, username: newUser.username },
+			process.env.JWT_SECRET || "stockms",
+		);
+
+		res.json({ user: newUser, token });
 	} catch (error) {
 		return res.status(500).json({ error: "Error signing up" });
 	}
@@ -46,7 +51,6 @@ authRouter.post("/signin", async (req, res) => {
 	}
 });
 
-authRouter.get("/me", verifyToken, (req: Request, res: Response) => {
-  res.json({ user: req.user });
+authRouter.get("/me", verifyToken, async (req: AuthedRequest, res) => {
+	return res.json({ user: req.user });
 });
-
