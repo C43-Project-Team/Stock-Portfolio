@@ -1,18 +1,19 @@
 import Docker from 'dockerode';
-import * as fs from 'fs';
 import * as path from 'path';
 import tar from 'tar-fs';
-import { db } from './database';
 
 const docker = new Docker();
 const postgresContainerName = process.env.POSTGRES_CONTAINER_NAME || 'postgres_stockms';
-const exportCsvFile = path.resolve('SP500History-db.csv');
+const exportStockDailyFile = path.resolve('src\\utils\\data\\SP500History-db.csv');
+const exportStockFile = path.resolve('src\\utils\\data\\stock-companies.csv');
 
 async function StockImportScript() {
     try {
         const container = docker.getContainer(postgresContainerName);
         await createDirectoryInContainer(container, '/tmp/DailyStockData');
-        await copyFileToContainer(container, exportCsvFile, '/tmp/DailyStockData/SP500History-db.csv');
+        await copyFileToContainer(container, exportStockDailyFile, '/tmp/DailyStockData/SP500History-db.csv');
+        await copyFileToContainer(container, exportStockFile, '/tmp/DailyStockData/stock-companies.csv');
+        await importCsvFileToDb('/tmp/DailyStockData/stock-companies.csv', 'stocks');
         await importCsvFileToDb('/tmp/DailyStockData/SP500History-db.csv', 'stocks_daily');
 
         console.log('Data imported successfully');

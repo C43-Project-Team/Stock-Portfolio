@@ -49,7 +49,7 @@ export class TableManager {
 		const createStocksTable = db.schema
 			.createTable("stocks")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.primaryKey())
-			.addColumn("comapany", "varchar(20)")
+			.addColumn("company", "varchar(200)")
 			.execute();
 
 		await Promise.all([
