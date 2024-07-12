@@ -10,11 +10,11 @@ const exportStockFile = path.resolve('src', 'utils', 'data', 'stock-companies.cs
 async function StockImportScript() {
     try {
         const container = docker.getContainer(postgresContainerName);
-        // await createDirectoryInContainer(container, '/tmp/DailyStockData');
-        // await copyFileToContainer(container, exportStockDailyFile, '/tmp/DailyStockData/SP500History-db.csv');
-        // await copyFileToContainer(container, exportStockFile, '/tmp/DailyStockData/stock-companies.csv');
-        // await importCsvFileToDb('/tmp/DailyStockData/stock-companies.csv', 'stocks');
-        // await importCsvFileToDb('/tmp/DailyStockData/SP500History-db.csv', 'stocks_daily');
+        await createDirectoryInContainer(container, '/tmp/DailyStockData');
+        await copyFileToContainer(container, exportStockDailyFile, '/tmp/DailyStockData/SP500History-db.csv');
+        await copyFileToContainer(container, exportStockFile, '/tmp/DailyStockData/stock-companies.csv');
+        await importCsvFileToDb('/tmp/DailyStockData/stock-companies.csv', 'stocks');
+        await importCsvFileToDb('/tmp/DailyStockData/SP500History-db.csv', 'stocks_daily');
 
         console.log('Data imported successfully');
     } catch (error) {
