@@ -4,17 +4,17 @@ import tar from 'tar-fs';
 
 const docker = new Docker();
 const postgresContainerName = process.env.POSTGRES_CONTAINER_NAME || 'postgres_stockms';
-const exportStockDailyFile = path.resolve('src\\utils\\data\\SP500History-db.csv');
-const exportStockFile = path.resolve('src\\utils\\data\\stock-companies.csv');
+const exportStockDailyFile = path.resolve('src', 'utils', 'data', 'SP500History-db.csv');
+const exportStockFile = path.resolve('src', 'utils', 'data', 'stock-companies.csv');
 
 async function StockImportScript() {
     try {
         const container = docker.getContainer(postgresContainerName);
-        await createDirectoryInContainer(container, '/tmp/DailyStockData');
-        await copyFileToContainer(container, exportStockDailyFile, '/tmp/DailyStockData/SP500History-db.csv');
-        await copyFileToContainer(container, exportStockFile, '/tmp/DailyStockData/stock-companies.csv');
-        await importCsvFileToDb('/tmp/DailyStockData/stock-companies.csv', 'stocks');
-        await importCsvFileToDb('/tmp/DailyStockData/SP500History-db.csv', 'stocks_daily');
+        // await createDirectoryInContainer(container, '/tmp/DailyStockData');
+        // await copyFileToContainer(container, exportStockDailyFile, '/tmp/DailyStockData/SP500History-db.csv');
+        // await copyFileToContainer(container, exportStockFile, '/tmp/DailyStockData/stock-companies.csv');
+        // await importCsvFileToDb('/tmp/DailyStockData/stock-companies.csv', 'stocks');
+        // await importCsvFileToDb('/tmp/DailyStockData/SP500History-db.csv', 'stocks_daily');
 
         console.log('Data imported successfully');
     } catch (error) {

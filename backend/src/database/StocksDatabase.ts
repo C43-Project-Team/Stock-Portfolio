@@ -1,4 +1,4 @@
-import { db } from "../utils/db/database"; // Adjust the import path accordingly
+import { db } from "../utils/db/db-controller"; // Adjust the import path accordingly
 import type { Database, Stocks } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
