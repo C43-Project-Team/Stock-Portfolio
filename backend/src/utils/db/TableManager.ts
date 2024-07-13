@@ -1,10 +1,6 @@
 import { FileMigrationProvider, type Kysely, Migrator, sql } from "kysely";
 import path, { dirname, join } from "node:path";
 import { promises as fs } from "fs";
-import {
-	up as fixUserNamingUp,
-	down as fixUserNamingDown,
-} from "./migrations/20240710_fix_user_naming";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +9,7 @@ const __dirname = dirname(__filename);
 /* TODO: We should put as a large header comment a summary of what SQL commands we ran here */
 
 export class TableManager {
-	migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
+	// migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
 
 	// biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 	async createDBTables(db: Kysely<any>): Promise<void> {
@@ -21,9 +17,8 @@ export class TableManager {
 			.createTable("users")
 			.addColumn("id", "serial", (col) => col.primaryKey())
 			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
-			.addColumn("password_hash", "varchar(20)")
-			.addColumn("first_name", "varchar(20)")
-			.addColumn("surname", "varchar(20)")
+			.addColumn("password_hash", "varchar(255)")
+            .addColumn("full_name", "varchar(40)")
 			.addColumn("user_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
