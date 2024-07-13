@@ -7,9 +7,7 @@ class StocksDatabase {
 
 	constructor() {
 		this.db = db;
-    }
-
-
+	}
 }
 
 export const userDatabase = new StocksDatabase();

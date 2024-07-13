@@ -18,7 +18,7 @@ export class TableManager {
 			.addColumn("id", "serial", (col) => col.primaryKey())
 			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
 			.addColumn("password_hash", "varchar(255)")
-            .addColumn("full_name", "varchar(40)")
+			.addColumn("full_name", "varchar(40)")
 			.addColumn("user_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
