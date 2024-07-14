@@ -276,4 +276,12 @@ export class TableManager {
 
 		await db.destroy();
 	}
+
+	async createIndexes(db: Kysely<any>) {
+		await db.schema
+			.createIndex("idx_username")
+			.on("users")
+			.column("username")
+			.execute();
+	}
 }
