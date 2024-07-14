@@ -62,7 +62,7 @@ export class TableManager {
 			.addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
-			.addColumn("volume", "integer", (col) => col.notNull())
+			.addColumn("volume", "bigint", (col) => col.notNull())
 			.addPrimaryKeyConstraint("stocks_daily_pk", [
 				"stock_symbol",
 				"stock_date",

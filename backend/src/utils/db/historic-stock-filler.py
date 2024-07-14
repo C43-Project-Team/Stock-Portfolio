@@ -132,14 +132,14 @@ def swap_columns(df, col1, col2):
     return df
 
 # Function to fetch historical data
-def fetch_data(ticker, start_date='2018-02-08', end_date='2024-07-12'):
+def fetch_data(ticker, og_ticker_name, start_date='2018-02-08', end_date='2024-07-12'):
     # Uncomment for log file to record errors on unavaiable stocks
     # log_file = 'error_log.txt'
 
     try:
         stock = yf.Ticker(ticker)
         df = stock.history(start=start_date, end=end_date, actions=False)
-        df['Code'] = ticker
+        df['Code'] = og_ticker_name
         df = df[['Code', 'Open', 'Close', 'Low', 'High', 'Volume']]
         df = df.round({'Open': 2, 'Close': 2, 'Low': 2, 'High': 2})
         # df.index = df.index.date
@@ -155,7 +155,7 @@ def fetch_data(ticker, start_date='2018-02-08', end_date='2024-07-12'):
 
 if __name__ == "__main__":
     # Fetch data for all tickers
-    all_data = pd.concat([fetch_data(ticker_map.get(ticker, ticker)) for ticker in tickers])
+    all_data = pd.concat([fetch_data(ticker_map.get(ticker, ticker), ticker) for ticker in tickers])
 
     # Save to a CSV file without index
     all_data.to_csv('../data/stock_data_recent.csv', index=False)
