@@ -26,7 +26,7 @@ async function importStockCompanyCsv(filePath) {
 				company: data.stock_company,
 			};
 			results.push(transformedData);
-            // console.log("DATA", data);
+			// console.log("DATA", data);
 		})
 		.on("end", async () => {
 			console.log("stocks CSV file successfully processed");
@@ -50,57 +50,55 @@ async function insertStocksDailyData(data) {
 
 // Read and parse the CSV file, then insert data into the database
 async function importStocksDailyCsv(filePath) {
-    const results = [];
-    const chunkSize = 5000;
-    let chunkCount = 0;
+	const results = [];
+	const chunkSize = 5000;
+	let chunkCount = 0;
 
-    const stream = createReadStream(filePath)
-        .pipe(csv())
-        .on("data", (data) => {
-            const transformedData = {
-                stock_symbol: data.Code,
-                stock_date: new Date(data.Timestamp).toISOString().split("T")[0],
-                open_price: parseFloat(data.Open),
-                close_price: parseFloat(data.Close),
-                low: parseFloat(data.Low),
-                high: parseFloat(data.High),
-                volume: parseInt(data.Volume, 10),
-            };
-            results.push(transformedData);
+	const stream = createReadStream(filePath)
+		.pipe(csv())
+		.on("data", (data) => {
+			const transformedData = {
+				stock_symbol: data.Code,
+				stock_date: new Date(data.Timestamp).toISOString().split("T")[0],
+				open_price: parseFloat(data.Open),
+				close_price: parseFloat(data.Close),
+				low: parseFloat(data.Low),
+				high: parseFloat(data.High),
+				volume: parseInt(data.Volume, 10),
+			};
+			results.push(transformedData);
 
-            // Insert in chunks
-            if (results.length === chunkSize) {
-                stream.pause();
-                insertStocksDailyData([...results])
-                    .then(() => {
-                        results.length = 0; // Clear the array by setting length to 0
-                        chunkCount++;
-                        console.log(`Chunk ${chunkCount} inserted successfully`);
-                        stream.resume();
-                    })
-                    .catch((error) => {
-                        console.error("Error inserting chunk:", error);
-                        stream.resume();
-                    });
-            }
-        })
-        .on("end", async () => {
-            // Insert any remaining data
-            if (results.length > 0) {
-                await insertStocksDailyData(results);
-                chunkCount++;
-                console.log(`Chunk ${chunkCount} inserted successfully`);
-            }
-            console.log("DAILY CSV file successfully processed");
-        });
+			// Insert in chunks
+			if (results.length === chunkSize) {
+				stream.pause();
+				insertStocksDailyData([...results])
+					.then(() => {
+						results.length = 0; // Clear the array by setting length to 0
+						chunkCount++;
+						console.log(`Chunk ${chunkCount} inserted successfully`);
+						stream.resume();
+					})
+					.catch((error) => {
+						console.error("Error inserting chunk:", error);
+						stream.resume();
+					});
+			}
+		})
+		.on("end", async () => {
+			// Insert any remaining data
+			if (results.length > 0) {
+				await insertStocksDailyData(results);
+				chunkCount++;
+				console.log(`Chunk ${chunkCount} inserted successfully`);
+			}
+			console.log("DAILY CSV file successfully processed");
+		});
 
-    await new Promise((resolve, reject) => {
-        stream.on("end", resolve);
-        stream.on("error", reject);
-    });
+	await new Promise((resolve, reject) => {
+		stream.on("end", resolve);
+		stream.on("error", reject);
+	});
 }
-
-
 
 // Run the import function with a relative path
 async function ingestData() {
