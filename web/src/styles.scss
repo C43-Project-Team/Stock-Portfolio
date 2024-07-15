@@ -1,0 +1,27 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+@import "primeng/resources/themes/aura-light-noir/theme.css";
+
+body,
+html {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+
+@layer primeng;

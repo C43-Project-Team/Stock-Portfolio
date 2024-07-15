@@ -1,0 +1,22 @@
+<form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="space-y-4">
+  <div *ngIf="!isSignIn">
+    <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+    <input id="fullName" type="text" pInputText formControlName="fullName"
+           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+    <div *ngIf="authForm.get('fullName')?.invalid && authForm.get('fullName')?.touched" class="text-red-500 text-sm">Full Name is required</div>
+  </div>
+  <div>
+    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+    <input id="username" type="text" pInputText formControlName="username"
+           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+    <div *ngIf="authForm.get('username')?.invalid && authForm.get('username')?.touched" class="text-red-500 text-sm">Username is required</div>
+  </div>
+  <div>
+    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+    <input id="password" type="password" pPassword formControlName="password"
+           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+    <div *ngIf="authForm.get('password')?.invalid && authForm.get('password')?.touched" class="text-red-500 text-sm">Password is required</div>
+  </div>
+  <button pButton type="submit" label="{{ isSignIn ? 'Sign In' : 'Sign Up' }}"
+          [disabled]="authForm.invalid" class="p-2 w-full bg-blue-500 text-white rounded hover:bg-blue-700"></button>
+</form>

@@ -1,0 +1,46 @@
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - ./acme:/etc/acme.sh
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL=murphy.lee@mail.utoronto.ca
+
+  frontend:
+    image: ghcr.io/c43-project-team/stockms-web
+    container_name: web
+    restart: always
+    expose:
+      - 80
+    environment:
+      VIRTUAL_HOST=stockms.live
+      LETSENCRYPT_HOST=stockms.live
+
+  backend:
+    image: ghcr.io/c43-project-team/stockms-backend
+    container_name: backend
+    restart: always
+    expose:
+      - 3000
+    environment:
+      VIRTUAL_HOST=api.stockms.live
+      LETSENCRYPT_HOST=api.stockms.live

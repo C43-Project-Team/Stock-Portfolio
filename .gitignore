@@ -24,6 +24,8 @@ docs/.trash/
 **/.env.production
 **/.env.local
 **/.env.*.local
+**/environment.prod.ts
+**/environment.ts
 
 # Logs
 **/logs
