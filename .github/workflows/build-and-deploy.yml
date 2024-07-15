@@ -44,6 +44,7 @@ jobs:
           echo "export default environment;" >> src/environments/environment.prod.ts
 
       - name: Build frontend image
+        working-directory: web
         run: docker build . --file Dockerfile --tag $FRONTEND_IMAGE_NAME
 
       - name: Push frontend image
@@ -77,6 +78,7 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
       - name: Build backend image
+        working-directory: backend
         run: docker build . --file Dockerfile --tag $BACKEND_IMAGE_NAME
 
       - name: Push backend image
