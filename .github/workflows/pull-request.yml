@@ -1,0 +1,122 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - web/**
+      - backend/**
+
+jobs:
+  # lint-frontend:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: web
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '20'
+
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Lint
+  #       run: npm run lint
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      # Frontend build and push
+      - name: Ensure environment.ts exists
+        # if: env.WEB_CHANGED == 'true'
+        working-directory: web
+        run: |
+          if [ ! -f src/environments/environment.ts ]; then
+            echo "export const environment = { production: false };" > src/environments/environment.ts
+            echo "export default environment;" >> src/environments/environment.ts
+          fi
+
+      - name: Create environment.prod.ts
+        # if: env.WEB_CHANGED == 'true'
+        working-directory: web
+        run: |
+          echo "export const environment = {" > src/environments/environment.prod.ts
+          echo "  production: true," >> src/environments/environment.prod.ts
+          echo "  api_url: '${{ secrets.API_URL }}'," >> src/environments/environment.prod.ts
+          echo "  token_key: '${{ secrets.TOKEN_KEY }}'," >> src/environments/environment.prod.ts
+          # Add any other environment variables here
+          echo "};" >> src/environments/environment.prod.ts
+          echo "export default environment;" >> src/environments/environment.prod.ts
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build -- --configuration=production
+
+  # lint-backend:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: backend
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '20'
+
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Lint
+  #       run: npm run lint
+  
+
+  build-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create .env file
+        # if: env.BACKEND_CHANGED == 'true'
+        working-directory: backend
+        run: |
+          echo "PORT=${{ secrets.PORT }}" > .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+      - name: Build
+        run: npm run build

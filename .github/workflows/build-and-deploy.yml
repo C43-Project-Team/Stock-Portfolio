@@ -1,0 +1,121 @@
+name: Build and Deploy StockMs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - web/**
+      - backend/**
+      - .github/workflows/*
+      - docker-compose.prod.yml
+
+env:
+  FRONTEND_IMAGE_NAME: stockms-web
+  BACKEND_IMAGE_NAME: stockms-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Frontend build and push
+      - name: Ensure environment.ts exists
+        # if: env.WEB_CHANGED == 'true'
+        working-directory: web
+        run: |
+          if [ ! -f src/environments/environment.ts ]; then
+            echo "export const environment = { production: false };" > src/environments/environment.ts
+            echo "export default environment;" >> src/environments/environment.ts
+          fi
+
+      - name: Create environment.prod.ts
+        # if: env.WEB_CHANGED == 'true'
+        working-directory: web
+        run: |
+          echo "export const environment = {" > src/environments/environment.prod.ts
+          echo "  production: true," >> src/environments/environment.prod.ts
+          echo "  api_url: '${{ secrets.API_URL }}'," >> src/environments/environment.prod.ts
+          echo "  token_key: '${{ secrets.TOKEN_KEY }}'," >> src/environments/environment.prod.ts
+          # Add any other environment variables here
+          echo "};" >> src/environments/environment.prod.ts
+          echo "export default environment;" >> src/environments/environment.prod.ts
+
+      - name: Build frontend image
+        run: docker build . --file Dockerfile --tag $FRONTEND_IMAGE_NAME
+
+      - name: Push frontend image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$FRONTEND_IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $FRONTEND_IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION]
+
+      # Backend build and push
+      - name: Create .env file
+        # if: env.BACKEND_CHANGED == 'true'
+        working-directory: backend
+        run: |
+          echo "PORT=${{ secrets.PORT }}" > .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+      - name: Build backend image
+        run: docker build . --file Dockerfile --tag $BACKEND_IMAGE_NAME
+
+      - name: Push backend image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$BACKEND_IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $BACKEND_IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+
+      - name: Copy Docker Compose file to VM
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "docker-compose.prod.yml"
+          target: "stockms"
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            cd stockms || exit 1
+            sudo docker compose -f docker-compose.prod.yml pull || exit 1
+            sudo docker compose -f docker-compose.prod.yml up -d || exit 1
+      
+      
