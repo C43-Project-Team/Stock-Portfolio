@@ -28,7 +28,7 @@ services:
   frontend:
     image: ghcr.io/c43-project-team/stockms-web
     container_name: web
-    restart: always
+    # restart: always
     expose:
       - 80
     environment:
@@ -38,7 +38,7 @@ services:
   backend:
     image: ghcr.io/c43-project-team/stockms-backend
     container_name: backend
-    restart: always
+    # restart: always
     expose:
       - 3000
     environment:
