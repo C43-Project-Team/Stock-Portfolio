@@ -1,10 +1,6 @@
 import { FileMigrationProvider, type Kysely, Migrator, sql } from "kysely";
 import path, { dirname, join } from "node:path";
 import { promises as fs } from "fs";
-import {
-	up as fixUserNamingUp,
-	down as fixUserNamingDown,
-} from "./migrations/20240710_fix_user_naming";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +9,7 @@ const __dirname = dirname(__filename);
 /* TODO: We should put as a large header comment a summary of what SQL commands we ran here */
 
 export class TableManager {
-	migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
+	// migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
 
 	// biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 	async createDBTables(db: Kysely<any>): Promise<void> {
@@ -21,9 +17,8 @@ export class TableManager {
 			.createTable("users")
 			.addColumn("id", "serial", (col) => col.primaryKey())
 			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
-			.addColumn("password_hash", "varchar(20)")
-			.addColumn("first_name", "varchar(20)")
-			.addColumn("surname", "varchar(20)")
+			.addColumn("password_hash", "varchar(255)")
+			.addColumn("full_name", "varchar(40)")
 			.addColumn("user_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
@@ -49,7 +44,7 @@ export class TableManager {
 		const createStocksTable = db.schema
 			.createTable("stocks")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.primaryKey())
-			.addColumn("comapany", "varchar(20)")
+			.addColumn("company", "varchar(200)")
 			.execute();
 
 		await Promise.all([
@@ -67,7 +62,7 @@ export class TableManager {
 			.addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
-			.addColumn("volume", "integer", (col) => col.notNull())
+			.addColumn("volume", "bigint", (col) => col.notNull())
 			.addPrimaryKeyConstraint("stocks_daily_pk", [
 				"stock_symbol",
 				"stock_date",
@@ -90,9 +85,7 @@ export class TableManager {
 			)
 			.addColumn("review_last_updated", "timestamp")
 			.addPrimaryKeyConstraint("review_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", [
-				"id",
-			])
+			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", ["id"])
 			.addForeignKeyConstraint(
 				"review_user_foreign2",
 				["stock_list_id"],
@@ -108,12 +101,8 @@ export class TableManager {
 			.addColumn("requesting_friend", "integer")
 			.addColumn("pending", "boolean")
 			.addPrimaryKeyConstraint("friend_primary", ["friend1", "friend2"])
-			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", [
-				"id",
-			])
-			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", [
-				"id",
-			])
+			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", ["id"])
+			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", ["id"])
 			.addForeignKeyConstraint(
 				"friend_user_foreign3",
 				["requesting_friend"],
@@ -122,7 +111,7 @@ export class TableManager {
 			)
 			.execute();
 
-		// Maybe fix the expiry time here or when entering value with the +5 minutes
+		// Maybe fix the expiry time here or when entering value with the +5 minutes using a trigger in the database
 		const createRequestTimeoutTable = db.schema
 			.createTable("request_timeout")
 			.addColumn("request_user", "integer")
@@ -280,5 +269,13 @@ export class TableManager {
 		}
 
 		await db.destroy();
+	}
+
+	async createIndexes(db: Kysely<any>) {
+		await db.schema
+			.createIndex("idx_username")
+			.on("users")
+			.column("username")
+			.execute();
 	}
 }

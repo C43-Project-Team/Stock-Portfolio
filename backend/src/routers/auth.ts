@@ -1,9 +1,9 @@
 import { Router } from "express";
-import bcrypt from "bcrypt";
 import { userDatabase } from "../database/UserDatabase";
-import jwt from "jsonwebtoken";
-import "dotenv/config";
 import { type AuthedRequest, verifyToken } from "../middleware/auth";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import "dotenv/config";
 
 export const authRouter = Router();
 

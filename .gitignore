@@ -75,3 +75,6 @@ pnpm-debug.log*
 # Temporary
 **/.cache
 
+# For Python environments
+**/.venv/
+
