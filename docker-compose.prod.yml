@@ -32,8 +32,8 @@ services:
     expose:
       - 80
     environment:
-      VIRTUAL_HOST=stockms.live
-      LETSENCRYPT_HOST=stockms.live
+      - VIRTUAL_HOST=stockms.live
+      - LETSENCRYPT_HOST=stockms.live
 
   backend:
     image: ghcr.io/c43-project-team/stockms-backend
@@ -42,5 +42,5 @@ services:
     expose:
       - 3000
     environment:
-      VIRTUAL_HOST=api.stockms.live
-      LETSENCRYPT_HOST=api.stockms.live
+      - VIRTUAL_HOST=api.stockms.live
+      - LETSENCRYPT_HOST=api.stockms.live
