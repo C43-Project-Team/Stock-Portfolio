@@ -13,7 +13,7 @@
   </div>
   <div>
     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-    <input id="password" type="password" pPassword formControlName="password"
+    <input id="password" type="password" [feedback]="false" pPassword formControlName="password"
            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
     <div *ngIf="authForm.get('password')?.invalid && authForm.get('password')?.touched" class="text-red-500 text-sm">Password is required</div>
   </div>

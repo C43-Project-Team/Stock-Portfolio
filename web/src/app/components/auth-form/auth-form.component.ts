@@ -60,10 +60,13 @@ export class AuthFormComponent {
 	ngOnChanges() {
 		if (this.isSignIn) {
 			this.authForm.get("fullName")?.clearValidators();
+			this.authForm.get("profilePicture")?.clearValidators();
 		} else {
 			this.authForm.get("fullName")?.setValidators(Validators.required);
+			this.authForm.get("profilePicture")?.setValidators(Validators.required);
 		}
 		this.authForm.get("fullName")?.updateValueAndValidity();
+		this.authForm.get("profilePicture")?.updateValueAndValidity();
 	}
 
 	onSubmit() {
