@@ -16,6 +16,9 @@ import { FileUploadModule } from "primeng/fileupload";
 import { AuthService } from "../../services/auth.service";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { Router } from "@angular/router";
+import { ToastModule } from "primeng/toast";
+import { MessageService } from "primeng/api";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 @Component({
 	selector: "app-auth-form",
@@ -28,23 +31,29 @@ import { Router } from "@angular/router";
 		PasswordModule,
 		ButtonModule,
 		FileUploadModule,
+		ToastModule,
 	],
+	providers: [MessageService],
 	templateUrl: "./auth-form.component.html",
 	styles: "",
 })
 export class AuthFormComponent {
 	@Input() isSignIn = true;
 	authForm: FormGroup;
+	selectedFile: File | null = null;
+	selectedFileName: string | null = null;
 
 	constructor(
 		private fb: FormBuilder,
 		private authService: AuthService,
 		private router: Router,
+		private messageService: MessageService,
 	) {
 		this.authForm = this.fb.group({
-			fullName: [""],
+			fullName: ["", Validators.required],
 			username: ["", Validators.required],
 			password: ["", Validators.required],
+			profilePicture: ["", Validators.required],
 		});
 	}
 
@@ -58,31 +67,52 @@ export class AuthFormComponent {
 	}
 
 	onSubmit() {
-		if (this.authForm.valid) {
-			const { username, password, fullName } = this.authForm.value;
+		const { username, password, fullName } = this.authForm.value;
 
-			if (this.isSignIn) {
-				this.authService.login(username, password).subscribe({
-					next: (response) => {
-						console.log("Successfully signed in:", response);
-						this.router.navigate(["/"]);
-					},
-					error: (error) => {
-						console.error("Sign-in error:", error);
-					},
-				});
-			} else {
-				this.authService.signUp(fullName, username, password).subscribe({
-					next: (response) => {
-						console.log("Successfully signed up:", response);
-						this.router.navigate(["/"]);
-					},
-					error: (error) => {
-						console.error("Sign-up error:", error);
-					},
-				});
+		if (this.isSignIn) {
+			this.authService.login(username, password).subscribe({
+				next: (response) => {
+					console.log("Successfully signed in:", response);
+					this.router.navigate(["/"]);
+				},
+				error: (error) => {
+					this.showError(error.message);
+				},
+			});
+		} else {
+			const formData = new FormData();
+			formData.append("fullName", fullName);
+			formData.append("username", username);
+			formData.append("password", password);
+			if (this.selectedFile) {
+				formData.append("profilePicture", this.selectedFile);
 			}
+
+			this.authService.signUp(formData).subscribe({
+				next: (response) => {
+					console.log("Successfully signed up:", response);
+					this.router.navigate(["/"]);
+				},
+				error: (error) => {
+					console.log(error);
+					this.showError(error.message);
+				},
+			});
 		}
+	}
+
+	onSelect(event: any) {
+		this.selectedFile = event.files[0];
+		this.authForm.patchValue({ profilePicture: event.files[0] });
+		this.selectedFileName = this.selectedFile ? this.selectedFile.name : null;
+	}
+
+	showError(error: string) {
+		this.messageService.add({
+			severity: "error",
+			summary: "Error",
+			detail: error,
+		});
 	}
 
 	// onUpload(event) {

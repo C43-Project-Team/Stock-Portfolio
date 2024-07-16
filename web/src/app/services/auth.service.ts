@@ -32,17 +32,9 @@ export class AuthService {
 			);
 	}
 
-	signUp(
-		fullName: string,
-		username: string,
-		password: string,
-	): Observable<any> {
+	signUp(formData: FormData): Observable<any> {
 		return this.http
-			.post<{ token: string }>(`${this.API_URL}/auth/signup`, {
-				fullName,
-				username,
-				password,
-			})
+			.post<{ token: string }>(`${this.API_URL}/auth/signup`, formData)
 			.pipe(
 				take(1), // Ensure the subscription completes after the first emission
 				map((response) => {
