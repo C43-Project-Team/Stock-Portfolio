@@ -15,15 +15,14 @@ env:
   BACKEND_IMAGE_NAME: stockms-backend
 
 jobs:
-  deploy:
+  build-and-push-frontend:
     runs-on: ubuntu-latest
+    environment: web  # Specify the environment for frontend
 
     steps:
       - uses: actions/checkout@v2
 
-      # Frontend build and push
       - name: Ensure environment.ts exists
-        # if: env.WEB_CHANGED == 'true'
         working-directory: web
         run: |
           if [ ! -f src/environments/environment.ts ]; then
@@ -32,7 +31,6 @@ jobs:
           fi
 
       - name: Create environment.prod.ts
-        # if: env.WEB_CHANGED == 'true'
         working-directory: web
         run: |
           echo "export const environment = {" > src/environments/environment.prod.ts
@@ -66,9 +64,14 @@ jobs:
           docker tag $FRONTEND_IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
-      # Backend build and push
+  build-and-push-backend:
+    runs-on: ubuntu-latest
+    environment: backend  # Specify the environment for backend
+
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Create .env file
-        # if: env.BACKEND_CHANGED == 'true'
         working-directory: backend
         run: |
           echo "PORT=${{ secrets.PORT }}" > .env
@@ -83,6 +86,9 @@ jobs:
       - name: Build backend image
         working-directory: backend
         run: docker build . --file Dockerfile --tag $BACKEND_IMAGE_NAME
+
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push backend image
         run: |
@@ -99,6 +105,15 @@ jobs:
           echo VERSION=$VERSION
           docker tag $BACKEND_IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+
+  deploy-to-vm:
+    runs-on: ubuntu-latest
+
+    needs: [build-and-push-frontend, build-and-push-backend]  # Ensure this job runs after the build jobs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Copy Docker Compose file to VM
         uses: appleboy/scp-action@master
@@ -122,5 +137,3 @@ jobs:
             cd stockms || exit 1
             sudo docker compose -f docker-compose.prod.yml pull || exit 1
             sudo docker compose -f docker-compose.prod.yml up -d || exit 1
-      
-      
