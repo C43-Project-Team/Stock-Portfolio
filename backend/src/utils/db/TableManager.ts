@@ -19,6 +19,7 @@ export class TableManager {
 			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
 			.addColumn("password_hash", "varchar(255)")
 			.addColumn("full_name", "varchar(40)")
+			.addColumn("profile_picture", "varchar(255)")
 			.addColumn("user_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
@@ -85,7 +86,9 @@ export class TableManager {
 			)
 			.addColumn("review_last_updated", "timestamp")
 			.addPrimaryKeyConstraint("review_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", ["id"])
+			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", [
+				"id",
+			])
 			.addForeignKeyConstraint(
 				"review_user_foreign2",
 				["stock_list_id"],
@@ -101,8 +104,12 @@ export class TableManager {
 			.addColumn("requesting_friend", "integer")
 			.addColumn("pending", "boolean")
 			.addPrimaryKeyConstraint("friend_primary", ["friend1", "friend2"])
-			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", ["id"])
-			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", ["id"])
+			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", [
+				"id",
+			])
+			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", [
+				"id",
+			])
 			.addForeignKeyConstraint(
 				"friend_user_foreign3",
 				["requesting_friend"],
