@@ -61,7 +61,7 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag $FRONTEND_IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION]
+          docker push $IMAGE_ID:$VERSION
 
       # Backend build and push
       - name: Create .env file
