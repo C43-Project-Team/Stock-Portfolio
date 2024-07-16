@@ -47,6 +47,9 @@ jobs:
         working-directory: web
         run: docker build . --file Dockerfile --tag $FRONTEND_IMAGE_NAME
 
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.CR_PAT }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Push frontend image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$FRONTEND_IMAGE_NAME
