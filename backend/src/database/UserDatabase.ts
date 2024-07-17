@@ -9,6 +9,16 @@ class UserDatabase {
 		this.db = db;
 	}
 
+	async getUserById(userId: number): Promise<User | null> {
+		const user = await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("id", "=", userId)
+			.executeTakeFirst();
+
+		return user || null;
+	}
+
 	async getUserByUsername(username: string): Promise<User | null> {
 		const user = await this.db
 			.selectFrom("users")
@@ -23,6 +33,7 @@ class UserDatabase {
 		username: string,
 		password_hash: string,
 		full_name: string,
+		profile_picture: string,
 	): Promise<User> {
 		const [user] = await this.db
 			.insertInto("users")
@@ -31,6 +42,7 @@ class UserDatabase {
 				password_hash,
 				full_name,
 				user_created_at: new Date(),
+				profile_picture,
 			})
 			.returning([
 				"id",
@@ -38,6 +50,7 @@ class UserDatabase {
 				"password_hash",
 				"full_name",
 				"user_created_at",
+				"profile_picture",
 			])
 			.execute();
 

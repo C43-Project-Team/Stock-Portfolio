@@ -1,20 +1,56 @@
-import { Router } from "express";
+import { Router, type Response } from "express";
 import { userDatabase } from "../database/UserDatabase";
 import { type AuthedRequest, verifyToken } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "node:url";
 
 export const authRouter = Router();
 
-authRouter.post("/signup", async (req, res) => {
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Set storage engine
+const storage = multer.diskStorage({
+	destination: path.resolve(__dirname, "../uploads"),
+	filename: (req, file, cb) => {
+		const username = req.body.username || "user";
+		const timestamp = Date.now();
+		const extension = path.extname(file.originalname);
+		cb(null, `${username}-${timestamp}${extension}`);
+	},
+});
+
+// Initialize upload
+const upload = multer({
+	storage: storage,
+	limits: { fileSize: 1000000 },
+}).single("profilePicture");
+
+authRouter.post("/signup", upload, async (req, res) => {
 	try {
 		const { fullName, username, password } = req.body;
+		const profilePicture = req.file ? `/uploads/${req.file.filename}` : null;
+
+		if (!profilePicture) {
+			return res.status(400).json({ error: "Profile picture is required" });
+		}
+
+		const existingUser = await userDatabase.getUserByUsername(username);
+		if (existingUser) {
+			return res.status(400).json({ error: "Username already exists" });
+		}
+
 		const passwordHash = await bcrypt.hash(password, 10);
 		const newUser = await userDatabase.createUser(
 			username,
 			passwordHash,
 			fullName,
+			profilePicture,
 		);
 		const token = jwt.sign(
 			{ id: newUser.id, username: newUser.username },
@@ -54,3 +90,28 @@ authRouter.post("/signin", async (req, res) => {
 authRouter.get("/me", verifyToken, async (req: AuthedRequest, res) => {
 	return res.json({ user: req.user });
 });
+
+authRouter.get(
+	"/profile-picture",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const userId = req.user?.id;
+			if (!userId) {
+				return res.status(400).json({ error: "User ID not found" });
+			}
+
+			// Fetch the user profile picture URL from the database
+			const user = await userDatabase.getUserById(+userId);
+			if (!user || !user.profile_picture) {
+				return res.status(404).json({ error: "Profile picture not found" });
+			}
+
+			res.json({ profilePicture: user.profile_picture });
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error retrieving profile picture" });
+		}
+	},
+);

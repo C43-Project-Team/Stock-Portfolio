@@ -4,19 +4,19 @@ import "dotenv/config";
 
 export const stockRouter = Router();
 
-const processStockList = (stockList) => {
-    const mean = (stockList) => {
-        const sum = stockList.reduce((a, b) => a + b, 0);
+const processStockList = (stockList: { stock_symbol: string; stock_date: Date; open_price: number; close_price: number; low: number; high: number; volume: number; }[]) => {
+    const mean = (stockList: any[]) => {
+        const sum = stockList.reduce((a: any, b: any) => a + b, 0);
         return sum / stockList.length;
     };
 
-    const std = (stockList) => {
+    const std = (stockList: any[]) => {
         const meanValue = mean(stockList);
-        const variance = stockList.reduce((sum, value) => sum + Math.pow(value - meanValue, 2), 0) / (stockList.length - 1);
+        const variance = stockList.reduce((sum: number, value: number) => sum + Math.pow(value - meanValue, 2), 0) / (stockList.length - 1);
         return Math.sqrt(variance);
     };
 
-    const rollingMeanAndStd = (stockList, windowSize) => {
+    const rollingMeanAndStd = (stockList: string | any[], windowSize: number) => {
         const means = [];
         const stds = [];
 
@@ -32,12 +32,12 @@ const processStockList = (stockList) => {
         return { means, stds };
     };
 
-    const meanReversion = (stockList) => {
+    const meanReversion = (stockList: any[]) => {
         const windowSize = 15;
-        const closePrices = stockList.map(d => d.close_price);
+        const closePrices = stockList.map((d: { close_price: any; }) => d.close_price);
         const { means, stds } = rollingMeanAndStd(closePrices, windowSize);
 
-        const result = stockList.slice(windowSize - 1).map((d, i) => {
+        const result = stockList.slice(windowSize - 1).map((d: { close_price: number; }, i: string | number) => {
             const zScore = (d.close_price - means[i]) / stds[i];
             return {
                 ...d,
