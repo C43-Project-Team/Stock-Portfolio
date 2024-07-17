@@ -9,15 +9,15 @@ class StocksDatabase {
 		this.db = db;
 	}
 
-    async getStockByTimePeriod(ticker: string, startDate: Date, endDate: Date): Promise<StocksDaily | null> {
+    async getStockByTimePeriod(ticker: string, startDate: Date, endDate: Date): Promise<StocksDaily[] | null> {
         const stockList = await this.db
             .selectFrom("stocks_daily")
             .selectAll()
             .where("stock_symbol", "=", ticker)
-            .where((eb) => eb.between("date", startDate, endDate))
+            .where((eb) => eb.between("stock_date", startDate, endDate))
             .execute();
-        
-            return stockList || null;
+
+        return stockList || null;
     }
 
     // async insertStock()
