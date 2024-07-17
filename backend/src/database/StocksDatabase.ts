@@ -17,7 +17,7 @@ class StocksDatabase {
             .where((eb) => eb.between("stock_date", startDate, endDate))
             .execute();
 
-        return stockList || null;
+        return stockList.length > 0 ? stockList : null;
     }
 
     // async insertStock()
