@@ -12,12 +12,12 @@ friendsRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		try {
 			const friend = +req.body.friend;
-			if (!req.user || !req.user.id) {
+
+			const requestingFriend = req.user ? +req.user.id : null;
+
+			if (!friend || !requestingFriend) {
+				return res.status(400).json({ error: "Missing required parameters" });
 			}
-			if (!req.user) {
-				return res.status(403).json({ error: "No token provided" });
-			}
-			const requestingFriend = +req.user?.id;
 
 			if (!friend || !requestingFriend) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -36,7 +36,59 @@ friendsRouter.post(
 
 			return res.json(newFriendRequest);
 		} catch (error) {
+			if (
+				error instanceof Error &&
+				error.message ===
+					"You cannot send a friend request at this time. Please try again later."
+			) {
+				return res.status(403).json({ error: error.message });
+			}
 			res.status(500).json("Could not create friend request");
+		}
+	},
+);
+
+friendsRouter.post(
+	"/accept",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const friend = +req.body.friend;
+
+			const receivingFriend = req.user ? +req.user.id : null;
+
+			if (!friend || !receivingFriend) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await friendsDatabase.acceptFriendRequest(friend, receivingFriend);
+
+			return res.status(200).json({ message: "Friend request accepted" });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not accept friend request" });
+		}
+	},
+);
+
+friendsRouter.post(
+	"/remove",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const friend = +req.body.friend;
+			const requestingFriend = req.user ? +req.user.id : null;
+
+			if (!friend || !requestingFriend) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await friendsDatabase.removeFriend(requestingFriend, friend);
+
+			return res.status(200).json({ message: "Friend removed successfully" });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not remove friend" });
 		}
 	},
 );

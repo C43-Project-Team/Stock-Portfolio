@@ -10,46 +10,112 @@ class FriendsDatabase {
 	}
 
 	async createFriendRequest(
+    requestingFriend: number,
+    receivingFriend: number,
+  ): Promise<Friend | null | undefined> {
+    const now = new Date();
+
+    const activeTimeout = await this.db
+      .selectFrom('request_timeout')
+      .selectAll()
+      .where((eb) =>
+		eb.and([
+		  eb('request_user', '=', requestingFriend),
+		  eb('receive_user', '=', receivingFriend),
+		  eb('expiry_time', '>', now),  // might be buggy rn bc its not a string and in the db its stored as a string
+		]),
+	  )
+
+    if (activeTimeout) {
+      throw new Error('Timeout for friend request has not expired');
+    }
+
+    const existingRequest = await this.db
+      .selectFrom('friends')
+      .selectAll()
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb('requesting_friend', '=', requestingFriend),
+            eb('receiving_friend', '=', receivingFriend),
+          ]),
+          eb.and([
+            eb('receiving_friend', '=', receivingFriend),
+            eb('requesting_friend', '=', requestingFriend),
+          ]),
+        ]),
+      )
+      .executeTakeFirst();
+
+    if (existingRequest) {
+      if (existingRequest.pending) {
+        throw new Error('Friend request already exists');
+      }
+      throw new Error('You are already friends');
+    }
+
+    const newFriendRequest = await this.db
+      .insertInto('friends')
+      .values({
+        requesting_friend: requestingFriend,
+        receiving_friend: receivingFriend,
+        pending: true,
+      })
+      .returningAll()
+      .executeTakeFirst();
+
+    return newFriendRequest;
+  }
+
+	async acceptFriendRequest(
 		requestingFriend: number,
-		friend: number,
-	): Promise<Friend | null | undefined> {
-		const existingRequest = await this.db
-			.selectFrom("friends")
-			.selectAll()
+		receivingFriend: number,
+	): Promise<void> {
+		await db
+			.updateTable("friends")
+			.set({ pending: false })
 			.where((eb) =>
-				eb.or([
+				eb.and([
 					eb.and([
-						eb("friend1", "=", requestingFriend),
-						eb("friend2", "=", friend),
-					]),
-					eb.and([
-						eb("friend1", "=", friend),
-						eb("friend2", "=", requestingFriend),
+						eb("requesting_friend", "=", requestingFriend),
+						eb("receiving_friend", "=", receivingFriend),
 					]),
 				]),
 			)
-			.executeTakeFirst();
-
-		if (existingRequest) {
-			if (existingRequest.pending) {
-				throw new Error("Friend request already exists");
-			}
-			throw new Error("You are already friends");
-		}
-
-		const newFriendRequest = await this.db
-			.insertInto("friends")
-			.values({
-				friend1: requestingFriend,
-				friend2: friend,
-				requesting_friend: requestingFriend,
-				pending: true,
-			})
-			.returningAll()
-			.executeTakeFirst();
-
-		return newFriendRequest;
+			.execute();
 	}
+
+	 async removeFriend(
+    requestingFriend: number,
+    receivingFriend: number,
+  ): Promise<void> {
+    await this.db
+      .deleteFrom("friends")
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb("requesting_friend", "=", requestingFriend),
+            eb("receiving_friend", "=", receivingFriend),
+          ]),
+          eb.and([
+            eb("receiving_friend", "=", requestingFriend),
+            eb("requesting_friend", "=", receivingFriend),
+          ]),
+        ]),
+      )
+      .execute();
+
+    const expiryTime = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
+
+    await this.db
+      .insertInto("request_timeout")
+      .values({
+        request_user: requestingFriend,
+        receive_user: receivingFriend,
+        expiry_time: expiryTime,
+      })
+      .execute();
+  }
 }
 
 export const friendsDatabase = new FriendsDatabase();
