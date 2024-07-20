@@ -93,4 +93,48 @@ friendsRouter.post(
 	},
 );
 
+friendsRouter.get(
+	"/connections",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const userId = req.user ? +req.user.id : null;
+
+			if (!userId) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const connections = await friendsDatabase.getConnections(userId);
+			const incomingRequests =
+				await friendsDatabase.getIncomingRequests(userId);
+
+			return res.json({ connections, incomingRequests });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not fetch connections" });
+		}
+	},
+);
+
+friendsRouter.get(
+	"/sent-requests",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const userId = req.user ? +req.user.id : null;
+
+			if (!userId) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const sentRequests = await friendsDatabase.getSentRequests(userId);
+
+			return res.json(sentRequests);
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not fetch sent requests" });
+		}
+	},
+);
+
 export default friendsRouter;
