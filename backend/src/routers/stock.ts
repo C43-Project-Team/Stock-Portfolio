@@ -111,7 +111,14 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
         const closePrices = stockList.map((stock) => stock.close_price);
         const predictedPrices = polyRegression(closePrices, predictAmount);
 
-        return res.json({ predictedPrices });
+        const predictedData = [];
+        for (let i = 0; i < predictAmount; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i + 1);
+            predictedData.push({ date: date.toISOString().split('T')[0], price: predictedPrices[i] });
+        }
+
+        return res.json({ predictedData });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
