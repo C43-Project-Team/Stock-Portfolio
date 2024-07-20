@@ -6,6 +6,7 @@ import { LayoutComponent } from "@pages/layout/layout.component";
 import { Component } from "@angular/core";
 import { ConnectionsComponent } from "@pages/connections/connections.component";
 import { authGuard } from "@guards/auth.guard";
+import { StocksComponent } from "@pages/stocks/stocks.component";
 
 export const routes: Routes = [
 	{ path: "", component: HomeComponent },
@@ -19,6 +20,6 @@ export const routes: Routes = [
             { path: "connections", component: ConnectionsComponent }, 
         ],
 	},
-    // { path: "stocks", component: StocksComponent },
+    { path: "stocks", component: StocksComponent },
 	{ path: "**", redirectTo: "" },
 ];
