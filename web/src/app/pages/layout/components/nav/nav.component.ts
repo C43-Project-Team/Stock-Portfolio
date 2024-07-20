@@ -74,13 +74,20 @@ export class NavbarComponent implements OnInit {
 		];
 
 		this.userItems = [
+            {
+                label: "Settings",
+                icon: "pi pi-fw pi-cog",
+                command: () => {
+                    this.router.navigate(["/user/settings"]);
+                }
+            },
 			{
 				label: "Logout",
 				icon: "pi pi-fw pi-sign-out",
 				command: () => {
 					this.logout();
 				},
-			},
+			}
 		];
 
 		// Fetch the profile picture URL

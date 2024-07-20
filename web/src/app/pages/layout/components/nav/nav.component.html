@@ -3,7 +3,10 @@
     <img src="assets/images/logo.svg" class="w-[15rem]" alt="Logo">
   </ng-template>
   <ng-template pTemplate="end">
-    <p-menu #menuPopup [popup]="true" [model]="userItems" styleClass=""></p-menu>
-    <img [src]="profilePictureUrl" class="profile-pic w-10 h-10 rounded-full cursor-pointer" (click)="menuPopup.toggle($event)">
+    <div class="flex align-items-center gap-3">
+        <input type="text" pInputText placeholder="Search for Stocks" class="w-[20rem] sm:w-auto p-3 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 bg-slate-50 shadow-sm" style="width: 20rem !important;" />
+        <p-menu #menuPopup [popup]="true" [model]="userItems" styleClass=""></p-menu>
+        <img [src]="profilePictureUrl" class="profile-pic w-10 h-10 rounded-full cursor-pointer" (click)="menuPopup.toggle($event)">
+    </div>
   </ng-template>
 </p-menubar>

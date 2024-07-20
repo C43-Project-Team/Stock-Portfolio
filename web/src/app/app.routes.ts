@@ -15,7 +15,10 @@ export const routes: Routes = [
 		path: "user",
 		component: LayoutComponent,
 		canActivate: [authGuard],
-		children: [{ path: "connections", component: ConnectionsComponent }],
+		children: [
+            { path: "connections", component: ConnectionsComponent }, 
+        ],
 	},
+    // { path: "stocks", component: StocksComponent },
 	{ path: "**", redirectTo: "" },
 ];
