@@ -76,9 +76,8 @@ export type NewReview = Insertable<ReviewsTable>;
 export type ReviewUpdate = Updateable<ReviewsTable>;
 
 export interface FriendsTable {
-	friend1: number;
-	friend2: number;
 	requesting_friend: number;
+	receiving_friend: number;
 	pending: boolean;
 }
 

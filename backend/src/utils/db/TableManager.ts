@@ -99,20 +99,22 @@ export class TableManager {
 
 		const createFriendsTable = db.schema
 			.createTable("friends")
-			.addColumn("friend1", "integer")
-			.addColumn("friend2", "integer")
 			.addColumn("requesting_friend", "integer")
+			.addColumn("receiving_friend", "integer")
 			.addColumn("pending", "boolean")
-			.addPrimaryKeyConstraint("friend_primary", ["friend1", "friend2"])
-			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", [
-				"id",
-			])
-			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", [
-				"id",
+			.addPrimaryKeyConstraint("friend_primary", [
+				"requesting_friend",
+				"receiving_friend",
 			])
 			.addForeignKeyConstraint(
-				"friend_user_foreign3",
+				"friend_user_foreign1",
 				["requesting_friend"],
+				"users",
+				["id"],
+			)
+			.addForeignKeyConstraint(
+				"friend_user_foreign2",
+				["receiving_friend"],
 				"users",
 				["id"],
 			)
