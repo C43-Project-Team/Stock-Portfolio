@@ -20,6 +20,16 @@ class StocksDatabase {
         return stockList.length > 0 ? stockList : null;
     }
 
+    async getAllStocks(ticker: string): Promise<StocksDaily[] | null> {
+        const stockList = await this.db
+            .selectFrom("stocks_daily")
+            .selectAll()
+            .where("stock_symbol", "=", ticker)
+            .execute();
+
+        return stockList.length > 0 ? stockList : null;
+    }
+
     // async insertStock()
 }
 
