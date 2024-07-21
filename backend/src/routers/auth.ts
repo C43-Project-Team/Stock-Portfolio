@@ -53,7 +53,7 @@ authRouter.post("/signup", upload, async (req, res) => {
 			profilePicture,
 		);
 		const token = jwt.sign(
-			{ id: newUser.id, username: newUser.username },
+			{ username: newUser.username },
 			process.env.JWT_SECRET || "stockms",
 		);
 
@@ -78,7 +78,7 @@ authRouter.post("/signin", async (req, res) => {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
 		const token = jwt.sign(
-			{ id: user.id, username: user.username },
+			{ username: user.username },
 			process.env.JWT_SECRET || "stockms",
 		);
 		return res.json({ token });
@@ -96,13 +96,13 @@ authRouter.get(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const userId = req.user?.id;
-			if (!userId) {
-				return res.status(400).json({ error: "User ID not found" });
+			const username = req.user?.username;
+			if (!username) {
+				return res.status(400).json({ error: "Username not found" });
 			}
 
 			// Fetch the user profile picture URL from the database
-			const user = await userDatabase.getUserById(+userId);
+			const user = await userDatabase.getUserByUsername(username);
 			if (!user || !user.profile_picture) {
 				return res.status(404).json({ error: "Profile picture not found" });
 			}

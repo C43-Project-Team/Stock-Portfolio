@@ -1,6 +1,6 @@
 import { db } from "../utils/db/db-controller"; // Adjust the import path accordingly
-import type { Database, Friend } from "../types/db-schema";
-import type { Kysely } from "kysely";
+import type { Database, Friend, User } from "../types/db-schema";
+import { sql, type Kysely } from "kysely";
 
 class FriendsDatabase {
 	private db: Kysely<Database>;
@@ -10,8 +10,8 @@ class FriendsDatabase {
 	}
 
 	async createFriendRequest(
-		requestingFriend: number,
-		receivingFriend: number,
+		requestingFriend: string,
+		receivingFriend: string,
 	): Promise<Friend | null | undefined> {
 		const now = new Date();
 
@@ -24,7 +24,8 @@ class FriendsDatabase {
 					eb("receive_user", "=", receivingFriend),
 					eb("expiry_time", ">", now), // might be buggy rn bc its not a string and in the db its stored as a string
 				]),
-			);
+			)
+			.executeTakeFirst();
 
 		if (activeTimeout) {
 			throw new Error("Timeout for friend request has not expired");
@@ -68,8 +69,8 @@ class FriendsDatabase {
 	}
 
 	async acceptFriendRequest(
-		requestingFriend: number,
-		receivingFriend: number,
+		requestingFriend: string,
+		receivingFriend: string,
 	): Promise<void> {
 		await db
 			.updateTable("friends")
@@ -86,8 +87,8 @@ class FriendsDatabase {
 	}
 
 	async removeFriend(
-		requestingFriend: number,
-		receivingFriend: number,
+		requestingFriend: string,
+		receivingFriend: string,
 	): Promise<void> {
 		await this.db
 			.deleteFrom("friends")
@@ -117,15 +118,15 @@ class FriendsDatabase {
 			.execute();
 	}
 
-	async getConnections(userId: number): Promise<Friend[]> {
+	async getConnections(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")
 			.selectAll()
 			.where((eb) =>
 				eb.and([
 					eb.or([
-						eb("requesting_friend", "=", userId),
-						eb("receiving_friend", "=", userId),
+						eb("requesting_friend", "=", username),
+						eb("receiving_friend", "=", username),
 					]),
 					eb("pending", "=", false),
 				]),
@@ -133,25 +134,54 @@ class FriendsDatabase {
 			.execute();
 	}
 
-	async getIncomingRequests(userId: number): Promise<Friend[]> {
-		return this.db
-			.selectFrom("friends")
-			.selectAll()
-			.where((eb) =>
-				eb.and([eb("receiving_friend", "=", userId), eb("pending", "=", true)]),
-			)
-			.execute();
-	}
-
-	async getSentRequests(userId: number): Promise<Friend[]> {
+	async getIncomingRequests(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")
 			.selectAll()
 			.where((eb) =>
 				eb.and([
-					eb("requesting_friend", "=", userId),
+					eb("receiving_friend", "=", username),
 					eb("pending", "=", true),
 				]),
+			)
+			.execute();
+	}
+
+	async getSentRequests(username: string): Promise<Friend[]> {
+		return this.db
+			.selectFrom("friends")
+			.selectAll()
+			.where((eb) =>
+				eb.and([
+					eb("requesting_friend", "=", username),
+					eb("pending", "=", true),
+				]),
+			)
+			.execute();
+	}
+
+	async getNonFriends(username: string): Promise<User[]> {
+		return this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "!=", username)
+			.where((eb) =>
+				eb.not(
+					eb.or([
+						eb.exists(
+							eb
+								.selectFrom("friends")
+								.where("requesting_friend", "=", username)
+								.whereRef("receiving_friend", "=", "users.username"),
+						),
+						eb.exists(
+							eb
+								.selectFrom("friends")
+								.where("receiving_friend", "=", username)
+								.whereRef("requesting_friend", "=", "users.username"),
+						),
+					]),
+				),
 			)
 			.execute();
 	}

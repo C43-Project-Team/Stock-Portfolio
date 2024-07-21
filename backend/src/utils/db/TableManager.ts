@@ -15,8 +15,7 @@ export class TableManager {
 	async createDBTables(db: Kysely<any>): Promise<void> {
 		const createUsersTable = db.schema
 			.createTable("users")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
+			.addColumn("username", "varchar(20)", (col) => col.primaryKey())
 			.addColumn("password_hash", "varchar(255)")
 			.addColumn("full_name", "varchar(40)")
 			.addColumn("profile_picture", "varchar(255)")
@@ -78,7 +77,7 @@ export class TableManager {
 
 		const createReviewsTable = db.schema
 			.createTable("reviews")
-			.addColumn("user_id", "integer")
+			.addColumn("user_id", "varchar(20)")
 			.addColumn("stock_list_id", "integer")
 			.addColumn("content", "varchar(200)")
 			.addColumn("review_creation_time", "timestamp", (col) =>
@@ -87,7 +86,7 @@ export class TableManager {
 			.addColumn("review_last_updated", "timestamp")
 			.addPrimaryKeyConstraint("review_primary", ["user_id", "stock_list_id"])
 			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", [
-				"id",
+				"username",
 			])
 			.addForeignKeyConstraint(
 				"review_user_foreign2",
@@ -99,8 +98,8 @@ export class TableManager {
 
 		const createFriendsTable = db.schema
 			.createTable("friends")
-			.addColumn("requesting_friend", "integer")
-			.addColumn("receiving_friend", "integer")
+			.addColumn("requesting_friend", "varchar(20)")
+			.addColumn("receiving_friend", "varchar(20)")
 			.addColumn("pending", "boolean")
 			.addPrimaryKeyConstraint("friend_primary", [
 				"requesting_friend",
@@ -110,21 +109,21 @@ export class TableManager {
 				"friend_user_foreign1",
 				["requesting_friend"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.addForeignKeyConstraint(
 				"friend_user_foreign2",
 				["receiving_friend"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.execute();
 
 		// Maybe fix the expiry time here or when entering value with the +5 minutes using a trigger in the database
 		const createRequestTimeoutTable = db.schema
 			.createTable("request_timeout")
-			.addColumn("request_user", "integer")
-			.addColumn("receive_user", "integer")
+			.addColumn("request_user", "varchar(20)")
+			.addColumn("receive_user", "varchar(20)")
 			.addColumn("expiry_time", "timestamp")
 			.addPrimaryKeyConstraint("request_primary", [
 				"request_user",
@@ -134,20 +133,20 @@ export class TableManager {
 				"request_user_foreign1",
 				["request_user"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.addForeignKeyConstraint(
 				"request_user_foreign2",
 				["receive_user"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.execute();
 
 		const createOwnsTable = db.schema
 			.createTable("owns")
 			.addColumn("portfolio_id", "integer")
-			.addColumn("user_id", "integer")
+			.addColumn("user_id", "varchar(20)")
 			.addPrimaryKeyConstraint("owns_primary", ["portfolio_id"])
 			.addForeignKeyConstraint(
 				"owns_foreign1",
@@ -155,7 +154,9 @@ export class TableManager {
 				"portfolios",
 				["id"],
 			)
-			.addForeignKeyConstraint("owns_foreign2", ["user_id"], "users", ["id"])
+			.addForeignKeyConstraint("owns_foreign2", ["user_id"], "users", [
+				"username",
+			])
 			.execute();
 
 		const createInvestmentsTable = db.schema
@@ -185,11 +186,13 @@ export class TableManager {
 
 		const createAccessTable = db.schema
 			.createTable("access")
-			.addColumn("user_id", "integer")
+			.addColumn("user_id", "varchar(20)")
 			.addColumn("stock_list_id", "integer")
 			.addColumn("is_owner", "boolean")
 			.addPrimaryKeyConstraint("access_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("access_foreign1", ["user_id"], "users", ["id"])
+			.addForeignKeyConstraint("access_foreign1", ["user_id"], "users", [
+				"username",
+			])
 			.addForeignKeyConstraint(
 				"access_foreign2",
 				["stock_list_id"],
@@ -280,11 +283,24 @@ export class TableManager {
 		await db.destroy();
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: necessary for kysely
 	async createIndexes(db: Kysely<any>) {
 		await db.schema
 			.createIndex("idx_username")
 			.on("users")
 			.column("username")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_requesting_friend")
+			.on("friends")
+			.column("requesting_friend")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_receiving_friend")
+			.on("friends")
+			.column("receiving_friend")
 			.execute();
 	}
 }

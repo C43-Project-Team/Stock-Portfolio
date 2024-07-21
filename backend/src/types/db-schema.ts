@@ -7,7 +7,6 @@ import type {
 } from "kysely";
 
 export interface UsersTable {
-	id: Generated<number>;
 	username: string;
 	password_hash: string;
 	full_name: string;
@@ -64,7 +63,7 @@ export type NewStocksDaily = Insertable<StocksDailyTable>;
 export type StocksDailyUpdate = Updateable<StocksDailyTable>;
 
 export interface ReviewsTable {
-	user_id: number;
+	user_id: string;
 	stock_list_id: number;
 	content: string;
 	review_creation_time: ColumnType<Date, string | undefined, never>;
@@ -76,8 +75,8 @@ export type NewReview = Insertable<ReviewsTable>;
 export type ReviewUpdate = Updateable<ReviewsTable>;
 
 export interface FriendsTable {
-	requesting_friend: number;
-	receiving_friend: number;
+	requesting_friend: string;
+	receiving_friend: string;
 	pending: boolean;
 }
 
@@ -86,8 +85,8 @@ export type NewFriend = Insertable<FriendsTable>;
 export type FriendUpdate = Updateable<FriendsTable>;
 
 export interface RequestTimeoutTable {
-	request_user: number;
-	receive_user: number;
+	request_user: string;
+	receive_user: string;
 	expiry_time: ColumnType<Date, string | undefined, never>;
 }
 
@@ -97,7 +96,7 @@ export type RequestTimeoutUpdate = Updateable<RequestTimeout>;
 
 export interface OwnsTable {
 	portfolio_id: number;
-	user_id: number;
+	user_id: string;
 }
 
 export type Owns = Selectable<OwnsTable>;
@@ -116,7 +115,7 @@ export type NewInvestments = Insertable<InvestmentsTable>;
 export type InvestmentsTableUpdate = Updateable<InvestmentsTable>;
 
 export interface AccessTable {
-	user_id: number;
+	user_id: string;
 	stock_list_id: number;
 	is_owner: boolean;
 }

@@ -3,6 +3,7 @@ import { friendsDatabase } from "@database/FriendsDatabase"; // Adjust the impor
 import { verifyToken } from "@middleware/auth"; // Adjust the import path accordingly
 import type { Request, Response } from "express";
 import type { AuthedRequest } from "@middleware/auth"; // Adjust the import path accordingly
+import { userDatabase } from "@/database/UserDatabase";
 
 const friendsRouter = express.Router();
 
@@ -11,19 +12,20 @@ friendsRouter.post(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const friend = +req.body.friend;
+			const friend = await userDatabase.getUserByUsername(req.body.friend);
+			const friendUsername = friend?.username;
 
-			const requestingFriend = req.user ? +req.user.id : null;
+			const requestingFriend = req.user ? req.user.username : null;
 
-			if (!friend || !requestingFriend) {
-				return res.status(400).json({ error: "Missing required parameters" });
+			if (!friendUsername || !requestingFriend) {
+				return res.status(400).json({ error: "User does not exist" });
 			}
 
-			if (!friend || !requestingFriend) {
-				return res.status(400).json({ error: "Missing required parameters" });
+			if (!friendUsername || !requestingFriend) {
+				return res.status(400).json({ error: "User does not exist" });
 			}
 
-			if (requestingFriend === friend) {
+			if (requestingFriend === friendUsername) {
 				return res
 					.status(400)
 					.json({ error: "Cannot be friends with yourself" });
@@ -31,7 +33,7 @@ friendsRouter.post(
 
 			const newFriendRequest = await friendsDatabase.createFriendRequest(
 				requestingFriend,
-				friend,
+				friendUsername,
 			);
 
 			return res.json(newFriendRequest);
@@ -43,6 +45,7 @@ friendsRouter.post(
 			) {
 				return res.status(403).json({ error: error.message });
 			}
+			console.log(error);
 			res.status(500).json("Could not create friend request");
 		}
 	},
@@ -53,9 +56,9 @@ friendsRouter.post(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const friend = +req.body.friend;
+			const friend = req.body.friend;
 
-			const receivingFriend = req.user ? +req.user.id : null;
+			const receivingFriend = req.user ? req.user.username : null;
 
 			if (!friend || !receivingFriend) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -76,8 +79,8 @@ friendsRouter.post(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const friend = +req.body.friend;
-			const requestingFriend = req.user ? +req.user.id : null;
+			const friend = req.body.friend;
+			const requestingFriend = req.user ? req.user.username : null;
 
 			if (!friend || !requestingFriend) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -98,15 +101,15 @@ friendsRouter.get(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const userId = req.user ? +req.user.id : null;
+			const username = req.user ? req.user.username : null;
 
-			if (!userId) {
+			if (!username) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-			const connections = await friendsDatabase.getConnections(userId);
+			const connections = await friendsDatabase.getConnections(username);
 			const incomingRequests =
-				await friendsDatabase.getIncomingRequests(userId);
+				await friendsDatabase.getIncomingRequests(username);
 
 			return res.json({ connections, incomingRequests });
 		} catch (error) {
@@ -121,18 +124,39 @@ friendsRouter.get(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const userId = req.user ? +req.user.id : null;
+			const username = req.user ? req.user.username : null;
 
-			if (!userId) {
+			if (!username) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-			const sentRequests = await friendsDatabase.getSentRequests(userId);
+			const sentRequests = await friendsDatabase.getSentRequests(username);
 
 			return res.json(sentRequests);
 		} catch (error) {
 			console.error(error);
 			res.status(500).json({ error: "Could not fetch sent requests" });
+		}
+	},
+);
+
+friendsRouter.get(
+	"/non-friends",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const username = req.user ? req.user.username : null;
+
+			if (!username) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const nonFriends = await friendsDatabase.getNonFriends(username);
+
+			return res.json(nonFriends);
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not fetch non-friends" });
 		}
 	},
 );

@@ -9,16 +9,6 @@ class UserDatabase {
 		this.db = db;
 	}
 
-	async getUserById(userId: number): Promise<User | null> {
-		const user = await this.db
-			.selectFrom("users")
-			.selectAll()
-			.where("id", "=", userId)
-			.executeTakeFirst();
-
-		return user || null;
-	}
-
 	async getUserByUsername(username: string): Promise<User | null> {
 		const user = await this.db
 			.selectFrom("users")
@@ -45,7 +35,6 @@ class UserDatabase {
 				profile_picture,
 			})
 			.returning([
-				"id",
 				"username",
 				"password_hash",
 				"full_name",

@@ -12,7 +12,8 @@ import { catchError } from "rxjs/operators";
 import environment from "../environments/environment";
 
 export const authInterceptor: HttpInterceptorFn = (
-	req: HttpRequest<any>, next: HttpHandlerFn
+	req: HttpRequest<any>,
+	next: HttpHandlerFn,
 ): Observable<HttpEvent<any>> => {
 	const TOKEN_KEY = environment.token_key;
 	const token = localStorage.getItem(TOKEN_KEY);
