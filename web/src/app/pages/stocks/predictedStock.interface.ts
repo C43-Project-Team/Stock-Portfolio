@@ -1,4 +1,4 @@
-export interface PredictedStock {
-    date: string;
-    price: number;
+export interface PredictedStockInterface {
+	date: Date;
+	price: number;
 }

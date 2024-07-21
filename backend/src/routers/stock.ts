@@ -54,7 +54,7 @@ const meanReversion = (stockList: any[]) => {
 };
 
 const polyRegression = (closePrices: any[], daysInFuture: number) => {
-    const deg = 2;
+    const deg = 7;
     const x = closePrices.map((_, index) => index);
     const regression = new PolynomialRegression(x, closePrices, deg);
 

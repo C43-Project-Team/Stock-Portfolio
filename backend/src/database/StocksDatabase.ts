@@ -1,5 +1,5 @@
 import { db } from "../utils/db/db-controller"; // Adjust the import path accordingly
-import type { Database, StocksDaily } from "../types/db-schema";
+import type { Database, StocksDaily, StocksTable } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
 class StocksDatabase {
@@ -28,6 +28,16 @@ class StocksDatabase {
             .execute();
 
         return stockList.length > 0 ? stockList : null;
+    }
+
+    async getStockCompany(ticker: string): Promise<StocksTable | null> {
+        const company = await this.db
+            .selectFrom("stocks")
+            .selectAll()
+            .where("stock_symbol", "=", ticker)
+            .execute();
+
+        return company.length > 0 ? company[0] : null;
     }
 
     // async insertStock()

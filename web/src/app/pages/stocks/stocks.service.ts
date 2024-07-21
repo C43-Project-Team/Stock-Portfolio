@@ -1,23 +1,31 @@
-import { Injectable } from '@angular/core';
-import type { HttpClient } from '@angular/common/http';
-import type { Observable } from 'rxjs';
-import type { HistoricStock } from './historicStock.interface';
-import type { PredictedStock } from './predictedStock.interface';
-import environment from '@environment';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { HistoricStockInterface } from "./historicStock.interface";
+import { PredictedStockInterface } from "./predictedStock.interface";
+import environment from "@environment";
 
 @Injectable({
-  providedIn: 'root',
+	providedIn: "root",
 })
 export class StockService {
-  private baseUrl = environment.api_url;
+	private baseUrl: string = environment.api_url;
 
-  constructor(private http: HttpClient) {}
+	constructor(private http: HttpClient) {}
 
-  getHistoricData(ticker: string, startDate: string): Observable<HistoricStock[]> {
-    return this.http.post<HistoricStock[]>(`${this.baseUrl}/${ticker}`, { startDate });
-  }
+	getHistoricData(
+		ticker: string,
+		startDate: string,
+	): Observable<HistoricStockInterface[]> {
+        // console.log(this.baseUrl + "/stock/" + ticker); 
+		return this.http.post<HistoricStockInterface[]>(`${this.baseUrl}/stock/${ticker}`, { startDate });
+	}
 
-  getPredictions(ticker: string, endDate: string): Observable<PredictedStock[]> {
-    return this.http.post<PredictedStock[]>(`${this.baseUrl}/prediction/${ticker}`, { endDate });
-  }
+	getPredictions(
+		ticker: string,
+		endDate: string,
+	): Observable<PredictedStockInterface[]> {
+        // console.log(this.baseUrl + "/stock/prediction/" + ticker);
+		return this.http.post<PredictedStockInterface[]>(`${this.baseUrl}/stock/prediction/${ticker}`, { endDate });
+	}
 }

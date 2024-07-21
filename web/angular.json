@@ -35,9 +35,9 @@
 							}
 						],
 						"styles": [
-                            "src/styles.scss",
-                            "node_modules/primeng/resources/primeng.min.css"
-                        ],
+							"src/styles.scss",
+							"node_modules/primeng/resources/primeng.min.css"
+						],
 						"scripts": []
 					},
 					"configurations": {
@@ -102,9 +102,9 @@
 							}
 						],
 						"styles": [
-                            "src/styles.scss",
-                            "node_modules/primeng/resources/primeng.min.css"
-                        ],
+							"src/styles.scss",
+							"node_modules/primeng/resources/primeng.min.css"
+						],
 						"scripts": []
 					}
 				}

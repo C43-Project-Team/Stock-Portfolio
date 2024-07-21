@@ -1,3 +1,9 @@
 <div>
-    <p>STOCKS PAGE!!</p>
+    <h2>Historic Data for {{ ticker }}</h2>
+    <p-chart type="line" [data]="historicChartData" [options]="chartOptions"></p-chart>
 </div>
+<div>
+    <h2>Predictions for {{ ticker }}</h2>
+    <p-chart type="line" [data]="predictionChartData" [options]="chartOptions"></p-chart>
+</div>
+  

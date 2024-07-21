@@ -8,6 +8,17 @@ import "dotenv/config";
 const int8TypeId = 20
 const numericTypeId = 1700
 const dateTypeId = 1082
+const boolTypeId = 16
+
+function parseBool (value) {
+    return value === 'TRUE' ||
+      value === 't' ||
+      value === 'true' ||
+      value === 'y' ||
+      value === 'yes' ||
+      value === 'on' ||
+      value === '1'
+  }
 
 pg.types.setTypeParser(int8TypeId, (val) => {
   return Number.parseInt(val, 10)
@@ -19,6 +30,10 @@ pg.types.setTypeParser(numericTypeId, (val) => {
 
 pg.types.setTypeParser(dateTypeId, (val) => {
   return new Date(val).toISOString().substring(0, 10)
+})
+
+pg.types.setTypeParser(boolTypeId, (val) => {
+    return parseBool(val);
 })
 
 const dialect = new PostgresDialect({
