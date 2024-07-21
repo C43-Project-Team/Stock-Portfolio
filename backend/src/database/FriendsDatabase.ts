@@ -118,6 +118,27 @@ class FriendsDatabase {
 			.execute();
 	}
 
+	async withdrawFriendRequest(
+		requestingFriend: string,
+		receivingFriend: string,
+	): Promise<void> {
+		await this.db
+			.deleteFrom("friends")
+			.where((eb) =>
+				eb.or([
+					eb.and([
+						eb("requesting_friend", "=", requestingFriend),
+						eb("receiving_friend", "=", receivingFriend),
+					]),
+					eb.and([
+						eb("receiving_friend", "=", requestingFriend),
+						eb("requesting_friend", "=", receivingFriend),
+					]),
+				]),
+			)
+			.execute();
+	}
+
 	async getConnections(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")

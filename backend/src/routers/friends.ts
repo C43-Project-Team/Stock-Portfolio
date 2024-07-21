@@ -119,6 +119,28 @@ friendsRouter.get(
 	},
 );
 
+friendsRouter.post(
+	"/withdraw",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const friend = req.body.friend;
+			const requestingFriend = req.user ? req.user.username : null;
+
+			if (!friend || !requestingFriend) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await friendsDatabase.withdrawFriendRequest(requestingFriend, friend);
+
+			return res.status(200).json({ message: "Friend request withdrawn" });
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ error: "Could not withdraw friend request" });
+		}
+	},
+);
+
 friendsRouter.get(
 	"/sent-requests",
 	verifyToken,

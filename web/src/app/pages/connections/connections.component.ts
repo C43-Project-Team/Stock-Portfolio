@@ -10,6 +10,9 @@ import { FormsModule } from "@angular/forms";
 import { InputTextModule } from "primeng/inputtext";
 import { ButtonModule } from "primeng/button";
 import type { HttpErrorResponse } from "@angular/common/http";
+// biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
+import { AuthService } from "@services/auth.service";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 
 @Component({
 	selector: "app-connections",
@@ -21,6 +24,7 @@ import type { HttpErrorResponse } from "@angular/common/http";
 		FormsModule,
 		InputTextModule,
 		ButtonModule,
+		ConfirmDialogModule,
 	],
 	providers: [ConfirmationService, MessageService],
 	templateUrl: "./connections.component.html",
@@ -31,14 +35,19 @@ export class ConnectionsComponent implements OnInit {
 	incomingRequests: FriendsTable[] = [];
 	sentRequests: FriendsTable[] = [];
 	newFriendUsername = "";
+	myId = "";
 
 	constructor(
 		private apiService: ApiService,
+		private authService: AuthService,
 		private confirmationService: ConfirmationService,
 		private messageService: MessageService,
 	) {}
 
 	ngOnInit(): void {
+		this.authService.getCredentials().subscribe((user) => {
+			this.myId = user.id;
+		});
 		this.loadConnections();
 		this.loadSentRequests();
 	}
@@ -74,33 +83,75 @@ export class ConnectionsComponent implements OnInit {
 		if (this.newFriendUsername.trim()) {
 			try {
 				await this.apiService.requestFriend(this.newFriendUsername);
-				this.messageService.add({
-					severity: "success",
-					summary: "Friend Request Sent",
-					detail: `Friend request sent to ${this.newFriendUsername}`,
-				});
+				this.logSuccess(
+					"Friend Request Sent",
+					`Friend request sent to ${this.newFriendUsername}`,
+				);
 				this.newFriendUsername = "";
 				this.loadSentRequests(); // Reload sent requests to reflect the new request
 			} catch (error) {
-				this.messageService.add({
-					severity: "error",
-					summary: "Error",
-					detail: (error as HttpErrorResponse).error.error,
-				});
+				this.logError((error as HttpErrorResponse).error.error);
 			}
 		}
 	}
 
-	acceptRequest(request: FriendsTable) {
-		// Implement the accept friend request logic here
+	async acceptRequest(request: FriendsTable) {
+		try {
+			await this.apiService.acceptFriendRequest(request.requesting_friend);
+			this.logSuccess(
+				"Friend Request Accepted",
+				`Friend request from ${request.requesting_friend} accepted`,
+			);
+			this.loadConnections(); // Reload connections to reflect the new connection
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
 	}
 
-	removeConnection(connection: FriendsTable) {
-		// Implement the remove friend logic here
+	async removeConnection(connection: FriendsTable) {
+		try {
+			await this.apiService.removeFriend(
+				connection.receiving_friend === this.myId
+					? connection.requesting_friend
+					: connection.receiving_friend,
+			);
+			this.logSuccess(
+				"Connection Removed",
+				`Connection with ${connection.receiving_friend === this.myId ? connection.requesting_friend : connection.receiving_friend} removed`,
+			);
+			this.loadConnections(); // Reload connections to reflect the removed connection
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
 	}
 
-	withdrawRequest(request: FriendsTable) {
-		// Implement the withdraw friend request logic here
+	async withdrawRequest(request: FriendsTable) {
+		try {
+			await this.apiService.withdrawFriendRequest(request.receiving_friend);
+			this.logSuccess(
+				"Friend Request Withdrawn",
+				`Friend request to ${request.receiving_friend} withdrawn`,
+			);
+			this.loadSentRequests(); // Reload sent requests to reflect the new request
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	logSuccess(summary: string, detail: string) {
+		this.messageService.add({
+			severity: "success",
+			summary,
+			detail,
+		});
+	}
+
+	logError(detail: string) {
+		this.messageService.add({
+			severity: "error",
+			summary: "Error",
+			detail: detail,
+		});
 	}
 
 	confirmAccept(request: FriendsTable) {

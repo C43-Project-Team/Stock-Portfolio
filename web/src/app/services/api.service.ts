@@ -62,4 +62,16 @@ export class ApiService {
 	async requestFriend(username: string): Promise<FriendsTable | null> {
 		return this.post<FriendsTable>("/friends/request", { friend: username });
 	}
+
+	async acceptFriendRequest(username: string): Promise<FriendsTable | null> {
+		return this.post<FriendsTable>("/friends/accept", { friend: username });
+	}
+
+	async removeFriend(username: string): Promise<FriendsTable | null> {
+		return this.post<FriendsTable>("/friends/remove", { friend: username });
+	}
+
+	async withdrawFriendRequest(username: string): Promise<FriendsTable | null> {
+		return this.post<FriendsTable>("/friends/withdraw", { friend: username });
+	}
 }
