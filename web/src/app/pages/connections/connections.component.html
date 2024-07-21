@@ -11,7 +11,14 @@
       [(ngModel)]="newFriendUsername"
       class="p-inputtext-sm p-mr-2"
     />
-    <button pButton type="button" label="Add Friend" (click)="addFriend()" [disabled]="!newFriendUsername.trim()"></button>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-user-plus"
+      class="p-button-success"
+      (click)="addFriend()"
+      [disabled]="!newFriendUsername.trim()"
+    ></button>
   </div>
 
   <div *ngIf="connections.length > 0" class="mb-4">
@@ -32,13 +39,13 @@
               *ngIf="!connection.pending"
               pButton
               type="button"
-              label="Remove"
-              class="p-button-danger"
+              icon="pi pi-user-minus"
+              class="p-button-danger p-button-rounded"
               (click)="confirmRemove(connection)"
             ></button>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right"></button>
+            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
           </td>
         </tr>
       </ng-template>
@@ -59,23 +66,25 @@
         <tr>
           <td>{{ request.requesting_friend }}</td>
           <td>
-            <button
-              pButton
-              type="button"
-              label="Accept"
-              class="p-button-success"
-              (click)="confirmAccept(request)"
-            ></button>
-            <button
-              pButton
-              type="button"
-              label="Remove"
-              class="p-button-danger"
-              (click)="confirmRemove(request)"
-            ></button>
+            <div class="flex gap-x-2">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-times"
+                class="p-button-danger p-button-rounded"
+                (click)="confirmRemove(request)"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-check"
+                class="p-button-success p-button-rounded"
+                (click)="confirmAccept(request)"
+              ></button>
+            </div>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right"></button>
+            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
           </td>
         </tr>
       </ng-template>
@@ -99,13 +108,13 @@
             <button
               pButton
               type="button"
-              label="Withdraw"
-              class="p-button-danger"
+              icon="pi pi-user-minus"
+              class="p-button-danger p-button-rounded"
               (click)="confirmWithdraw(request)"
             ></button>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right"></button>
+            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
           </td>
         </tr>
       </ng-template>

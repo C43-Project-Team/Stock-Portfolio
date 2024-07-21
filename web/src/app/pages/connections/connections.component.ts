@@ -9,6 +9,7 @@ import { ConfirmationService, MessageService } from "primeng/api";
 import { FormsModule } from "@angular/forms";
 import { InputTextModule } from "primeng/inputtext";
 import { ButtonModule } from "primeng/button";
+import type { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
 	selector: "app-connections",
@@ -52,7 +53,7 @@ export class ConnectionsComponent implements OnInit {
 			this.messageService.add({
 				severity: "error",
 				summary: "Error",
-				detail: "Error loading connections",
+				detail: (error as HttpErrorResponse).error.error,
 			});
 		}
 	}
@@ -64,7 +65,7 @@ export class ConnectionsComponent implements OnInit {
 			this.messageService.add({
 				severity: "error",
 				summary: "Error",
-				detail: "Error loading sent requests",
+				detail: (error as HttpErrorResponse).error.error,
 			});
 		}
 	}
@@ -81,11 +82,10 @@ export class ConnectionsComponent implements OnInit {
 				this.newFriendUsername = "";
 				this.loadSentRequests(); // Reload sent requests to reflect the new request
 			} catch (error) {
-				console.log(error);
 				this.messageService.add({
 					severity: "error",
 					summary: "Error",
-					detail: "Could not send friend request",
+					detail: (error as HttpErrorResponse).error.error,
 				});
 			}
 		}
