@@ -15,8 +15,7 @@ export class TableManager {
 	async createDBTables(db: Kysely<any>): Promise<void> {
 		const createUsersTable = db.schema
 			.createTable("users")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
+			.addColumn("username", "varchar(20)", (col) => col.primaryKey())
 			.addColumn("password_hash", "varchar(255)")
 			.addColumn("full_name", "varchar(40)")
 			.addColumn("profile_picture", "varchar(255)")
@@ -27,19 +26,29 @@ export class TableManager {
 
 		const createPortfoliosTable = db.schema
 			.createTable("portfolios")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("portfolio_name", "varchar(30)")
+			.addColumn("owner", "varchar(20)", (col) =>
+				col.notNull().references("users.username").onDelete("cascade"),
+			)
+			.addColumn("portfolio_name", "varchar(30)", (col) => col.notNull())
 			.addColumn("cash", "decimal(18, 2)")
 			.addColumn("portfolio_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
+			.addPrimaryKeyConstraint("portfolios_pkey", ["owner", "portfolio_name"])
 			.execute();
 
 		const createStocksListTable = db.schema
 			.createTable("stocks_list")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("private", "boolean")
+			.addColumn("owner", "varchar(20)")
 			.addColumn("stock_list_name", "varchar(30)")
+			.addColumn("private", "boolean")
+			.addPrimaryKeyConstraint("stocks_list_primary", [
+				"owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("stocks_list_owner_fk", ["owner"], "users", [
+				"username",
+			])
 			.execute();
 
 		const createStocksTable = db.schema
@@ -78,29 +87,34 @@ export class TableManager {
 
 		const createReviewsTable = db.schema
 			.createTable("reviews")
-			.addColumn("user_id", "integer")
-			.addColumn("stock_list_id", "integer")
+			.addColumn("reviewer", "varchar(20)")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
 			.addColumn("content", "varchar(200)")
 			.addColumn("review_creation_time", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
 			.addColumn("review_last_updated", "timestamp")
-			.addPrimaryKeyConstraint("review_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", [
-				"id",
+			.addPrimaryKeyConstraint("review_pk", [
+				"reviewer",
+				"stock_list_owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("review_reviewer_fk", ["reviewer"], "users", [
+				"username",
 			])
 			.addForeignKeyConstraint(
-				"review_user_foreign2",
-				["stock_list_id"],
+				"review_stock_list_fk",
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.execute();
 
 		const createFriendsTable = db.schema
 			.createTable("friends")
-			.addColumn("requesting_friend", "integer")
-			.addColumn("receiving_friend", "integer")
+			.addColumn("requesting_friend", "varchar(20)")
+			.addColumn("receiving_friend", "varchar(20)")
 			.addColumn("pending", "boolean")
 			.addPrimaryKeyConstraint("friend_primary", [
 				"requesting_friend",
@@ -110,21 +124,21 @@ export class TableManager {
 				"friend_user_foreign1",
 				["requesting_friend"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.addForeignKeyConstraint(
 				"friend_user_foreign2",
 				["receiving_friend"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.execute();
 
 		// Maybe fix the expiry time here or when entering value with the +5 minutes using a trigger in the database
 		const createRequestTimeoutTable = db.schema
 			.createTable("request_timeout")
-			.addColumn("request_user", "integer")
-			.addColumn("receive_user", "integer")
+			.addColumn("request_user", "varchar(20)")
+			.addColumn("receive_user", "varchar(20)")
 			.addColumn("expiry_time", "timestamp")
 			.addPrimaryKeyConstraint("request_primary", [
 				"request_user",
@@ -134,46 +148,32 @@ export class TableManager {
 				"request_user_foreign1",
 				["request_user"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.addForeignKeyConstraint(
 				"request_user_foreign2",
 				["receive_user"],
 				"users",
-				["id"],
+				["username"],
 			)
-			.execute();
-
-		const createOwnsTable = db.schema
-			.createTable("owns")
-			.addColumn("portfolio_id", "integer")
-			.addColumn("user_id", "integer")
-			.addPrimaryKeyConstraint("owns_primary", ["portfolio_id"])
-			.addForeignKeyConstraint(
-				"owns_foreign1",
-				["portfolio_id"],
-				"portfolios",
-				["id"],
-			)
-			.addForeignKeyConstraint("owns_foreign2", ["user_id"], "users", ["id"])
 			.execute();
 
 		const createInvestmentsTable = db.schema
 			.createTable("investments")
-			.addColumn("portfolio_id", "integer")
+			.addColumn("owner", "varchar(20)")
+			.addColumn("portfolio_name", "varchar(30)")
 			.addColumn("stock_symbol", "varchar(10)")
-			.addColumn("stock_date", "date")
 			.addColumn("num_shares", "integer")
 			.addPrimaryKeyConstraint("investment_primary", [
-				"portfolio_id",
+				"owner",
+				"portfolio_name",
 				"stock_symbol",
-				"stock_date",
 			])
 			.addForeignKeyConstraint(
 				"investment_foreign1",
-				["portfolio_id"],
+				["owner", "portfolio_name"],
 				"portfolios",
-				["id"],
+				["owner", "portfolio_name"],
 			)
 			.addForeignKeyConstraint(
 				"investment_foreign2",
@@ -183,35 +183,43 @@ export class TableManager {
 			)
 			.execute();
 
-		const createAccessTable = db.schema
-			.createTable("access")
-			.addColumn("user_id", "integer")
-			.addColumn("stock_list_id", "integer")
-			.addColumn("is_owner", "boolean")
-			.addPrimaryKeyConstraint("access_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("access_foreign1", ["user_id"], "users", ["id"])
+		const createPrivateAccessTable = db.schema
+			.createTable("private_access")
+			.addColumn("user", "varchar(20)")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
+			.addPrimaryKeyConstraint("private_access_primary", [
+				"user",
+				"stock_list_owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("private_access_user_fk", ["user"], "users", [
+				"username",
+			])
 			.addForeignKeyConstraint(
-				"access_foreign2",
-				["stock_list_id"],
+				"private_access_stock_list_fk",
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.execute();
 
 		const createContainsTable = db.schema
 			.createTable("contains")
-			.addColumn("stock_list_id", "integer")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
 			.addColumn("stock_symbol", "varchar(10)")
 			.addColumn("num_shares", "integer", (col) => col.defaultTo(0))
 			.addPrimaryKeyConstraint("contains_primary", [
-				"stock_list_id",
+				"stock_list_owner",
+				"stock_list_name",
 				"stock_symbol",
 			])
 			.addForeignKeyConstraint(
 				"contains_foreign1",
-				["stock_list_id"],
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.addForeignKeyConstraint(
 				"contains_foreign2",
@@ -225,10 +233,9 @@ export class TableManager {
 			createStocksDailyTable,
 			createReviewsTable,
 			createFriendsTable,
+			createPrivateAccessTable,
 			createRequestTimeoutTable,
-			createOwnsTable,
 			createInvestmentsTable,
-			createAccessTable,
 			createContainsTable,
 		]);
 	}
@@ -280,11 +287,24 @@ export class TableManager {
 		await db.destroy();
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: necessary for kysely
 	async createIndexes(db: Kysely<any>) {
 		await db.schema
 			.createIndex("idx_username")
 			.on("users")
 			.column("username")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_requesting_friend")
+			.on("friends")
+			.column("requesting_friend")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_receiving_friend")
+			.on("friends")
+			.column("receiving_friend")
 			.execute();
 	}
 }

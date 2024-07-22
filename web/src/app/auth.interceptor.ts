@@ -34,7 +34,8 @@ export const authInterceptor: HttpInterceptorFn = (
 				// Handle unauthorized access
 				router.navigate(["/signin"]);
 			}
-			return throwError(() => new Error(error.message));
+			console.log(error);
+			return throwError(() => error);
 		}),
 	);
 };

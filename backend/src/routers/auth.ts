@@ -1,6 +1,6 @@
 import { Router, type Response } from "express";
-import { userDatabase } from "../database/UserDatabase";
-import { type AuthedRequest, verifyToken } from "../middleware/auth";
+import { userDatabase } from "@database/UserDatabase";
+import { type AuthedRequest, verifyToken } from "@middleware/auth";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
@@ -53,7 +53,7 @@ authRouter.post("/signup", upload, async (req, res) => {
 			profilePicture,
 		);
 		const token = jwt.sign(
-			{ id: newUser.id, username: newUser.username },
+			{ username: newUser.username },
 			process.env.JWT_SECRET || "stockms",
 		);
 
@@ -78,7 +78,7 @@ authRouter.post("/signin", async (req, res) => {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
 		const token = jwt.sign(
-			{ id: user.id, username: user.username },
+			{ username: user.username },
 			process.env.JWT_SECRET || "stockms",
 		);
 		return res.json({ token });
@@ -90,28 +90,3 @@ authRouter.post("/signin", async (req, res) => {
 authRouter.get("/me", verifyToken, async (req: AuthedRequest, res) => {
 	return res.json({ user: req.user });
 });
-
-authRouter.get(
-	"/profile-picture",
-	verifyToken,
-	async (req: AuthedRequest, res: Response) => {
-		try {
-			const userId = req.user?.id;
-			if (!userId) {
-				return res.status(400).json({ error: "User ID not found" });
-			}
-
-			// Fetch the user profile picture URL from the database
-			const user = await userDatabase.getUserById(+userId);
-			if (!user || !user.profile_picture) {
-				return res.status(404).json({ error: "Profile picture not found" });
-			}
-
-			res.json({ profilePicture: user.profile_picture });
-		} catch (error) {
-			return res
-				.status(500)
-				.json({ error: "Error retrieving profile picture" });
-		}
-	},
-);

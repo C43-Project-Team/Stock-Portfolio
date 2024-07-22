@@ -79,7 +79,7 @@ export class AuthFormComponent {
 					this.router.navigate(["/"]);
 				},
 				error: (error) => {
-					this.showError(error.message);
+					this.showError(error.error.error);
 				},
 			});
 		} else {
@@ -97,8 +97,7 @@ export class AuthFormComponent {
 					this.router.navigate(["/"]);
 				},
 				error: (error) => {
-					console.log(error);
-					this.showError(error.message);
+					this.showError(error.error.error);
 				},
 			});
 		}

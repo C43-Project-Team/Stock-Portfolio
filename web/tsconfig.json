@@ -24,6 +24,7 @@
 		"paths": {
 			"@environment": ["src/environments/environment.ts"],
 			"@components/*": ["src/app/components/*"],
+			"@models/*": ["src/app/models/*"],
 			"@pages/*": ["src/app/pages/*"],
 			"@guards/*": ["src/app/guards/*"],
 			"@services/*": ["src/app/services/*"],

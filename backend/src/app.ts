@@ -7,6 +7,7 @@ import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import friendsRouter from "./routers/friends";
+import { userRouter } from "./routers/user";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
@@ -29,7 +30,8 @@ app.use(
 
 app.use("/api/auth", authRouter);
 app.use("/api/stock", stockRouter);
-app.use("/api/friends", friendsRouter)
+app.use("/api/friends", friendsRouter);
+app.use("/api/user", userRouter);
 
 app.use("/api/uploads", express.static(path.join(__dirname, "./uploads")));
 

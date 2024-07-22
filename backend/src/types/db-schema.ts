@@ -7,7 +7,6 @@ import type {
 } from "kysely";
 
 export interface UsersTable {
-	id: Generated<number>;
 	username: string;
 	password_hash: string;
 	full_name: string;
@@ -22,6 +21,7 @@ export type UserUpdate = Updateable<UsersTable>;
 export interface PortfoliosTable {
 	id: Generated<number>;
 	portfolio_name: string;
+	owner: string;
 	cash: number;
 	portfolio_created_at: ColumnType<Date, string | undefined, never>;
 }
@@ -31,7 +31,7 @@ export type NewPortfolio = Insertable<PortfoliosTable>;
 export type PortfolioUpdate = Updateable<PortfoliosTable>;
 
 export interface StocksListTable {
-	id: Generated<number>;
+	owner: string;
 	private: boolean;
 	stock_list_name: string;
 }
@@ -64,8 +64,9 @@ export type NewStocksDaily = Insertable<StocksDailyTable>;
 export type StocksDailyUpdate = Updateable<StocksDailyTable>;
 
 export interface ReviewsTable {
-	user_id: number;
-	stock_list_id: number;
+	reviewer: string;
+	stock_list_owner: string;
+	stock_list_name: string;
 	content: string;
 	review_creation_time: ColumnType<Date, string | undefined, never>;
 	review_last_updated: ColumnType<Date, string | undefined, never>;
@@ -76,8 +77,8 @@ export type NewReview = Insertable<ReviewsTable>;
 export type ReviewUpdate = Updateable<ReviewsTable>;
 
 export interface FriendsTable {
-	requesting_friend: number;
-	receiving_friend: number;
+	requesting_friend: string;
+	receiving_friend: string;
 	pending: boolean;
 }
 
@@ -86,28 +87,19 @@ export type NewFriend = Insertable<FriendsTable>;
 export type FriendUpdate = Updateable<FriendsTable>;
 
 export interface RequestTimeoutTable {
-	request_user: number;
-	receive_user: number;
-	expiry_time: ColumnType<Date, string | undefined, never>;
+	request_user: string;
+	receive_user: string;
+	expiry_time: ColumnType<string | undefined, string | undefined, never>;
 }
 
 export type RequestTimeout = Selectable<RequestTimeoutTable>;
 export type NewRequestTimeout = Insertable<RequestTimeout>;
 export type RequestTimeoutUpdate = Updateable<RequestTimeout>;
 
-export interface OwnsTable {
-	portfolio_id: number;
-	user_id: number;
-}
-
-export type Owns = Selectable<OwnsTable>;
-export type NewOwns = Insertable<OwnsTable>;
-export type OwnsUpdate = Updateable<OwnsTable>;
-
 export interface InvestmentsTable {
-	portfolio_id: number;
+	owner: string;
+	portfolio_name: string;
 	stock_symbol: string;
-	stock_date: ColumnType<Date, string | undefined, never>;
 	num_shares: number;
 }
 
@@ -115,18 +107,19 @@ export type Investments = Selectable<InvestmentsTable>;
 export type NewInvestments = Insertable<InvestmentsTable>;
 export type InvestmentsTableUpdate = Updateable<InvestmentsTable>;
 
-export interface AccessTable {
-	user_id: number;
-	stock_list_id: number;
-	is_owner: boolean;
+export interface PrivateAccessTable {
+	user: string;
+	stock_list_owner: string;
+	stock_list_name: string;
 }
 
-export type Access = Selectable<AccessTable>;
-export type NewAccess = Insertable<AccessTable>;
-export type AccessUpdate = Updateable<AccessTable>;
+export type PrivateAccess = Selectable<PrivateAccessTable>;
+export type NewPrivateAccess = Insertable<PrivateAccessTable>;
+export type PrivateAccessUpdate = Updateable<PrivateAccessTable>;
 
 export interface ContainsTable {
-	stock_list_id: number;
+	stock_list_owner: string;
+	stock_list_name: string;
 	stock_symbol: string;
 	num_shares: number;
 }
@@ -144,8 +137,7 @@ export interface Database {
 	reviews: ReviewsTable;
 	friends: FriendsTable;
 	request_timeout: RequestTimeoutTable;
-	owns: OwnsTable;
 	investments: InvestmentsTable;
-	access: AccessTable;
+	access: PrivateAccessTable;
 	contains: ContainsTable;
 }
