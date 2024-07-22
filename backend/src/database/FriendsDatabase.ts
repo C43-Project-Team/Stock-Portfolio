@@ -22,13 +22,15 @@ class FriendsDatabase {
 				eb.and([
 					eb("request_user", "=", requestingFriend),
 					eb("receive_user", "=", receivingFriend),
-					eb("expiry_time", ">", now), // might be buggy rn bc its not a string and in the db its stored as a string
+					eb("expiry_time", ">", now.toISOString()), // might be buggy rn bc its not a string and in the db its stored as a string
 				]),
 			)
 			.executeTakeFirst();
 
 		if (activeTimeout) {
-			throw new Error("Timeout for friend request has not expired");
+			throw new Error(
+				`Timeout for friend request has not expired. Expires at ${activeTimeout.expiry_time}`,
+			);
 		}
 
 		const existingRequest = await this.db
@@ -108,14 +110,42 @@ class FriendsDatabase {
 
 		const expiryTime = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
 
-		await this.db
-			.insertInto("request_timeout")
-			.values({
-				request_user: requestingFriend,
-				receive_user: receivingFriend,
-				expiry_time: expiryTime,
-			})
-			.execute();
+		// Check if a timeout already exists
+		const existingTimeout = await this.db
+			.selectFrom("request_timeout")
+			.selectAll()
+			.where((eb) =>
+				eb.and([
+					eb("request_user", "=", requestingFriend),
+					eb("receive_user", "=", receivingFriend),
+				]),
+			)
+			.executeTakeFirst();
+
+		if (existingTimeout) {
+			// Update the existing timeout
+			await this.db
+				.updateTable("request_timeout")
+				// @ts-ignore
+				.set({ expiry_time: expiryTime })
+				.where((eb) =>
+					eb.and([
+						eb("request_user", "=", requestingFriend),
+						eb("receive_user", "=", receivingFriend),
+					]),
+				)
+				.execute();
+		} else {
+			// Insert a new timeout
+			await this.db
+				.insertInto("request_timeout")
+				.values({
+					request_user: requestingFriend,
+					receive_user: receivingFriend,
+					expiry_time: expiryTime,
+				})
+				.execute();
+		}
 	}
 
 	async withdrawFriendRequest(

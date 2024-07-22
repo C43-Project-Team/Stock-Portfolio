@@ -40,13 +40,11 @@ friendsRouter.post(
 		} catch (error) {
 			if (
 				error instanceof Error &&
-				error.message ===
-					"You cannot send a friend request at this time. Please try again later."
+				error.message.includes("Timeout for friend request")
 			) {
 				return res.status(403).json({ error: error.message });
 			}
-			console.log(error);
-			res.status(500).json("Could not create friend request");
+			return res.status(500).json({ error: "Could not send friend request" });
 		}
 	},
 );
@@ -86,7 +84,7 @@ friendsRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-			await friendsDatabase.removeFriend(requestingFriend, friend);
+			await friendsDatabase.removeFriend(friend, requestingFriend);
 
 			return res.status(200).json({ message: "Friend removed successfully" });
 		} catch (error) {

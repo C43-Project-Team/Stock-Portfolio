@@ -87,7 +87,7 @@ export type FriendUpdate = Updateable<FriendsTable>;
 export interface RequestTimeoutTable {
 	request_user: string;
 	receive_user: string;
-	expiry_time: ColumnType<Date, string | undefined, never>;
+	expiry_time: ColumnType<string | undefined, string | undefined, never>;
 }
 
 export type RequestTimeout = Selectable<RequestTimeoutTable>;

@@ -46,7 +46,7 @@ export class ConnectionsComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.authService.getCredentials().subscribe((user) => {
-			this.myId = user.id;
+			this.myId = user.username;
 		});
 		this.loadConnections();
 		this.loadSentRequests();
@@ -110,6 +110,11 @@ export class ConnectionsComponent implements OnInit {
 
 	async removeConnection(connection: FriendsTable) {
 		try {
+			console.log(
+				connection.receiving_friend,
+				this.myId,
+				connection.receiving_friend === this.myId,
+			);
 			await this.apiService.removeFriend(
 				connection.receiving_friend === this.myId
 					? connection.requesting_friend
