@@ -7,11 +7,14 @@ import { ChartModule } from 'primeng/chart';
 import { LayoutComponent } from "../layout/layout.component";
 import { StockChartComponent } from "../../components/stock-chart/stock-chart.component";
 import { ActivatedRoute } from '@angular/router';
+import { CalendarModule } from 'primeng/calendar';
+import { FormsModule } from '@angular/forms';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @Component({
   selector: 'app-stocks',
   standalone: true,
-  imports: [ChartModule, LayoutComponent, StockChartComponent],
+  imports: [ChartModule, LayoutComponent, StockChartComponent, CalendarModule, FormsModule, FloatLabelModule],
   templateUrl: './stocks.component.html',
   styles: []
 })
@@ -20,8 +23,8 @@ export class StocksComponent implements OnInit {
   historicStockData: HistoricStockInterface[] = [];
   predictedStockData: PredictedStockInterface[] = [];
   ticker: string = "";
-  startDate: string = "2020-07-31";
-  endDate: string = "2024-12-08";
+  startDate: Date = new Date("2020-07-31");
+  endDate: Date = new Date("2024-12-08");
 
   historicChartData: ChartData<'line'> = { datasets: [] };
   predictionChartData: ChartData<'line'> = { datasets: [] };
@@ -37,7 +40,8 @@ export class StocksComponent implements OnInit {
   }
 
   fetchHistoricStockData(): void {
-    this.stockService.getHistoricData(this.ticker, this.startDate).subscribe((data) => {
+    const historyStart = this.startDate.toISOString().split('T')[0];
+    this.stockService.getHistoricData(this.ticker, historyStart).subscribe((data) => {
       this.historicStockData = this.transformData(Object.values(data));
       console.log(this.historicStockData);
       this.updateHistoricChart();
@@ -45,7 +49,8 @@ export class StocksComponent implements OnInit {
   }
 
   fetchPredictedStockData(): void {
-    this.stockService.getPredictions(this.ticker, this.endDate).subscribe((data) => {
+    const predictEnd = this.endDate.toISOString().split('T')[0];
+    this.stockService.getPredictions(this.ticker, predictEnd).subscribe((data) => {
       this.predictedStockData = this.transformData(Object.values(data));
       console.log(this.predictedStockData);
       this.updatePredictedChart();
@@ -92,4 +97,15 @@ export class StocksComponent implements OnInit {
         ]
     };
   }
+
+  onStartDateChange(event: any): void {
+    this.startDate = event;
+    this.fetchHistoricStockData();
+  }
+
+  onEndDateChange(event: any): void {
+    this.endDate = event;
+    this.fetchPredictedStockData();
+  }
+
 }
