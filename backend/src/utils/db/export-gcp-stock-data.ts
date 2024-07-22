@@ -120,11 +120,18 @@ async function ingestData() {
 		"data",
 		"stock_data_recent.csv",
 	);
+    const exportUptoDateStockFile = path.resolve(
+		"src",
+		"utils",
+		"data",
+		"stock_data_3.csv",
+	);
 
 	// Import the data from the CSV files to the database
 	await importStockCompanyCsv(exportStockFile);
 	await importStocksDailyCsv(exportStockDailyFile);
 	await importStocksDailyCsv(exportStockRecentFile);
+    await importStocksDailyCsv(exportUptoDateStockFile);
 }
 
 ingestData().then(() => {

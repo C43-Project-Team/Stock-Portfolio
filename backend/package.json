@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"@types/pg": "^8.11.6",
+		"arima": "^0.2.5",
 		"bcrypt": "^5.1.1",
 		"body-parser": "^1.20.2",
 		"cors": "^2.8.5",
@@ -46,6 +47,7 @@
 		"kysely": "^0.27.4",
 		"kysely-postgres-js": "^2.0.0",
 		"mathjs": "^13.0.2",
+		"ml-regression-polynomial": "^3.0.1",
 		"multer": "^1.4.5-lts.1",
 		"path": "^0.12.7",
 		"pg": "^8.12.0",
