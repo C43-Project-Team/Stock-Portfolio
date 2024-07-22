@@ -3,10 +3,17 @@
     <div class="p-4 max-w-4xl mx-auto">
         <h2 class="text-3xl font-semibold mb-4 text-center">Historic Data for {{ ticker }}</h2>
         <div class="flex items-center mb-4">
-             <p-floatLabel>
-                 <p-calendar id="startDate" [(ngModel)]="startDate" (onSelect)="onStartDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
+            <p-floatLabel class="flex-1">
+                <p-calendar id="startDate" [(ngModel)]="startDate" (onSelect)="onStartDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
                 <label for="startDate">Start Date</label>
-             </p-floatLabel>
+            </p-floatLabel>
+            <div class="ml-auto card">
+                <label>View Date by: </label>
+                <p-dropdown placeholder="Select date view" [checkmark]="true" id="aggregationPeriod" [(ngModel)]="aggregationPeriod" [options]="aggregationOptions" (onChange)="updateHistoricChart()"></p-dropdown>
+            </div>
+        </div>
+        <div class="flex mb-4">
+            <p-selectButton [options]="presetTimeOptions" [(ngModel)]="presetTime" (onChange)="setPresetTime($event.value)" class="w-full rounded-full text-xs"></p-selectButton>
         </div>
         <div class="w-full h-96 md:h-80 lg:h-96">
             <app-stock-chart [chartData]="historicChartData"></app-stock-chart>
@@ -16,11 +23,10 @@
     <div class="p-4 max-w-4xl mx-auto mt-8">
         <h2 class="text-3xl font-semibold mb-4 text-center">Predictions for {{ ticker }}</h2>
         <div class="flex justify-between items-center mb-4">
-            <!-- <label for="endDate" class="mr-2">End Date:</label> -->
-             <p-floatLabel>
-                 <p-calendar id="endDate" [(ngModel)]="endDate" (onSelect)="onEndDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
+            <p-floatLabel class="flex-1">
+                <p-calendar id="endDate" [(ngModel)]="endDate" (onSelect)="onEndDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
                 <label for="endDate">End Date</label>
-             </p-floatLabel>
+            </p-floatLabel>
         </div>
         <div class="w-full h-96 md:h-80 lg:h-96">
             <app-stock-chart [chartData]="predictionChartData"></app-stock-chart>
