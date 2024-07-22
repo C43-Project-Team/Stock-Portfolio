@@ -35,6 +35,7 @@ class StocksDatabase {
             .selectFrom("stocks")
             .selectAll()
             .where("stock_symbol", "like", `%${ticker}%`)
+            .orderBy("stock_symbol", "asc")
             .execute();
 
         return company.length > 0 ? company : null;
