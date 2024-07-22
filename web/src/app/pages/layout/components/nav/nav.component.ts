@@ -10,11 +10,15 @@ import { MenubarModule } from "primeng/menubar";
 import environment from "@environment";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { AuthService } from "@services/auth.service";
+import { StockService } from "@services/stocks.service";
+import { StockCompany } from "@pages/stocks/stockCompany.interface";
+import { FormsModule } from "@angular/forms";
+import { AutoCompleteCompleteEvent, AutoCompleteModule, AutoCompleteSelectEvent } from 'primeng/autocomplete';
 
 @Component({
 	selector: "app-nav",
 	standalone: true,
-	imports: [MenuModule, MenubarModule],
+	imports: [MenuModule, MenubarModule, FormsModule, AutoCompleteModule],
 	providers: [MessageService],
 	templateUrl: "./nav.component.html",
 	styles: "",
@@ -22,6 +26,8 @@ import { AuthService } from "@services/auth.service";
 export class NavbarComponent implements OnInit {
 	items: MenuItem[] = [];
 	userItems: MenuItem[] = [];
+    tickers: StockCompany[] = [];
+    selectedTicker: any;
 	profilePictureUrl = "assets/images/default-pfp.png"; // Default profile picture
 
 	constructor(
@@ -29,6 +35,7 @@ export class NavbarComponent implements OnInit {
 		private router: Router,
 		private apiService: ApiService,
 		private authService: AuthService,
+        private stockService: StockService
 	) {}
 
 	ngOnInit() {
@@ -93,6 +100,28 @@ export class NavbarComponent implements OnInit {
 		// Fetch the profile picture URL
 		this.loadProfilePicture();
 	}
+
+    search(event: AutoCompleteCompleteEvent) {
+        this.stockService.getStockCompanies(event.query.length === 0 ? "*" : event.query).subscribe((data) => {
+            this.tickers = this.transformaData(Object.values(data));
+            console.log(this.tickers);
+        });
+    }
+
+    onTickerSelect(event: AutoCompleteSelectEvent) {
+        this.router.navigate(["/stocks", this.selectedTicker.stockCompany.split(" - ")[0].trim()]);
+    }
+
+    transformaData(data: any): any {
+        if (data && Array.isArray(data) && data.length > 0) {
+            const innerData = data[0];
+            if (Array.isArray(innerData) && innerData.length > 0) {
+                return innerData.map((stock) => ({
+                    stockCompany: `${stock.stock_symbol} - ${stock.company}`,
+                }));
+            }
+        }
+    }
 
 	loadProfilePicture() {
 		this.apiService

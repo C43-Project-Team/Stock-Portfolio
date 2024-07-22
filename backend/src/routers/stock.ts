@@ -2,7 +2,7 @@ import { Router } from "express";
 import { stockDatabase } from "../database/StocksDatabase";
 import { PolynomialRegression} from 'ml-regression-polynomial';
 import "dotenv/config";
-import type { StocksDaily } from "../types/db-schema";
+import type { StocksDaily, StocksTable } from "../types/db-schema";
 import { start } from "node:repl";
 
 export const stockRouter = Router();
@@ -110,8 +110,9 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 
         const closePrices = stockList.map((stock) => stock.close_price);
         const predictedPrices = polyRegression(closePrices, predictAmount);
+        const monthData = stockList.slice(stockList.length - 100, stockList.length).map((stock) => ({date: stock.stock_date, price: stock.close_price}));
 
-        const predictedData = [];
+        const predictedData = [...monthData];
         for (let i = 0; i < predictAmount; i++) {
             const date = new Date(startDate);
             date.setDate(date.getDate() + i + 1);
@@ -139,6 +140,40 @@ stockRouter.post("/:ticker", async (req, res) => {
         }
 
         return res.json({ stockList });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+stockRouter.get("/stock-companies", async (req, res) => {
+    try {
+        const companyList = await stockDatabase.getAllStocksCompany();
+
+        if (!companyList) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        return res.json({ companyList });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+stockRouter.get("/stock-company/:ticker", async (req, res) => {
+    try {
+        const { ticker } = req.params;
+        let company: StocksTable[] = [];
+        if (ticker === "*") {
+            company = await stockDatabase.getAllStocksCompany();
+        } else {
+            company = await stockDatabase.getSimilarStockCompany(ticker);
+        }
+
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        return res.json({ company });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }

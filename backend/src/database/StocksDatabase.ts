@@ -30,16 +30,25 @@ class StocksDatabase {
         return stockList.length > 0 ? stockList : null;
     }
 
-    async getStockCompany(ticker: string): Promise<StocksTable | null> {
+    async getSimilarStockCompany(ticker: string): Promise<StocksTable[] | null> {
         const company = await this.db
             .selectFrom("stocks")
             .selectAll()
-            .where("stock_symbol", "=", ticker)
+            .where("stock_symbol", "like", `%${ticker}%`)
             .execute();
 
-        return company.length > 0 ? company[0] : null;
+        return company.length > 0 ? company : null;
     }
 
+    async getAllStocksCompany(): Promise<StocksTable[] | null> {
+        const company = await this.db
+            .selectFrom("stocks")
+            .selectAll()
+            .execute();
+
+        return company.length > 0 ? company : null;
+    }
+    
     // async insertStock()
 }
 

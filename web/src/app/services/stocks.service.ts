@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { HistoricStockInterface } from "./historicStock.interface";
-import { PredictedStockInterface } from "./predictedStock.interface";
+import { HistoricStockInterface } from "../pages/stocks/historicStock.interface";
+import { PredictedStockInterface } from "../pages/stocks/predictedStock.interface";
+import { StockCompany } from "@pages/stocks/stockCompany.interface";
 import environment from "@environment";
 
 @Injectable({
@@ -28,4 +29,8 @@ export class StockService {
         // console.log(this.baseUrl + "/stock/prediction/" + ticker);
 		return this.http.post<PredictedStockInterface[]>(`${this.baseUrl}/stock/prediction/${ticker}`, { endDate });
 	}
+
+    getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
+        return this.http.get<StockCompany[]>(`${this.baseUrl}/stock/stock-company/${searchTicker.toUpperCase()}`);
+    }
 }
