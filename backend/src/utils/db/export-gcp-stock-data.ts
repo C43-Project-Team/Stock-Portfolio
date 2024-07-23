@@ -114,13 +114,13 @@ async function ingestData() {
 		"data",
 		"stock-companies.csv",
 	);
-    const exportStockRecentFile = path.resolve(
+	const exportStockRecentFile = path.resolve(
 		"src",
 		"utils",
 		"data",
 		"stock_data_recent.csv",
 	);
-    const exportUptoDateStockFile = path.resolve(
+	const exportUptoDateStockFile = path.resolve(
 		"src",
 		"utils",
 		"data",
@@ -131,7 +131,7 @@ async function ingestData() {
 	await importStockCompanyCsv(exportStockFile);
 	await importStocksDailyCsv(exportStockDailyFile);
 	await importStocksDailyCsv(exportStockRecentFile);
-    await importStocksDailyCsv(exportUptoDateStockFile);
+	await importStocksDailyCsv(exportUptoDateStockFile);
 }
 
 ingestData().then(() => {

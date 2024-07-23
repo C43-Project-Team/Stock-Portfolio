@@ -1,4 +1,4 @@
 export interface StockCompany {
-    stock_symbol: string;
-    company: string;
+	stock_symbol: string;
+	company: string;
 }

@@ -18,19 +18,27 @@ export class StockService {
 		ticker: string,
 		startDate: string,
 	): Observable<HistoricStockInterface[]> {
-        // console.log(this.baseUrl + "/stock/" + ticker); 
-		return this.http.post<HistoricStockInterface[]>(`${this.baseUrl}/stock/${ticker}`, { startDate });
+		// console.log(this.baseUrl + "/stock/" + ticker);
+		return this.http.post<HistoricStockInterface[]>(
+			`${this.baseUrl}/stock/${ticker}`,
+			{ startDate },
+		);
 	}
 
 	getPredictions(
 		ticker: string,
 		endDate: string,
 	): Observable<PredictedStockInterface[]> {
-        // console.log(this.baseUrl + "/stock/prediction/" + ticker);
-		return this.http.post<PredictedStockInterface[]>(`${this.baseUrl}/stock/prediction/${ticker}`, { endDate });
+		// console.log(this.baseUrl + "/stock/prediction/" + ticker);
+		return this.http.post<PredictedStockInterface[]>(
+			`${this.baseUrl}/stock/prediction/${ticker}`,
+			{ endDate },
+		);
 	}
 
-    getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
-        return this.http.get<StockCompany[]>(`${this.baseUrl}/stock/stock-company/${searchTicker.toUpperCase()}`);
-    }
+	getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
+		return this.http.get<StockCompany[]>(
+			`${this.baseUrl}/stock/stock-company/${searchTicker.toUpperCase()}`,
+		);
+	}
 }
