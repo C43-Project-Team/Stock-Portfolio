@@ -119,7 +119,7 @@ export class NavbarComponent implements OnInit {
 
 	loadProfilePicture() {
 		this.apiService
-			.getProfilePicture()
+			.getMyProfilePicture()
 			.then((response) => {
 				console.log(response.profilePicture);
 				this.profilePictureUrl = `${environment.api_url}${response.profilePicture}`;

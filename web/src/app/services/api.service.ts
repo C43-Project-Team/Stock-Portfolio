@@ -57,8 +57,16 @@ export class ApiService {
 
 	/* USER STUFF */
 
-	async getProfilePicture(): Promise<{ profilePicture: string }> {
-		return this.get<{ profilePicture: string }>("/user/profile-picture");
+	async getMyProfilePicture(): Promise<{ profilePicture: string }> {
+		return this.get<{ profilePicture: string }>("/user/my-profile-picture");
+	}
+
+	async getOtherProfilePicture(
+		username: string,
+	): Promise<{ profilePicture: string }> {
+		return this.get<{ profilePicture: string }>(
+			`/user/profile-picture/${username}`,
+		);
 	}
 
 	/* FRIEND STUFF */
@@ -113,6 +121,16 @@ export class ApiService {
 		return this.delete<void>("/stock-list/delete", {
 			stock_list_name: stockListName,
 		});
+	}
+
+	async getPrivateStockListsSharedWithUser(
+		username: string,
+	): Promise<StocksList[]> {
+		return this.get<StocksList[]>(`/stock-list/private-shared/${username}`);
+	}
+
+	async getPublicStockLists(): Promise<StocksList[]> {
+		return this.get<StocksList[]>("/stock-list/public");
 	}
 
 	/* PORTFOLIO STUFF */

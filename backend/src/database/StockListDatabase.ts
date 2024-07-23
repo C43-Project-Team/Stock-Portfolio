@@ -58,7 +58,8 @@ class StockListDatabase {
 	}
 
 	async getPrivateStockListsSharedWithUser(
-		user: string,
+		authenticatedUser: string,
+		stockListOwner: string,
 	): Promise<StocksList[]> {
 		return await this.db
 			.selectFrom("private_access")
@@ -72,7 +73,12 @@ class StockListDatabase {
 					),
 			)
 			.selectAll("stocks_list")
-			.where("private_access.user", "=", user)
+			.where((eb) =>
+				eb.and([
+					eb("private_access.user", "=", authenticatedUser),
+					eb("private_access.stock_list_owner", "=", stockListOwner),
+				]),
+			)
 			.execute();
 	}
 

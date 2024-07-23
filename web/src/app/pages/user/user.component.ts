@@ -41,6 +41,8 @@ import environment from "@environment";
 export class UserComponent implements OnInit {
 	stockLists: StocksList[] = [];
 	portfolios: Portfolio[] = [];
+	privateStockLists: StocksList[] = [];
+	publicStockLists: StocksList[] = [];
 	isCurrentUser = false;
 	username = "";
 	myUsername = "";
@@ -71,9 +73,8 @@ export class UserComponent implements OnInit {
 			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.username = params["username"];
 			this.checkUser();
+			this.loadProfilePicture();
 		});
-
-		this.loadProfilePicture();
 	}
 
 	checkUser() {
@@ -81,6 +82,34 @@ export class UserComponent implements OnInit {
 		if (this.isCurrentUser) {
 			this.loadStockLists();
 			this.loadPortfolios();
+		} else {
+			this.loadPrivateStockListsSharedWithUser();
+			this.loadPublicStockLists();
+		}
+	}
+
+	async loadPrivateStockListsSharedWithUser() {
+		try {
+			this.privateStockLists =
+				await this.apiService.getPrivateStockListsSharedWithUser(this.username);
+		} catch (error) {
+			this.messageService.add({
+				severity: "error",
+				summary: "Error",
+				detail: (error as HttpErrorResponse).error.error,
+			});
+		}
+	}
+
+	async loadPublicStockLists() {
+		try {
+			this.publicStockLists = await this.apiService.getPublicStockLists();
+		} catch (error) {
+			this.messageService.add({
+				severity: "error",
+				summary: "Error",
+				detail: (error as HttpErrorResponse).error.error,
+			});
 		}
 	}
 
@@ -132,7 +161,9 @@ export class UserComponent implements OnInit {
 
 	async loadProfilePicture() {
 		try {
-			const response = await this.apiService.getProfilePicture();
+			const response = await this.apiService.getOtherProfilePicture(
+				this.username,
+			);
 			this.profilePictureUrl = `${environment.api_url}${response.profilePicture}`;
 		} catch (error) {
 			this.messageService.add({

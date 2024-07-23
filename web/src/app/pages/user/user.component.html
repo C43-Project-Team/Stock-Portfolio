@@ -189,6 +189,56 @@
   </p-dialog>
 
   <div *ngIf="!isCurrentUser">
-    <p>Placeholder for viewing another user's profile.</p>
+    <div class="mb-4">
+      <h2 class="text-xl font-semibold">Private Stock Lists Shared With You</h2>
+      <p-table [value]="privateStockLists" class="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Stock List Name</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-stockList>
+          <tr>
+            <td>{{ stockList.stock_list_name }}</td>
+            <td>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-arrow-right"
+                class="p-button-rounded"
+                (click)="goToStock(stockList.stock_list_name)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold">Public Stock Lists</h2>
+      <p-table [value]="publicStockLists" class="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Stock List Name</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-stockList>
+          <tr>
+            <td>{{ stockList.stock_list_name }}</td>
+            <td>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-arrow-right"
+                class="p-button-rounded"
+                (click)="goToStock(stockList.stock_list_name)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
   </div>
 </div>

@@ -52,17 +52,27 @@ stockListRouter.post(
 );
 
 stockListRouter.get(
-	"/private-shared",
+	"/private-shared/:username",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const username = req.user?.username;
+			const authenticatedUsername = req.user?.username;
+			const { username } = req.params;
+
+			if (!authenticatedUsername) {
+				return res.status(400).json({ error: "Authenticated user not found" });
+			}
+
 			if (!username) {
-				return res.status(400).json({ error: "Username not found" });
+				return res.status(400).json({ error: "Username parameter missing" });
 			}
 
 			const privateStockLists =
-				await stockListDatabase.getPrivateStockListsSharedWithUser(username);
+				await stockListDatabase.getPrivateStockListsSharedWithUser(
+					authenticatedUsername,
+					username,
+				);
+
 			res.json(privateStockLists);
 		} catch (error) {
 			return res
