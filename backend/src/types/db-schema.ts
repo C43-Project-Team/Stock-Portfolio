@@ -138,6 +138,6 @@ export interface Database {
 	friends: FriendsTable;
 	request_timeout: RequestTimeoutTable;
 	investments: InvestmentsTable;
-	access: PrivateAccessTable;
+	private_access: PrivateAccessTable;
 	contains: ContainsTable;
 }

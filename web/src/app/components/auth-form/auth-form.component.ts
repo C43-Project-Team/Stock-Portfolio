@@ -76,7 +76,7 @@ export class AuthFormComponent {
 			this.authService.login(username, password).subscribe({
 				next: (response) => {
 					console.log("Successfully signed in:", response);
-					this.router.navigate(["/"]);
+					this.router.navigate([`/user/id/${response.username}`]);
 				},
 				error: (error) => {
 					this.showError(error.error.error);
@@ -94,7 +94,7 @@ export class AuthFormComponent {
 			this.authService.signUp(formData).subscribe({
 				next: (response) => {
 					console.log("Successfully signed up:", response);
-					this.router.navigate(["/"]);
+					this.router.navigate([`/user/id/${response.username}`]);
 				},
 				error: (error) => {
 					this.showError(error.error.error);

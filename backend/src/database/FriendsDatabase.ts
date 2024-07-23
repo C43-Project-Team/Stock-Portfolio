@@ -1,4 +1,4 @@
-import { db } from "../utils/db/db-controller"; // Adjust the import path accordingly
+import { db } from "@utils/db/db-controller"; // Adjust the import path accordingly
 import type { Database, Friend, User } from "../types/db-schema";
 import { sql, type Kysely } from "kysely";
 

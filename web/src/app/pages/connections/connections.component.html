@@ -46,7 +46,13 @@
             ></button>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToUserPage(connection.requesting_friend)"
+            ></button>
           </td>
         </tr>
       </ng-template>
@@ -85,7 +91,13 @@
             </div>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToUserPage(request.requesting_friend)"
+            ></button>
           </td>
         </tr>
       </ng-template>

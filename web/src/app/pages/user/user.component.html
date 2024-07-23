@@ -1,0 +1,40 @@
+<div class="container mx-auto p-4">
+  <ng-container *ngIf="isCurrentUser; else notCurrentUser">
+    <h1 class="text-2xl font-bold mb-4">My Stock Lists</h1>
+    <p-table [value]="stockLists" class="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Stock List Name</th>
+          <th>Private</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-stockList>
+        <tr>
+          <td>{{ stockList.stock_list_name }}</td>
+          <td>
+            <i
+              class="pi"
+              [ngClass]="{
+                'pi-lock': stockList.private,
+                'pi-unlock': !stockList.private
+              }"
+            ></i>
+          </td>
+          <td>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToStock(stockList.stock_list_name)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </ng-container>
+  <ng-template #notCurrentUser>
+    <p>Placeholder for another user's page.</p>
+  </ng-template>
+</div>

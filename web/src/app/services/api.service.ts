@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import environment from "@environment";
 import type { FriendsTable } from "@models/friends-table";
+import type { StocksList } from "@models/stock-list";
 import { take } from "rxjs";
 
 @Injectable({
@@ -40,7 +41,7 @@ export class ApiService {
 	/* USER STUFF */
 
 	async getProfilePicture(): Promise<{ profilePicture: string }> {
-		return this.get<{ profilePicture: string }>("/auth/profile-picture");
+		return this.get<{ profilePicture: string }>("/user/profile-picture");
 	}
 
 	/* FRIEND STUFF */
@@ -73,5 +74,9 @@ export class ApiService {
 
 	async withdrawFriendRequest(username: string): Promise<FriendsTable | null> {
 		return this.post<FriendsTable>("/friends/withdraw", { friend: username });
+	}
+
+	async getUserStockLists(): Promise<StocksList[]> {
+		return this.get<StocksList[]>("/stock-list");
 	}
 }

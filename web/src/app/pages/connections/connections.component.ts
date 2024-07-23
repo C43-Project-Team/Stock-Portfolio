@@ -13,6 +13,7 @@ import type { HttpErrorResponse } from "@angular/common/http";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { AuthService } from "@services/auth.service";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { Router } from "@angular/router";
 
 @Component({
 	selector: "app-connections",
@@ -42,6 +43,7 @@ export class ConnectionsComponent implements OnInit {
 		private authService: AuthService,
 		private confirmationService: ConfirmationService,
 		private messageService: MessageService,
+		private router: Router,
 	) {}
 
 	ngOnInit(): void {
@@ -93,6 +95,10 @@ export class ConnectionsComponent implements OnInit {
 				this.logError((error as HttpErrorResponse).error.error);
 			}
 		}
+	}
+
+	goToUserPage(username: string) {
+		this.router.navigate([`/user/id/${username}`]);
 	}
 
 	async acceptRequest(request: FriendsTable) {

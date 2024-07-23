@@ -13,7 +13,11 @@ import { AuthService } from "@services/auth.service";
 import { StockService } from "@services/stocks.service";
 import { StockCompany } from "@pages/stocks/stockCompany.interface";
 import { FormsModule } from "@angular/forms";
-import { AutoCompleteCompleteEvent, AutoCompleteModule, AutoCompleteSelectEvent } from 'primeng/autocomplete';
+import {
+	AutoCompleteCompleteEvent,
+	AutoCompleteModule,
+	AutoCompleteSelectEvent,
+} from "primeng/autocomplete";
 
 @Component({
 	selector: "app-nav",
@@ -26,16 +30,17 @@ import { AutoCompleteCompleteEvent, AutoCompleteModule, AutoCompleteSelectEvent 
 export class NavbarComponent implements OnInit {
 	items: MenuItem[] = [];
 	userItems: MenuItem[] = [];
-    tickers: StockCompany[] = [];
-    selectedTicker: any;
+	tickers: StockCompany[] = [];
+	selectedTicker: any;
 	profilePictureUrl = "assets/images/default-pfp.png"; // Default profile picture
+	username: string = ""; // Add a username property
 
 	constructor(
 		private messageService: MessageService,
 		private router: Router,
 		private apiService: ApiService,
 		private authService: AuthService,
-        private stockService: StockService
+		private stockService: StockService,
 	) {}
 
 	ngOnInit() {
@@ -80,48 +85,37 @@ export class NavbarComponent implements OnInit {
 			},
 		];
 
-		this.userItems = [
-			{
-				label: "Settings",
-				icon: "pi pi-fw pi-cog",
-				command: () => {
-					this.router.navigate(["/user/settings"]);
-				},
-			},
-			{
-				label: "Logout",
-				icon: "pi pi-fw pi-sign-out",
-				command: () => {
-					this.logout();
-				},
-			},
-		];
-
-		// Fetch the profile picture URL
+		// Fetch the profile picture URL and username
 		this.loadProfilePicture();
+		this.loadUsernameAndSetupMenu();
 	}
 
-    search(event: AutoCompleteCompleteEvent) {
-        this.stockService.getStockCompanies(event.query.length === 0 ? "*" : event.query).subscribe((data) => {
-            this.tickers = this.transformaData(Object.values(data));
-            console.log(this.tickers);
-        });
-    }
+	search(event: AutoCompleteCompleteEvent) {
+		this.stockService
+			.getStockCompanies(event.query.length === 0 ? "*" : event.query)
+			.subscribe((data) => {
+				this.tickers = this.transformaData(Object.values(data));
+				console.log(this.tickers);
+			});
+	}
 
-    onTickerSelect(event: AutoCompleteSelectEvent) {
-        this.router.navigate(["/stocks", this.selectedTicker.stockCompany.split(" - ")[0].trim()]);
-    }
+	onTickerSelect(event: AutoCompleteSelectEvent) {
+		this.router.navigate([
+			"/stocks",
+			this.selectedTicker.stockCompany.split(" - ")[0].trim(),
+		]);
+	}
 
-    transformaData(data: any): any {
-        if (data && Array.isArray(data) && data.length > 0) {
-            const innerData = data[0];
-            if (Array.isArray(innerData) && innerData.length > 0) {
-                return innerData.map((stock) => ({
-                    stockCompany: `${stock.stock_symbol} - ${stock.company}`,
-                }));
-            }
-        }
-    }
+	transformaData(data: any): any {
+		if (data && Array.isArray(data) && data.length > 0) {
+			const innerData = data[0];
+			if (Array.isArray(innerData) && innerData.length > 0) {
+				return innerData.map((stock) => ({
+					stockCompany: `${stock.stock_symbol} - ${stock.company}`,
+				}));
+			}
+		}
+	}
 
 	loadProfilePicture() {
 		this.apiService
@@ -133,6 +127,36 @@ export class NavbarComponent implements OnInit {
 			.catch((error) => {
 				console.error("Error fetching profile picture:", error);
 			});
+	}
+
+	loadUsernameAndSetupMenu() {
+		this.authService.getCredentials().subscribe((user) => {
+			this.username = user.username;
+			this.updateUserItems(); // Update the user menu items after fetching the username
+		});
+	}
+
+	updateUserItems() {
+		this.userItems = [
+			{
+				label: `Logged in as: ${this.username}`,
+				disabled: true,
+			},
+			{
+				label: "My Account",
+				icon: "pi pi-fw pi-user",
+				command: () => {
+					this.router.navigate([`/user/id/${this.username}`]);
+				},
+			},
+			{
+				label: "Logout",
+				icon: "pi pi-fw pi-sign-out",
+				command: () => {
+					this.logout();
+				},
+			},
+		];
 	}
 
 	logout() {
