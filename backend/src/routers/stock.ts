@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { stockDatabase } from "../database/StocksDatabase";
 import { PolynomialRegression} from 'ml-regression-polynomial';
-import "dotenv/config";
 import type { StocksDaily, StocksTable } from "../types/db-schema";
-import { start } from "node:repl";
+import "dotenv/config";
 
 export const stockRouter = Router();
 
