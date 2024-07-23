@@ -1,5 +1,5 @@
 import { db } from "@utils/db/db-controller";
-import type { Database, StocksList, PrivateAccess } from "../types/db-schema";
+import type { Database, StocksList } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
 class StockListDatabase {
@@ -22,6 +22,20 @@ class StockListDatabase {
 		stock_list_name: string,
 		isPrivate: boolean,
 	): Promise<StocksList> {
+		// Check if a stock list with the same name already exists
+		const existingStockList = await this.db
+			.selectFrom("stocks_list")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
+
+		if (existingStockList) {
+			throw new Error(
+				`Stock list with the name "${stock_list_name}" already exists.`,
+			);
+		}
+
 		const [stockList] = await this.db
 			.insertInto("stocks_list")
 			.values({
@@ -33,6 +47,14 @@ class StockListDatabase {
 			.execute();
 
 		return stockList;
+	}
+
+	async deleteStockList(owner: string, stock_list_name: string): Promise<void> {
+		await this.db
+			.deleteFrom("stocks_list")
+			.where("owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.execute();
 	}
 
 	async getPrivateStockListsSharedWithUser(

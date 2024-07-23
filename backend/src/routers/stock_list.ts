@@ -41,8 +41,11 @@ stockListRouter.post(
 				stock_list_name,
 				isPrivate,
 			);
-			res.json(stockList);
+			return res.json(stockList);
 		} catch (error) {
+			if (error instanceof Error && error.message.includes("already exists")) {
+				return res.status(400).json({ error: error.message });
+			}
 			return res.status(500).json({ error: "Error creating stock list" });
 		}
 	},
@@ -65,6 +68,26 @@ stockListRouter.get(
 			return res
 				.status(500)
 				.json({ error: "Error retrieving private stock lists" });
+		}
+	},
+);
+
+stockListRouter.delete(
+	"/delete",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { stock_list_name } = req.body;
+			const owner = req.user?.username;
+
+			if (!owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await stockListDatabase.deleteStockList(owner, stock_list_name);
+			return res.json({ message: "Stock list deleted successfully" });
+		} catch (error) {
+			return res.status(500).json({ error: "Error deleting stock list" });
 		}
 	},
 );

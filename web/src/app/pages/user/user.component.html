@@ -1,27 +1,132 @@
-<div class="container mx-auto p-4">
-  <ng-container *ngIf="isCurrentUser; else notCurrentUser">
-    <h1 class="text-2xl font-bold mb-4">My Stock Lists</h1>
-    <p-table [value]="stockLists" class="p-datatable-sm">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Stock List Name</th>
-          <th>Private</th>
-          <th></th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-stockList>
-        <tr>
-          <td>{{ stockList.stock_list_name }}</td>
-          <td>
-            <i
-              class="pi"
-              [ngClass]="{
-                'pi-lock': stockList.private,
-                'pi-unlock': !stockList.private
-              }"
-            ></i>
-          </td>
-          <td>
+<div class="container mx-auto p-4 pt-12">
+  <div class="flex items-center mb-4">
+    <img
+      *ngIf="profilePictureUrl"
+      [src]="profilePictureUrl"
+      alt="Profile Picture"
+      class="w-16 h-16 rounded-full mr-4"
+    />
+    <h1 class="text-2xl font-bold">{{ username }}'s Dashboard</h1>
+  </div>
+
+  <div *ngIf="isCurrentUser" class="flex justify-between mb-4">
+    <h2 class="text-xl font-semibold">My Portfolios</h2>
+    <p-button
+      label="Create Portfolio"
+      icon="pi pi-plus"
+      class="p-button-success"
+      (click)="showCreatePortfolioDialog()"
+    ></p-button>
+  </div>
+
+  <p-table [value]="portfolios" class="p-datatable-sm" *ngIf="isCurrentUser">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Portfolio Name</th>
+        <th>Initial Deposit</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-portfolio>
+      <tr>
+        <td>{{ portfolio.portfolio_name }}</td>
+        <td>{{ portfolio.cash }}</td>
+        <td>
+          <div class="flex gap-x-2">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToPortfolio(portfolio.portfolio_name)"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-danger p-button-rounded"
+              (click)="confirmDeletePortfolio(portfolio.portfolio_name)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    header="Create Portfolio"
+    [(visible)]="displayCreatePortfolioDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [responsive]="true"
+    [style]="{ width: '20rem' }"
+    [baseZIndex]="10000"
+  >
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <label for="portfolioName" class="block text-sm font-medium text-gray-700">Portfolio Name</label>
+        <input
+          id="portfolioName"
+          type="text"
+          pInputText
+          [(ngModel)]="newPortfolioName"
+          class="mt-1 block w-full"
+        />
+      </div>
+      <div class="p-field mb-4">
+        <label for="initialDeposit" class="block text-sm font-medium text-gray-700">Initial Deposit</label>
+        <input
+          id="initialDeposit"
+          type="number"
+          pInputText
+          [(ngModel)]="initialDeposit"
+          class="mt-1 block w-full"
+        />
+      </div>
+      <div class="text-right">
+        <p-button
+          label="Create"
+          class="p-button-success"
+          (click)="createPortfolio()"
+          [disabled]="!newPortfolioName.trim() || !initialDeposit"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <div *ngIf="isCurrentUser" class="flex justify-between mb-4 mt-12">
+    <h2 class="text-xl font-semibold">My Stock Lists</h2>
+    <p-button
+      label="Create Stock List"
+      icon="pi pi-plus"
+      class="p-button-success"
+      (click)="showCreateStockListDialog()"
+    ></p-button>
+  </div>
+
+  <p-table [value]="stockLists" class="p-datatable-sm" *ngIf="isCurrentUser">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Stock List Name</th>
+        <th>Private</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-stockList>
+      <tr>
+        <td>{{ stockList.stock_list_name }}</td>
+        <td>
+          <i
+            class="pi"
+            [ngClass]="{
+              'pi-lock': stockList.private,
+              'pi-unlock': !stockList.private
+            }"
+          ></i>
+        </td>
+        <td>
+          <div class="flex gap-x-2">
             <button
               pButton
               type="button"
@@ -29,12 +134,61 @@
               class="p-button-rounded"
               (click)="goToStock(stockList.stock_list_name)"
             ></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </ng-container>
-  <ng-template #notCurrentUser>
-    <p>Placeholder for another user's page.</p>
-  </ng-template>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-danger p-button-rounded"
+              (click)="confirmDelete(stockList.stock_list_name)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    header="Create Stock List"
+    [(visible)]="displayCreateStockListDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [responsive]="true"
+    [style]="{ width: '20rem' }"
+    [baseZIndex]="10000"
+  >
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <label for="stockListName" class="block text-sm font-medium text-gray-700">Stock List Name</label>
+        <input
+          id="stockListName"
+          type="text"
+          pInputText
+          [(ngModel)]="newStockListName"
+          class="mt-1 block w-full"
+        />
+      </div>
+      <div class="p-field-checkbox mb-4">
+        <p-checkbox
+          inputId="private"
+          [(ngModel)]="isPrivate"
+          binary="true"
+          class="mr-2"
+        ></p-checkbox>
+        <label for="private" class="text-sm font-medium text-gray-700">Private</label>
+      </div>
+      <div class="text-right">
+        <p-button
+          label="Create"
+          class="p-button-success"
+          (click)="createStockList()"
+          [disabled]="!newStockListName.trim()"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <div *ngIf="!isCurrentUser">
+    <p>Placeholder for viewing another user's profile.</p>
+  </div>
 </div>

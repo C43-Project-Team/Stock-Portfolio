@@ -5,6 +5,7 @@ import environment from "@environment";
 import type { FriendsTable } from "@models/friends-table";
 import type { StocksList } from "@models/stock-list";
 import { take } from "rxjs";
+import type { Portfolio } from "@models/portfolio";
 
 @Injectable({
 	providedIn: "root",
@@ -26,6 +27,7 @@ export class ApiService {
 		});
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: necessary
 	private async post<T>(endpoint: string, body: any): Promise<T> {
 		return new Promise<T>((resolve, reject) => {
 			this.http
@@ -33,6 +35,21 @@ export class ApiService {
 				.pipe(take(1))
 				.subscribe({
 					next: (res) => resolve(res),
+					error: (err: HttpErrorResponse) => reject(err),
+				});
+		});
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: necessary
+	private async delete<T>(endpoint: string, body: any): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			this.http
+				.request<void>("delete", encodeURI(`${this.API_URL}${endpoint}`), {
+					body,
+				})
+				.pipe(take(1))
+				.subscribe({
+					next: () => resolve(),
 					error: (err: HttpErrorResponse) => reject(err),
 				});
 		});
@@ -76,7 +93,47 @@ export class ApiService {
 		return this.post<FriendsTable>("/friends/withdraw", { friend: username });
 	}
 
+	/* STOCK LIST STUFF */
+
 	async getUserStockLists(): Promise<StocksList[]> {
 		return this.get<StocksList[]>("/stock-list");
+	}
+
+	async createStockList(
+		stockListName: string,
+		isPrivate: boolean,
+	): Promise<{ stockList: StocksList }> {
+		return this.post("/stock-list/create", {
+			stock_list_name: stockListName,
+			private: isPrivate,
+		});
+	}
+
+	async deleteStockList(stockListName: string): Promise<void> {
+		return this.delete<void>("/stock-list/delete", {
+			stock_list_name: stockListName,
+		});
+	}
+
+	/* PORTFOLIO STUFF */
+
+	async getUserPortfolios(): Promise<Portfolio[]> {
+		return this.get<Portfolio[]>("/portfolio");
+	}
+
+	async createPortfolio(
+		portfolioName: string,
+		initialDeposit: number,
+	): Promise<{ portfolio: Portfolio }> {
+		return this.post("/portfolio/create", {
+			portfolio_name: portfolioName,
+			initialDeposit,
+		});
+	}
+
+	async deletePortfolio(portfolioName: string): Promise<void> {
+		return this.delete("/portfolio/delete", {
+			portfolio_name: portfolioName,
+		});
 	}
 }
