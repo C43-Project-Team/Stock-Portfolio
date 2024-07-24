@@ -1,3 +1,4 @@
+<p-toast />
 <div class="container mx-auto p-4 pt-12">
   <div class="flex items-center mb-4">
     <div>
@@ -59,12 +60,8 @@
         <label for="buyNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
         <input id="buyNumShares" type="number" pInputText [(ngModel)]="buyNumShares" class="mt-1 block w-full" />
       </div>
-      <div class="p-field mb-4">
-        <label for="buyPricePerShare" class="block text-sm font-medium text-gray-700">Price per Share</label>
-        <input id="buyPricePerShare" type="number" pInputText [(ngModel)]="buyPricePerShare" class="mt-1 block w-full" />
-      </div>
       <div class="text-right">
-        <p-button label="Buy" class="p-button-success" (click)="buyShares()" [disabled]="!buyStockSymbol || !buyNumShares || !buyPricePerShare"></p-button>
+        <p-button label="Buy" class="p-button-success" (click)="buyShares()" [disabled]="!buyStockSymbol || !buyNumShares"></p-button>
       </div>
     </div>
   </p-dialog>
@@ -79,12 +76,8 @@
         <label for="sellNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
         <input id="sellNumShares" type="number" pInputText [(ngModel)]="sellNumShares" class="mt-1 block w-full" />
       </div>
-      <div class="p-field mb-4">
-        <label for="sellPricePerShare" class="block text-sm font-medium text-gray-700">Price per Share</label>
-        <input id="sellPricePerShare" type="number" pInputText [(ngModel)]="sellPricePerShare" class="mt-1 block w-full" />
-      </div>
       <div class="text-right">
-        <p-button label="Sell" class="p-button-danger" (click)="sellShares()" [disabled]="!sellStockSymbol || !sellNumShares || !sellPricePerShare"></p-button>
+        <p-button label="Sell" class="p-button-danger" (click)="sellShares()" [disabled]="!sellStockSymbol || !sellNumShares"></p-button>
       </div>
     </div>
   </p-dialog>

@@ -188,12 +188,10 @@ export class ApiService {
 		portfolioName: string,
 		stockSymbol: string,
 		numShares: number,
-		pricePerShare: number,
 	): Promise<void> {
 		return this.post<void>(`/portfolio/${portfolioName}/buy`, {
 			stock_symbol: stockSymbol,
 			num_shares: numShares,
-			price_per_share: pricePerShare,
 		});
 	}
 
@@ -201,12 +199,10 @@ export class ApiService {
 		portfolioName: string,
 		stockSymbol: string,
 		numShares: number,
-		pricePerShare: number,
 	): Promise<void> {
 		return this.post<void>(`/portfolio/${portfolioName}/sell`, {
 			stock_symbol: stockSymbol,
 			num_shares: numShares,
-			price_per_share: pricePerShare,
 		});
 	}
 }

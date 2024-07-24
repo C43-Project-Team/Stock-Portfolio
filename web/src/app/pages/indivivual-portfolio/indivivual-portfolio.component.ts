@@ -10,12 +10,22 @@ import { ApiService } from "@services/api.service";
 import { MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
+import { InputTextModule } from "primeng/inputtext";
 import { TableModule } from "primeng/table";
+import { ToastModule } from "primeng/toast";
 
 @Component({
 	selector: "app-indivivual-portfolio",
 	standalone: true,
-	imports: [ButtonModule, DialogModule, TableModule, FormsModule, CommonModule],
+	imports: [
+		ButtonModule,
+		DialogModule,
+		TableModule,
+		FormsModule,
+		CommonModule,
+		InputTextModule,
+		ToastModule,
+	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
 	styles: "",
@@ -31,10 +41,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	depositAmount = 0;
 	buyStockSymbol = "";
 	buyNumShares = 0;
-	buyPricePerShare = 0;
 	sellStockSymbol = "";
 	sellNumShares = 0;
-	sellPricePerShare = 0;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -57,7 +65,6 @@ export class IndivivualPortfolioComponent implements OnInit {
 	async loadPortfolio() {
 		try {
 			const portfolio = await this.apiService.getPortfolio(this.portfolioName);
-			console.log(portfolio);
 			this.portfolioCash = portfolio.cash;
 		} catch (error) {
 			this.messageService.add({
@@ -121,7 +128,6 @@ export class IndivivualPortfolioComponent implements OnInit {
 				this.portfolioName,
 				this.buyStockSymbol,
 				this.buyNumShares,
-				this.buyPricePerShare,
 			);
 			this.logSuccess("Success", "Shares bought successfully");
 			this.displayBuySharesDialog = false;
@@ -138,7 +144,6 @@ export class IndivivualPortfolioComponent implements OnInit {
 				this.portfolioName,
 				this.sellStockSymbol,
 				this.sellNumShares,
-				this.sellPricePerShare,
 			);
 			this.logSuccess("Success", "Shares sold successfully");
 			this.displaySellSharesDialog = false;
