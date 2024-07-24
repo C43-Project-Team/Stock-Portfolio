@@ -94,3 +94,39 @@ portfolioRouter.get(
 		}
 	},
 );
+
+portfolioRouter.post(
+	"/:portfolio_name/buy",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { portfolio_name } = req.params;
+			const { stock_symbol, num_shares, price_per_share } = req.body;
+
+			if (
+				!owner ||
+				!portfolio_name ||
+				!stock_symbol ||
+				num_shares == null ||
+				price_per_share == null
+			) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await portfolioDatabase.buyShares(
+				owner,
+				portfolio_name,
+				stock_symbol,
+				num_shares,
+				price_per_share,
+			);
+			return res.json({ message: "Shares bought successfully" });
+		} catch (error) {
+			if (error instanceof Error && error.message === "Insufficient funds") {
+				return res.status(400).json({ error: error.message });
+			}
+			return res.status(500).json({ error: "Error buying shares" });
+		}
+	},
+);
