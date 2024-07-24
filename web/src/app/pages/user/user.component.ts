@@ -103,7 +103,9 @@ export class UserComponent implements OnInit {
 
 	async loadPublicStockLists() {
 		try {
-			this.publicStockLists = await this.apiService.getPublicStockLists();
+			this.publicStockLists = await this.apiService.getUserPublicStockLists(
+				this.username,
+			);
 		} catch (error) {
 			this.messageService.add({
 				severity: "error",

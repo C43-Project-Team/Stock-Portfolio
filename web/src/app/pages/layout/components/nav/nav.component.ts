@@ -71,7 +71,7 @@ export class NavbarComponent implements OnInit {
 					{
 						label: "Public Stock Lists",
 						command: () => {
-							this.router.navigate(["/user/stock-lists/public"]);
+							this.router.navigate(["/stock-lists/public"]);
 						},
 					},
 				],

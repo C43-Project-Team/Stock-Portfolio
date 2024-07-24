@@ -82,12 +82,36 @@ class StockListDatabase {
 			.execute();
 	}
 
-	async getPublicStockLists(): Promise<StocksList[]> {
+	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
+		return await this.db
+			.selectFrom("stocks_list")
+			.selectAll()
+			.where("owner", "=", username)
+			.where("private", "=", false)
+			.execute();
+	}
+
+	async getPublicStockLists(
+		limit: number,
+		offset: number,
+	): Promise<StocksList[]> {
 		return await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
 			.where("private", "=", false)
+			.limit(limit)
+			.offset(offset)
 			.execute();
+	}
+
+	async getPublicStockListCount(): Promise<number> {
+		const result = await this.db
+			.selectFrom("stocks_list")
+			// @ts-ignore
+			.select(({ fn }) => fn.count("*").as("count"))
+			.where("private", "=", false)
+			.executeTakeFirst();
+		return result ? Number(result.count) : 0;
 	}
 }
 

@@ -129,8 +129,22 @@ export class ApiService {
 		return this.get<StocksList[]>(`/stock-list/private-shared/${username}`);
 	}
 
-	async getPublicStockLists(): Promise<StocksList[]> {
-		return this.get<StocksList[]>("/stock-list/public");
+	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
+		const endpoint = `/stock-list/public/${username}`;
+		return this.get<StocksList[]>(endpoint);
+	}
+
+	async getPublicStockLists(
+		page: number,
+		limit: number,
+	): Promise<StocksList[]> {
+		const endpoint = `/stock-list/public?page=${page}&limit=${limit}`;
+		return this.get<StocksList[]>(endpoint);
+	}
+
+	async getPublicStockListCount(): Promise<{ count: number }> {
+		const endpoint = "/stock-list/public/count";
+		return this.get<{ count: number }>(endpoint);
 	}
 
 	/* PORTFOLIO STUFF */

@@ -8,6 +8,7 @@ import { ConnectionsComponent } from "@pages/connections/connections.component";
 import { authGuard } from "@guards/auth.guard";
 import { StocksComponent } from "@pages/stocks/stocks.component";
 import { UserComponent } from "@pages/user/user.component";
+import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stock-lists.component";
 
 export const routes: Routes = [
 	{ path: "", component: HomeComponent },
@@ -21,6 +22,12 @@ export const routes: Routes = [
 			{ path: "connections", component: ConnectionsComponent },
 			{ path: "id/:username", component: UserComponent },
 		],
+	},
+	{
+		path: "stock-lists",
+		component: LayoutComponent,
+		canActivate: [authGuard],
+		children: [{ path: "public", component: PublicStockListsComponent }],
 	},
 	{ path: "stocks/:ticker", component: StocksComponent },
 	{ path: "**", redirectTo: "" },

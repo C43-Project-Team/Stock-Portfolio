@@ -103,16 +103,55 @@ stockListRouter.delete(
 );
 
 stockListRouter.get(
+	"/public/:username",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const username = req.params.username;
+			const publicStockLists =
+				await stockListDatabase.getUserPublicStockLists(username);
+			res.json(publicStockLists);
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error retrieving user's public stock lists" });
+		}
+	},
+);
+
+stockListRouter.get(
 	"/public",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const publicStockLists = await stockListDatabase.getPublicStockLists();
+			const limit = Number.parseInt(req.query.limit as string) || 10;
+			const page = Number.parseInt(req.query.page as string) || 1;
+			const offset = (page - 1) * limit;
+
+			const publicStockLists = await stockListDatabase.getPublicStockLists(
+				limit,
+				offset,
+			);
 			res.json(publicStockLists);
 		} catch (error) {
 			return res
 				.status(500)
 				.json({ error: "Error retrieving public stock lists" });
+		}
+	},
+);
+
+stockListRouter.get(
+	"/public/count",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const count = await stockListDatabase.getPublicStockListCount();
+			res.json({ count });
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error retrieving public stock list count" });
 		}
 	},
 );
