@@ -57,6 +57,18 @@ class PortfolioDatabase {
 			.execute();
 	}
 
+	async getPortfolioFromName(
+		owner: string,
+		portfolio_name: string,
+	): Promise<Portfolio | null | undefined> {
+		return await this.db
+			.selectFrom("portfolios")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.executeTakeFirst();
+	}
+
 	async getInvestments(
 		owner: string,
 		portfolio_name: string,

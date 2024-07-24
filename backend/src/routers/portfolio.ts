@@ -73,6 +73,35 @@ portfolioRouter.delete(
 );
 
 portfolioRouter.get(
+	"/:portfolio_name",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { portfolio_name } = req.params;
+
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const portfolio = await portfolioDatabase.getPortfolioFromName(
+				owner,
+				portfolio_name,
+			);
+			if (!portfolio) {
+				return res.status(404).json({ error: "Portfolio not found" });
+			}
+
+			res.json(portfolio);
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error retrieving portfolio details" });
+		}
+	},
+);
+
+portfolioRouter.get(
 	"/:portfolio_name/investments",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
