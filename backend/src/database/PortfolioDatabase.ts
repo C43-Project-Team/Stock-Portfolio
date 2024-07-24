@@ -118,6 +118,52 @@ class PortfolioDatabase {
 			)
 			.execute();
 	}
+
+	async sellShares(
+		owner: string,
+		portfolio_name: string,
+		stock_symbol: string,
+		num_shares: number,
+		price_per_share: number,
+	): Promise<void> {
+		// Check if the portfolio has enough shares
+		const investment = await this.db
+			.selectFrom("investments")
+			.select("num_shares")
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.where("stock_symbol", "=", stock_symbol)
+			.executeTakeFirst();
+
+		if (!investment || investment.num_shares < num_shares) {
+			throw new Error("Insufficient shares");
+		}
+
+		const totalProceeds = num_shares * price_per_share;
+
+		// Update the portfolio's cash
+		await this.db
+			.updateTable("portfolios")
+			.set((eb) => ({
+				// @ts-ignore
+				cash: eb.bxp(`cash + ${totalProceeds}`),
+			}))
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.execute();
+
+		// Update the investments table
+		await this.db
+			.updateTable("investments")
+			.set((eb) => ({
+				// @ts-ignore
+				num_shares: eb.bxp(`num_shares - ${num_shares}`),
+			}))
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.where("stock_symbol", "=", stock_symbol)
+			.execute();
+	}
 }
 
 export const portfolioDatabase = new PortfolioDatabase();
