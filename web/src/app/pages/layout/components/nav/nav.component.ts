@@ -10,13 +10,14 @@ import { MenubarModule } from "primeng/menubar";
 import environment from "@environment";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { AuthService } from "@services/auth.service";
+// biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { StockService } from "@services/stocks.service";
-import { StockCompany } from "@pages/stocks/stockCompany.interface";
+import type { StockCompany } from "@pages/stocks/stockCompany.interface";
 import { FormsModule } from "@angular/forms";
 import {
-	AutoCompleteCompleteEvent,
+	type AutoCompleteCompleteEvent,
 	AutoCompleteModule,
-	AutoCompleteSelectEvent,
+	type AutoCompleteSelectEvent,
 } from "primeng/autocomplete";
 
 @Component({
@@ -33,7 +34,7 @@ export class NavbarComponent implements OnInit {
 	tickers: StockCompany[] = [];
 	selectedTicker: any;
 	profilePictureUrl = "assets/images/default-pfp.png"; // Default profile picture
-	username: string = ""; // Add a username property
+	username = ""; // Add a username property
 
 	constructor(
 		private messageService: MessageService,
