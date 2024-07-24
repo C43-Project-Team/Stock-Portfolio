@@ -38,7 +38,7 @@ class StocksDatabase {
 		const company = await this.db
 			.selectFrom("stocks")
 			.selectAll()
-			.where("stock_symbol", "like", `%${ticker}%`)
+			.where("stock_symbol", "like", `${ticker}%`)
 			.orderBy("stock_symbol", "asc")
 			.execute();
 
