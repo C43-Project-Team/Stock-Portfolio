@@ -131,15 +131,9 @@ portfolioRouter.post(
 		try {
 			const owner = req.user?.username;
 			const { portfolio_name } = req.params;
-			const { stock_symbol, num_shares, price_per_share } = req.body;
+			const { stock_symbol, num_shares } = req.body;
 
-			if (
-				!owner ||
-				!portfolio_name ||
-				!stock_symbol ||
-				num_shares == null ||
-				price_per_share == null
-			) {
+			if (!owner || !portfolio_name || !stock_symbol || num_shares == null) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
@@ -148,12 +142,16 @@ portfolioRouter.post(
 				portfolio_name,
 				stock_symbol,
 				num_shares,
-				price_per_share,
 			);
 			return res.json({ message: "Shares bought successfully" });
 		} catch (error) {
-			if (error instanceof Error && error.message === "Insufficient funds") {
-				return res.status(400).json({ error: error.message });
+			if (error instanceof Error) {
+				if (error.message === "Insufficient funds") {
+					return res.status(400).json({ error: error.message });
+				}
+				if (error.message === "Stock not found") {
+					return res.status(404).json({ error: error.message });
+				}
 			}
 			return res.status(500).json({ error: "Error buying shares" });
 		}
@@ -167,15 +165,9 @@ portfolioRouter.post(
 		try {
 			const owner = req.user?.username;
 			const { portfolio_name } = req.params;
-			const { stock_symbol, num_shares, price_per_share } = req.body;
+			const { stock_symbol, num_shares } = req.body;
 
-			if (
-				!owner ||
-				!portfolio_name ||
-				!stock_symbol ||
-				num_shares == null ||
-				price_per_share == null
-			) {
+			if (!owner || !portfolio_name || !stock_symbol || num_shares == null) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
@@ -184,7 +176,6 @@ portfolioRouter.post(
 				portfolio_name,
 				stock_symbol,
 				num_shares,
-				price_per_share,
 			);
 			return res.json({ message: "Shares sold successfully" });
 		} catch (error) {
