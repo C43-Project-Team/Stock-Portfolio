@@ -166,3 +166,24 @@ portfolioRouter.post(
 		}
 	},
 );
+
+portfolioRouter.post(
+	"/:portfolio_name/deposit",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { portfolio_name } = req.params;
+			const { amount } = req.body;
+
+			if (!owner || !portfolio_name || amount == null) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await portfolioDatabase.depositCash(owner, portfolio_name, amount);
+			return res.json({ message: "Cash deposited successfully" });
+		} catch (error) {
+			return res.status(500).json({ error: "Error depositing cash" });
+		}
+	},
+);

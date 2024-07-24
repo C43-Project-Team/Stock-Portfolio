@@ -164,6 +164,24 @@ class PortfolioDatabase {
 			.where("stock_symbol", "=", stock_symbol)
 			.execute();
 	}
+
+	async depositCash(
+		owner: string,
+		portfolio_name: string,
+		amount: number,
+	): Promise<void> {
+		await this.db
+			.updateTable("portfolios")
+			.set((eb) => ({
+				// @ts-ignore
+				cash: eb.bxp(`cash + ${amount}`),
+			}))
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.execute();
+	}
+
+	// TODO: Transfer money between portfolios
 }
 
 export const portfolioDatabase = new PortfolioDatabase();
