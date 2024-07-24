@@ -6,6 +6,7 @@ import type { FriendsTable } from "@models/friends-table";
 import type { StocksList } from "@models/stock-list";
 import { take } from "rxjs";
 import type { Portfolio } from "@models/portfolio";
+import type { Investment } from "@models/investment";
 
 @Injectable({
 	providedIn: "root",
@@ -166,6 +167,62 @@ export class ApiService {
 	async deletePortfolio(portfolioName: string): Promise<void> {
 		return this.delete("/portfolio/delete", {
 			portfolio_name: portfolioName,
+		});
+	}
+
+	async getPortfolio(
+		username: string,
+		portfolioName: string,
+	): Promise<{ cash: number }> {
+		return this.get<{ cash: number }>(
+			`/portfolio/${username}/${portfolioName}`,
+		);
+	}
+
+	async getPortfolioInvestments(
+		username: string,
+		portfolioName: string,
+	): Promise<Investment[]> {
+		return this.get<Investment[]>(
+			`/portfolio/${username}/${portfolioName}/investments`,
+		);
+	}
+
+	async depositMoney(
+		username: string,
+		portfolioName: string,
+		amount: number,
+	): Promise<void> {
+		return this.post<void>(`/portfolio/${username}/${portfolioName}/deposit`, {
+			amount,
+		});
+	}
+
+	async buyShares(
+		username: string,
+		portfolioName: string,
+		stockSymbol: string,
+		numShares: number,
+		pricePerShare: number,
+	): Promise<void> {
+		return this.post<void>(`/portfolio/${username}/${portfolioName}/buy`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
+			price_per_share: pricePerShare,
+		});
+	}
+
+	async sellShares(
+		username: string,
+		portfolioName: string,
+		stockSymbol: string,
+		numShares: number,
+		pricePerShare: number,
+	): Promise<void> {
+		return this.post<void>(`/portfolio/${username}/${portfolioName}/sell`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
+			price_per_share: pricePerShare,
 		});
 	}
 }
