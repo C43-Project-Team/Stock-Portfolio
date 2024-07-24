@@ -257,7 +257,10 @@ export class UserComponent implements OnInit {
 	}
 
 	goToPortfolio(portfolioName: string) {
-		this.router.navigate(["/portfolios", portfolioName]);
+		this.router.navigate([
+			`/user/id/${this.username}/portfolios`,
+			portfolioName,
+		]);
 	}
 
 	showCreateStockListDialog() {

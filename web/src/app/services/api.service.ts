@@ -170,42 +170,27 @@ export class ApiService {
 		});
 	}
 
-	async getPortfolio(
-		username: string,
-		portfolioName: string,
-	): Promise<{ cash: number }> {
-		return this.get<{ cash: number }>(
-			`/portfolio/${username}/${portfolioName}`,
-		);
+	async getPortfolio(portfolioName: string): Promise<{ cash: number }> {
+		return this.get<{ cash: number }>(`/portfolio/${portfolioName}`);
 	}
 
-	async getPortfolioInvestments(
-		username: string,
-		portfolioName: string,
-	): Promise<Investment[]> {
-		return this.get<Investment[]>(
-			`/portfolio/${username}/${portfolioName}/investments`,
-		);
+	async getPortfolioInvestments(portfolioName: string): Promise<Investment[]> {
+		return this.get<Investment[]>(`/portfolio/${portfolioName}/investments`);
 	}
 
-	async depositMoney(
-		username: string,
-		portfolioName: string,
-		amount: number,
-	): Promise<void> {
-		return this.post<void>(`/portfolio/${username}/${portfolioName}/deposit`, {
+	async depositMoney(portfolioName: string, amount: number): Promise<void> {
+		return this.post<void>(`/portfolio/${portfolioName}/deposit`, {
 			amount,
 		});
 	}
 
 	async buyShares(
-		username: string,
 		portfolioName: string,
 		stockSymbol: string,
 		numShares: number,
 		pricePerShare: number,
 	): Promise<void> {
-		return this.post<void>(`/portfolio/${username}/${portfolioName}/buy`, {
+		return this.post<void>(`/portfolio/${portfolioName}/buy`, {
 			stock_symbol: stockSymbol,
 			num_shares: numShares,
 			price_per_share: pricePerShare,
@@ -213,13 +198,12 @@ export class ApiService {
 	}
 
 	async sellShares(
-		username: string,
 		portfolioName: string,
 		stockSymbol: string,
 		numShares: number,
 		pricePerShare: number,
 	): Promise<void> {
-		return this.post<void>(`/portfolio/${username}/${portfolioName}/sell`, {
+		return this.post<void>(`/portfolio/${portfolioName}/sell`, {
 			stock_symbol: stockSymbol,
 			num_shares: numShares,
 			price_per_share: pricePerShare,
