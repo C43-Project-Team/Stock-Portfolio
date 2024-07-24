@@ -32,18 +32,18 @@ import { SelectButtonModule } from "primeng/selectbutton";
 export class StocksComponent implements OnInit {
 	historicStockData: HistoricStockInterface[] = [];
 	predictedStockData: PredictedStockInterface[] = [];
-	ticker: string = "";
+	ticker = "";
 	startDate: Date = new Date("2023-07-30");
 	endDate: Date = new Date("2024-12-08");
 	//   aggregationPeriod: 'day' | 'week' | 'month' = 'day';
-	aggregationPeriod: string = "day";
+	aggregationPeriod = "day";
 	aggregationOptions: any[] = [
 		{ label: "Day", value: "day" },
 		{ label: "Week", value: "week" },
 		{ label: "Month", value: "month" },
 	];
 
-	presetTime: string = "1Y";
+	presetTime = "1Y";
 	presetTimeOptions: any[] = [
 		{ label: "1W", value: "1W" },
 		{ label: "1M", value: "1M" },

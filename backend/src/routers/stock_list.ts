@@ -103,7 +103,7 @@ stockListRouter.delete(
 );
 
 stockListRouter.get(
-	"/public/:username",
+	"/public/user/:username",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
@@ -149,6 +149,7 @@ stockListRouter.get(
 			const count = await stockListDatabase.getPublicStockListCount();
 			res.json({ count });
 		} catch (error) {
+			console.log(error);
 			return res
 				.status(500)
 				.json({ error: "Error retrieving public stock list count" });

@@ -107,8 +107,7 @@ class StockListDatabase {
 	async getPublicStockListCount(): Promise<number> {
 		const result = await this.db
 			.selectFrom("stocks_list")
-			// @ts-ignore
-			.select(({ fn }) => fn.count("*").as("count"))
+			.select(({ fn }) => fn.count("owner").as("count"))
 			.where("private", "=", false)
 			.executeTakeFirst();
 		return result ? Number(result.count) : 0;

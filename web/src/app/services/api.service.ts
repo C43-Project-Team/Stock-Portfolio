@@ -130,7 +130,7 @@ export class ApiService {
 	}
 
 	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
-		const endpoint = `/stock-list/public/${username}`;
+		const endpoint = `/stock-list/public/user/${username}`;
 		return this.get<StocksList[]>(endpoint);
 	}
 
