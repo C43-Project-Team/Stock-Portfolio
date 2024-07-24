@@ -1,5 +1,5 @@
 import { db } from "@utils/db/db-controller";
-import type { Database, Portfolio } from "../types/db-schema";
+import type { Database, Portfolio, Investments } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
 class PortfolioDatabase {
@@ -52,6 +52,18 @@ class PortfolioDatabase {
 	async deletePortfolio(owner: string, portfolio_name: string): Promise<void> {
 		await this.db
 			.deleteFrom("portfolios")
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.execute();
+	}
+
+	async getInvestments(
+		owner: string,
+		portfolio_name: string,
+	): Promise<Investments[]> {
+		return await this.db
+			.selectFrom("investments")
+			.selectAll()
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
 			.execute();

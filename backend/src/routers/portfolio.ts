@@ -71,3 +71,26 @@ portfolioRouter.delete(
 		}
 	},
 );
+
+portfolioRouter.get(
+	"/:portfolio_name/investments",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { portfolio_name } = req.params;
+
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const investments = await portfolioDatabase.getInvestments(
+				owner,
+				portfolio_name,
+			);
+			res.json(investments);
+		} catch (error) {
+			return res.status(500).json({ error: "Error retrieving investments" });
+		}
+	},
+);
