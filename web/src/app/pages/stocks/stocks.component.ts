@@ -54,6 +54,15 @@ export class StocksComponent implements OnInit {
 		{ label: "Max", value: "Max" },
 	];
 
+    selectedDataType = "close_price";
+	dataTypeOptions: any[] = [
+		{ label: "Close Price", value: "close_price" },
+		{ label: "Stock Volume", value: "volume" },
+		{ label: "Open Price", value: "open_price" },
+		{ label: "Daily Low", value: "low" },
+		{ label: "Daily High", value: "high" },
+	];
+
 	historicChartData: ChartData<"line"> = { datasets: [] };
 	predictionChartData: ChartData<"line"> = { datasets: [] };
 
@@ -126,12 +135,12 @@ export class StocksComponent implements OnInit {
 
 		const result = Object.keys(groupedData).map((key) => {
 			const group = groupedData[key];
-			const averageClosePrice =
-				group.reduce((sum: any, item: any) => sum + item.close_price, 0) /
+			const averageValue =
+				group.reduce((sum: any, item: any) => sum + item[this.selectedDataType], 0) /
 				group.length;
 			return {
 				stock_date: key,
-				close_price: averageClosePrice,
+				[this.selectedDataType]: averageValue,
 			};
 		});
 
@@ -139,20 +148,16 @@ export class StocksComponent implements OnInit {
 	}
 
 	updateHistoricChart(): void {
-		const groupedData =
-			this.aggregationPeriod === "day"
-				? this.historicStockData
-				: this.groupDataByTimePeriod(
-						this.historicStockData,
-						this.aggregationPeriod as "week" | "month",
-					);
+		const groupedData = this.aggregationPeriod === "day" ? this.historicStockData : this.groupDataByTimePeriod(this.historicStockData, this.aggregationPeriod as "week" | "month");
 		this.historicChartData = {
 			// labels: this.historicStockData.map(data => data.stock_date),
 			labels: groupedData.map((data: any) => data.stock_date),
 			datasets: [
 				{
-					label: "Price",
-					data: this.historicStockData.map((data) => data.close_price),
+					// label: "Price",
+					label: this.selectedDataType.replace(/_/g, " ").toUpperCase(),
+					// data: this.historicStockData.map((data) => data.close_price),
+					data: groupedData.map((data: any) => data[this.selectedDataType]),
 					fill: false,
 					borderColor: "rgba(75, 192, 192, 1)",
 					borderWidth: 1,
