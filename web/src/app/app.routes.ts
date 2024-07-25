@@ -9,6 +9,7 @@ import { authGuard } from "@guards/auth.guard";
 import { StocksComponent } from "@pages/stocks/stocks.component";
 import { UserComponent } from "@pages/user/user.component";
 import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stock-lists.component";
+import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivivual-portfolio.component";
 
 export const routes: Routes = [
 	{ path: "", component: HomeComponent },
@@ -20,7 +21,16 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 		children: [
 			{ path: "connections", component: ConnectionsComponent },
-			{ path: "id/:username", component: UserComponent },
+			{
+				path: "id/:username",
+				children: [
+					{ path: "", component: UserComponent },
+					{
+						path: "portfolios/:portfolio_name",
+						component: IndivivualPortfolioComponent,
+					},
+				],
+			},
 		],
 	},
 	{

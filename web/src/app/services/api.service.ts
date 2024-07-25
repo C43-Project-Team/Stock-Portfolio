@@ -6,6 +6,7 @@ import type { FriendsTable } from "@models/friends-table";
 import type { StocksList } from "@models/stock-list";
 import { take } from "rxjs";
 import type { Portfolio } from "@models/portfolio";
+import type { Investment } from "@models/investment";
 
 @Injectable({
 	providedIn: "root",
@@ -166,6 +167,42 @@ export class ApiService {
 	async deletePortfolio(portfolioName: string): Promise<void> {
 		return this.delete("/portfolio/delete", {
 			portfolio_name: portfolioName,
+		});
+	}
+
+	async getPortfolio(portfolioName: string): Promise<{ cash: number }> {
+		return this.get<{ cash: number }>(`/portfolio/${portfolioName}`);
+	}
+
+	async getPortfolioInvestments(portfolioName: string): Promise<Investment[]> {
+		return this.get<Investment[]>(`/portfolio/${portfolioName}/investments`);
+	}
+
+	async depositMoney(portfolioName: string, amount: number): Promise<void> {
+		return this.post<void>(`/portfolio/${portfolioName}/deposit`, {
+			amount,
+		});
+	}
+
+	async buyShares(
+		portfolioName: string,
+		stockSymbol: string,
+		numShares: number,
+	): Promise<void> {
+		return this.post<void>(`/portfolio/${portfolioName}/buy`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
+		});
+	}
+
+	async sellShares(
+		portfolioName: string,
+		stockSymbol: string,
+		numShares: number,
+	): Promise<void> {
+		return this.post<void>(`/portfolio/${portfolioName}/sell`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
 		});
 	}
 }

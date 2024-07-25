@@ -57,6 +57,18 @@ class PortfolioDatabase {
 			.execute();
 	}
 
+	async getPortfolioFromName(
+		owner: string,
+		portfolio_name: string,
+	): Promise<Portfolio | null | undefined> {
+		return await this.db
+			.selectFrom("portfolios")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.executeTakeFirst();
+	}
+
 	async getInvestments(
 		owner: string,
 		portfolio_name: string,
@@ -74,8 +86,21 @@ class PortfolioDatabase {
 		portfolio_name: string,
 		stock_symbol: string,
 		num_shares: number,
-		price_per_share: number,
 	): Promise<void> {
+		// Fetch the most recent close price for the stock symbol
+		const recentPrice = await this.db
+			.selectFrom("stocks_daily")
+			.select("close_price")
+			.where("stock_symbol", "=", stock_symbol)
+			.orderBy("stock_date", "desc")
+			.limit(1)
+			.executeTakeFirst();
+
+		if (!recentPrice) {
+			throw new Error(`Stock not found: ${stock_symbol}`);
+		}
+
+		const price_per_share = recentPrice.close_price;
 		const totalCost = num_shares * price_per_share;
 
 		// Check if the portfolio has enough cash
@@ -124,7 +149,6 @@ class PortfolioDatabase {
 		portfolio_name: string,
 		stock_symbol: string,
 		num_shares: number,
-		price_per_share: number,
 	): Promise<void> {
 		// Check if the portfolio has enough shares
 		const investment = await this.db
@@ -139,6 +163,22 @@ class PortfolioDatabase {
 			throw new Error("Insufficient shares");
 		}
 
+		// Fetch the most recent close price for the stock symbol
+		const recentPrice = await this.db
+			.selectFrom("stocks_daily")
+			.select("close_price")
+			.where("stock_symbol", "=", stock_symbol)
+			.orderBy("stock_date", "desc")
+			.limit(1)
+			.executeTakeFirst();
+
+		if (!recentPrice) {
+			throw new Error(
+				`No recent price found for stock symbol: ${stock_symbol}`,
+			);
+		}
+
+		const price_per_share = recentPrice.close_price;
 		const totalProceeds = num_shares * price_per_share;
 
 		// Update the portfolio's cash
