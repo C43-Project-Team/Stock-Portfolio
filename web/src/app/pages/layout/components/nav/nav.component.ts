@@ -96,7 +96,6 @@ export class NavbarComponent implements OnInit {
 			.getStockCompanies(event.query.length === 0 ? "*" : event.query)
 			.subscribe((data) => {
 				this.tickers = this.transformaData(Object.values(data));
-				console.log(this.tickers);
 			});
 	}
 

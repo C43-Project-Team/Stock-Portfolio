@@ -112,7 +112,7 @@ stockRouter.get("/stock-companies", async (req, res) => {
 	}
 });
 
-stockRouter.get("/stock-company/:ticker", async (req, res) => {
+stockRouter.get("/similar/stock-company/:ticker", async (req, res) => {
 	try {
 		const { ticker } = req.params;
 		let company: StocksTable[] = [];
@@ -130,4 +130,19 @@ stockRouter.get("/stock-company/:ticker", async (req, res) => {
 	} catch (error) {
 		return res.status(500).json({ error: error.message });
 	}
+});
+
+stockRouter.get("/stock-company/:ticker", async (req, res) => {
+    try {
+        const { ticker } = req.params;
+        const company = await stockDatabase.getStockCompany(ticker);
+
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        return res.json({ company });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
 });

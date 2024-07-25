@@ -1,5 +1,14 @@
-<!-- <div>
+ <div>
     <app-layout></app-layout>
+
+    <div class="p-4 max-w-4xl mx-auto">
+        <h1 class="text-4xl font-semibold mb-2 text-center">{{ stockCompany.company }} ({{ ticker }})</h1>
+    </div>
+
+    <div *ngIf="stockCompany?.description" class="p-4 max-w-4xl mx-auto">
+        <p class="text-lg">{{ stockCompany.description }}</p>
+    </div>
+
     <div class="p-4 max-w-4xl mx-auto">
         <h2 class="text-3xl font-semibold mb-4 text-center">Historic Data for {{ ticker }}</h2>
         <div class="flex items-center mb-4">
@@ -12,51 +21,13 @@
                 <p-dropdown placeholder="Select date view" [checkmark]="true" id="aggregationPeriod" [(ngModel)]="aggregationPeriod" [options]="aggregationOptions" (onChange)="updateHistoricChart()"></p-dropdown>
             </div>
         </div>
-        <div class="flex mb-4">
-            <p-selectButton [options]="presetTimeOptions" [(ngModel)]="presetTime" (onChange)="setPresetTime($event.value)" class="w-full rounded-full text-xs"></p-selectButton>
-        </div>
-        <div class="w-full h-96 md:h-80 lg:h-96">
-            <app-stock-chart [chartData]="historicChartData"></app-stock-chart>
-        </div>
-    </div>
-      
-    <div class="p-4 max-w-4xl mx-auto mt-8">
-        <h2 class="text-3xl font-semibold mb-4 text-center">Predictions for {{ ticker }}</h2>
-        <div class="flex justify-between items-center mb-4">
-            <p-floatLabel class="flex-1">
-                <p-calendar id="endDate" [(ngModel)]="endDate" (onSelect)="onEndDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
-                <label for="endDate">End Date</label>
-            </p-floatLabel>
-        </div>
-        <div class="w-full h-96 md:h-80 lg:h-96">
-            <app-stock-chart [chartData]="predictionChartData"></app-stock-chart>
-        </div>
-    </div>
-</div> -->
 
-
-<div>
-    <app-layout></app-layout>
-    <div class="p-4 max-w-4xl mx-auto">
-        <h2 class="text-3xl font-semibold mb-4 text-center">Historic Data for {{ ticker }}</h2>
         <div class="flex items-center mb-4">
-            <p-floatLabel class="flex-1">
-                <p-calendar id="startDate" [(ngModel)]="startDate" (onSelect)="onStartDateChange($event)" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
-                <label for="startDate">Start Date</label>
-            </p-floatLabel>
-            <div class="ml-auto card">
-                <label>View Date by: </label>
-                <p-dropdown placeholder="Select date view" [checkmark]="true" id="aggregationPeriod" [(ngModel)]="aggregationPeriod" [options]="aggregationOptions" (onChange)="updateHistoricChart()"></p-dropdown>
-            </div>
-        </div>
-        <div class="flex items-center mb-4">
-            <div class="ml-auto card">
-                <label>Select Data Type: </label>
+            <p-selectButton class="flex-1 mr-4 rounded-full text-xs" [options]="presetTimeOptions" [(ngModel)]="presetTime" (onChange)="setPresetTime($event.value)"></p-selectButton>
+            <div class="card">
+                <label>Stock Data Type: </label>
                 <p-dropdown placeholder="Select data type" [checkmark]="true" id="dataType" [(ngModel)]="selectedDataType" [options]="dataTypeOptions" (onChange)="updateHistoricChart()"></p-dropdown>
             </div>
-        </div>
-        <div class="flex mb-4">
-            <p-selectButton [options]="presetTimeOptions" [(ngModel)]="presetTime" (onChange)="setPresetTime($event.value)" class="w-full rounded-full text-xs"></p-selectButton>
         </div>
         <div class="w-full h-96 md:h-80 lg:h-96">
             <app-stock-chart [chartData]="historicChartData"></app-stock-chart>

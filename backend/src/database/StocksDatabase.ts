@@ -45,6 +45,16 @@ class StocksDatabase {
 		return company.length > 0 ? company : null;
 	}
 
+	async getStockCompany(ticker: string): Promise<StocksTable | null> {
+		const company = await this.db
+			.selectFrom("stocks")
+			.selectAll()
+			.where("stock_symbol", "=", ticker)
+			.execute() as StocksTable[];
+		
+		return company.length > 0 ? company[0] : null;
+	}
+
 	async getAllStocksCompany(): Promise<StocksTable[] | null> {
 		const company = await this.db.selectFrom("stocks").selectAll().execute();
 

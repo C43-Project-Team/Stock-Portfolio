@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import type { HistoricStockInterface } from "./historicStock.interface";
 import type { PredictedStockInterface } from "./predictedStock.interface";
 import { StockService } from "@services/stocks.service";
+import { CommonModule } from "@angular/common";
 import { ChartData } from "chart.js";
 import { ChartModule } from "primeng/chart";
 import { LayoutComponent } from "../layout/layout.component";
@@ -12,6 +13,7 @@ import { FormsModule } from "@angular/forms";
 import { FloatLabelModule } from "primeng/floatlabel";
 import { DropdownModule } from "primeng/dropdown";
 import { SelectButtonModule } from "primeng/selectbutton";
+import { StockCompany } from "./stockCompany.interface";
 
 @Component({
 	selector: "app-stocks",
@@ -25,6 +27,7 @@ import { SelectButtonModule } from "primeng/selectbutton";
 		FloatLabelModule,
 		DropdownModule,
 		SelectButtonModule,
+        CommonModule,
 	],
 	templateUrl: "./stocks.component.html",
 	styles: [],
@@ -35,7 +38,7 @@ export class StocksComponent implements OnInit {
 	ticker = "";
 	startDate: Date = new Date("2023-07-30");
 	endDate: Date = new Date("2024-12-08");
-	//   aggregationPeriod: 'day' | 'week' | 'month' = 'day';
+    stockCompany: StockCompany = { stock_symbol: "", company: "", description: "" };
 	aggregationPeriod = "day";
 	aggregationOptions: any[] = [
 		{ label: "Day", value: "day" },
@@ -74,8 +77,15 @@ export class StocksComponent implements OnInit {
 	ngOnInit(): void {
 		this.route.params.subscribe((params) => {
 			this.ticker = params["ticker"];
+            this.fetchStockCompany();
 			this.fetchHistoricStockData();
 			this.fetchPredictedStockData();
+		});
+	}
+
+    fetchStockCompany(): void {
+		this.stockService.getStockCompany(this.ticker).subscribe((data: StockCompany) => {
+			this.stockCompany = Object.values(data)[0];
 		});
 	}
 

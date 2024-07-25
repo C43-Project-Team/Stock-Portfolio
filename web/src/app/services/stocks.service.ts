@@ -37,8 +37,10 @@ export class StockService {
 	}
 
 	getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
-		return this.http.get<StockCompany[]>(
-			`${this.baseUrl}/stock/stock-company/${searchTicker.toUpperCase()}`,
-		);
+		return this.http.get<StockCompany[]>(`${this.baseUrl}/stock/similar/stock-company/${searchTicker.toUpperCase()}`,);
+	}
+
+	getStockCompany(ticker: string): Observable<StockCompany> {
+		return this.http.get<StockCompany>(`${this.baseUrl}/stock/stock-company/${ticker.toUpperCase()}`,);
 	}
 }
