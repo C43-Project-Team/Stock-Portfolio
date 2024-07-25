@@ -1,0 +1,1 @@
+// PostgreSQL variance function script
