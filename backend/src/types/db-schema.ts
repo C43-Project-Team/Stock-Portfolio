@@ -42,6 +42,7 @@ export type StocksListUpdate = Updateable<StocksListTable>;
 export interface StocksTable {
 	stock_symbol: string;
 	company: string;
+    description: string;
 }
 
 export type Stocks = Selectable<StocksTable>;

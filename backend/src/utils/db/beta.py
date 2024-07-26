@@ -2,6 +2,7 @@ import yfinance as yf
 import json
 import psycopg2
 from psycopg2 import sql
+from IPython.display import display
 import dotenv
 import os
 
@@ -38,20 +39,22 @@ db_params = {
 }
 
 try:
-    conn = psycopg2.connect(**db_params)
-    cursor = conn.cursor()
+    # conn = psycopg2.connect(**db_params)
+    # cursor = conn.cursor()
 
-    for ticker in tickers:
-        description = get_stock_desc(ticker)
-        update_stock_description(cursor, ticker, description)
+    # for ticker in tickers:
+    #     description = get_stock_desc(ticker)
+    #     update_stock_description(cursor, ticker, description)
 
-    conn.commit()
+    display(get_SP500_data("2024-07-13", "2024-07-19")).head(10)
+
+    # conn.commit()
     print("Stock descriptions updated successfully.")
 
 except Exception as e:
     print(f"An error occurred: {e}")
 
-finally:
-    if conn:
-        cursor.close()
-        conn.close()
+# finally:
+    # if conn:
+    #     cursor.close()
+    #     conn.close()
