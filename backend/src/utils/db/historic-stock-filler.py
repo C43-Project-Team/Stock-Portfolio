@@ -94,11 +94,12 @@ def swap_columns(df, col1, col2):
     df = df[col_list]
     return df
 
-# # Function to fetch historical data
-# # 1st given timeline: 2013-02-08 to 2018-02-07
-# # 2nd timeline: 2018-02-08 to 2024-07-12
-# # 3rd timeline: 2024-07-13 to 2024-07-19
-def fetch_data(ticker, og_ticker_name, start_date='2013-02-08', end_date='2024-07-19'):
+# Function to fetch historical data
+# 1st given timeline: 2013-02-08 to 2018-02-07
+# 2nd timeline: 2018-02-08 to 2024-07-12
+# 3rd timeline: 2024-07-13 to 2024-07-19
+# 4th timeline: 2024-07-20 to 2024-07-25
+def fetch_data(ticker, og_ticker_name, start_date='2024-07-19', end_date='2024-07-25'):
 # def fetch_data(ticker, og_ticker_name, start_date, end_date):
     # Uncomment for log file to record errors on unavaiable stocks
     log_file = '../logs/error_log.txt'
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     # all_data = pd.concat([fetch_data("^GSPC", "^GSPC", '2013-02-08', '2024-07-23')])
 
     # Save to a CSV file without index
-    all_data.to_csv('../data/test.csv', index=False)
+    all_data.to_csv('../data/stock_data_4.csv', index=False)
     
     # Debugging
     # display(all_data.head(10))
