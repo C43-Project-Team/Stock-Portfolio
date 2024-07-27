@@ -40,6 +40,7 @@ export class StocksComponent implements OnInit {
 	endDate: Date = new Date("2024-12-08");
     stockCompany: StockCompany = { stock_symbol: "", company: "", description: "" };
 	aggregationPeriod = "day";
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	aggregationOptions: any[] = [
 		{ label: "Day", value: "day" },
 		{ label: "Week", value: "week" },
@@ -47,6 +48,7 @@ export class StocksComponent implements OnInit {
 	];
 
 	presetTime = "1Y";
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	presetTimeOptions: any[] = [
 		{ label: "1W", value: "1W" },
 		{ label: "1M", value: "1M" },
@@ -58,6 +60,7 @@ export class StocksComponent implements OnInit {
 	];
 
     selectedDataType = "close_price";
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	dataTypeOptions: any[] = [
 		{ label: "Close Price", value: "close_price" },
 		{ label: "Stock Volume", value: "volume" },
@@ -76,6 +79,7 @@ export class StocksComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.route.params.subscribe((params) => {
+			// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 			this.ticker = params["ticker"];
             this.fetchStockCompany();
 			this.fetchHistoricStockData();
@@ -111,6 +115,7 @@ export class StocksComponent implements OnInit {
 			});
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	transformData(data: any): any {
 		if (data && Array.isArray(data) && data.length > 0) {
 			const innerData = data[0];
@@ -120,12 +125,14 @@ export class StocksComponent implements OnInit {
 		}
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	groupDataByTimePeriod(data: any[], timePeriod: "week" | "month"): any[] {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		const groupedData: any = {};
 
 		for (const item of data) {
 			const date = new Date(item.stock_date);
-			let groupKey: string = "";
+			let groupKey = "";
 
 			if (timePeriod === "week") {
 				const startOfWeek = new Date(
@@ -146,6 +153,7 @@ export class StocksComponent implements OnInit {
 		const result = Object.keys(groupedData).map((key) => {
 			const group = groupedData[key];
 			const averageValue =
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				group.reduce((sum: any, item: any) => sum + item[this.selectedDataType], 0) /
 				group.length;
 			return {
@@ -161,13 +169,15 @@ export class StocksComponent implements OnInit {
 		const groupedData = this.aggregationPeriod === "day" ? this.historicStockData : this.groupDataByTimePeriod(this.historicStockData, this.aggregationPeriod as "week" | "month");
 		this.historicChartData = {
 			// labels: this.historicStockData.map(data => data.stock_date),
-			labels: groupedData.map((data: any) => data.stock_date),
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+						labels: groupedData.map((data: any) => data.stock_date),
 			datasets: [
 				{
 					// label: "Price",
 					label: this.selectedDataType.replace(/_/g, " ").toUpperCase(),
 					// data: this.historicStockData.map((data) => data.close_price),
-					data: groupedData.map((data: any) => data[this.selectedDataType]),
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+										data: groupedData.map((data: any) => data[this.selectedDataType]),
 					fill: false,
 					borderColor: "rgba(75, 192, 192, 1)",
 					borderWidth: 1,
@@ -191,11 +201,13 @@ export class StocksComponent implements OnInit {
 		};
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	onStartDateChange(event: any): void {
 		this.startDate = event;
 		this.fetchHistoricStockData();
 	}
 
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	onEndDateChange(event: any): void {
 		this.endDate = event;
 		this.fetchPredictedStockData();

@@ -19,6 +19,7 @@ class StocksDatabase {
 			.selectAll()
 			.where("stock_symbol", "=", ticker)
 			.where((eb) => eb.between("stock_date", startDate, endDate))
+            .orderBy("stock_date", "asc")
 			.execute();
 
 		return stockList.length > 0 ? stockList : null;
@@ -56,7 +57,11 @@ class StocksDatabase {
 	}
 
 	async getAllStocksCompany(): Promise<StocksTable[] | null> {
-		const company = await this.db.selectFrom("stocks").selectAll().execute();
+		const company = await this.db
+            .selectFrom("stocks")
+            .selectAll()
+            .orderBy("stock_symbol", "asc")
+            .execute();
 
 		return company.length > 0 ? company : null;
 	}
@@ -72,8 +77,6 @@ class StocksDatabase {
 
 		return recentPrice || null;
 	}
-
-	// async insertStock()
 }
 
 export const stockDatabase = new StocksDatabase();
