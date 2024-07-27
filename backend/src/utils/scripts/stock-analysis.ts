@@ -106,3 +106,18 @@
 
 ////////////////////////////////////////////////////////////////////////
 
+// COV STOCK CALCULATION
+
+// DECLARE
+//     mean_return FLOAT;
+//     stddev_return FLOAT;
+// BEGIN
+//     SELECT AVG(return), STDDEV(return)
+//     INTO mean_return, stddev_return
+//     FROM stocks_daily sd
+//     WHERE sd.stock_symbol = cov.stock_symbol;
+
+//     RETURN stddev_return / mean_return;
+// END;
+
+////////////////////////////////////////////////////////////////////////
