@@ -54,3 +54,22 @@ userRouter.get(
 		}
 	},
 );
+
+userRouter.get(
+	"/search",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { query } = req.query;
+			if (!query || typeof query !== "string") {
+				return res.status(400).json({ error: "Query parameter is required" });
+			}
+
+			const users = await userDatabase.searchUsersByUsername(query);
+
+			res.json({ users });
+		} catch (error) {
+			return res.status(500).json({ error: "Error searching for users" });
+		}
+	},
+);

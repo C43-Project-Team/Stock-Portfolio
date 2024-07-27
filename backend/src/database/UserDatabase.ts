@@ -45,6 +45,14 @@ class UserDatabase {
 
 		return user;
 	}
+
+	async searchUsersByUsername(query: string): Promise<User[]> {
+		return await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "like", `${query}%`)
+			.execute();
+	}
 }
 
 export const userDatabase = new UserDatabase();
