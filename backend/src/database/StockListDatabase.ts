@@ -1,5 +1,10 @@
 import { db } from "@utils/db/db-controller";
-import type { Contains, Database, StocksList } from "../types/db-schema";
+import type {
+	Contains,
+	Database,
+	PrivateAccess,
+	StocksList,
+} from "../types/db-schema";
 import type { Kysely } from "kysely";
 
 class StockListDatabase {
@@ -233,6 +238,63 @@ class StockListDatabase {
 			.where("stock_list_owner", "=", owner)
 			.where("stock_list_name", "=", stock_list_name)
 			.where("stock_symbol", "=", stock_symbol)
+			.execute();
+	}
+
+	async getSharedUsers(
+		owner: string,
+		stock_list_name: string,
+	): Promise<PrivateAccess[]> {
+		const stockList = await this.db
+			.selectFrom("stocks_list")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
+
+		if (!stockList) {
+			throw new Error("Stock list not found");
+		}
+
+		if (!stockList.private) {
+			throw new Error("Cannot list shared users for a public stock list");
+		}
+
+		return await this.db
+			.selectFrom("private_access")
+			.selectAll()
+			.where("stock_list_owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.execute();
+	}
+
+	async shareStockList(
+		owner: string,
+		stock_list_name: string,
+		user: string,
+	): Promise<void> {
+		const stockList = await this.db
+			.selectFrom("stocks_list")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
+
+		if (!stockList) {
+			throw new Error("Stock list not found");
+		}
+
+		if (!stockList.private) {
+			throw new Error("Cannot share a public stock list");
+		}
+
+		await this.db
+			.insertInto("private_access")
+			.values({
+				user,
+				stock_list_owner: owner,
+				stock_list_name,
+			})
 			.execute();
 	}
 }

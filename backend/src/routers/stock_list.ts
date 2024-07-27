@@ -1,6 +1,7 @@
 import { stockListDatabase } from "@/database/StockListDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
+import { re } from "mathjs";
 
 export const stockListRouter = Router();
 
@@ -270,6 +271,60 @@ stockListRouter.post(
 			return res.json({ message: "Stock deleted from list successfully" });
 		} catch (error) {
 			return res.status(500).json({ error: "Error deleting stock from list" });
+		}
+	},
+);
+
+stockListRouter.get(
+	"/:stock_list_name/shared-users",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+
+			if (!owner) {
+				return res.status(400).json({ error: "Username not found" });
+			}
+
+			const sharedUsers = await stockListDatabase.getSharedUsers(
+				owner,
+				stock_list_name,
+			);
+			res.json(sharedUsers);
+		} catch (error) {
+			if (error instanceof Error) {
+				return res.status(500).json({ error: error.message });
+			}
+			return res.status(500).json({ error: "Error retrieving shared users" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/:stock_list_name/share",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+			const { user } = req.body;
+
+			if (!owner) {
+				return res.status(400).json({ error: "Username not found" });
+			}
+
+			if (!user) {
+				return res.status(400).json({ error: "Missing user parameter" });
+			}
+
+			await stockListDatabase.shareStockList(owner, stock_list_name, user);
+			res.json({ message: "Stock list shared successfully" });
+		} catch (error) {
+			if (error instanceof Error) {
+				return res.status(404).json({ error: error.message });
+			}
+			return res.status(500).json({ error: "Error sharing stock list" });
 		}
 	},
 );
