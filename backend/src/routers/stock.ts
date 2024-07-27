@@ -77,11 +77,16 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 
 // Endpoint to get historic stock data by ticker and time period
 // End date is always going to be todays date
-stockRouter.post("/:ticker", async (req, res) => {
+// stockRouter.post("/:ticker", async (req, res) => {
+stockRouter.post("/", async (req, res) => {
 	try {
-		const { ticker } = req.params;
+		const { ticker } = req.query;
 		const { startDate } = req.body;
 		const endDate = new Date().toISOString().substring(0, 10);
+
+        if (!ticker) {
+            return res.status(400).json({ error: "Stock symbol is required" });
+        }
 
 		const stockList = await stockDatabase.getStockByTimePeriod(
 			ticker,

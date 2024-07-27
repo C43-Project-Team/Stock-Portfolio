@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { HistoricStockInterface } from "../pages/stocks/historicStock.interface";
 import { PredictedStockInterface } from "../pages/stocks/predictedStock.interface";
@@ -14,14 +14,16 @@ export class StockService {
 
 	constructor(private http: HttpClient) {}
 
-	getHistoricData(
+    getHistoricData(
 		ticker: string,
 		startDate: string,
 	): Observable<HistoricStockInterface[]> {
-		// console.log(this.baseUrl + "/stock/" + ticker);
+        const params = new HttpParams().set("ticker", ticker);
+
 		return this.http.post<HistoricStockInterface[]>(
-			`${this.baseUrl}/stock/${ticker}`,
+			`${this.baseUrl}/stock`,
 			{ startDate },
+            { params }
 		);
 	}
 
