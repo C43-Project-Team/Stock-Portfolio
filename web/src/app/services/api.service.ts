@@ -8,6 +8,7 @@ import { take } from "rxjs";
 import type { Portfolio } from "@models/portfolio";
 import type { Investment } from "@models/investment";
 import { Stock } from "@models/stock";
+import { User } from "@models/user";
 
 @Injectable({
 	providedIn: "root",
@@ -69,6 +70,10 @@ export class ApiService {
 		return this.get<{ profilePicture: string }>(
 			`/user/profile-picture/${username}`,
 		);
+	}
+
+	async searchUsers(query: string): Promise<{ users: User[] }> {
+		return this.get<{ users: User[] }>(`/user/search?query=${query}`);
 	}
 
 	/* FRIEND STUFF */

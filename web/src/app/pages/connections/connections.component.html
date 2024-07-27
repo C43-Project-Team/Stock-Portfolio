@@ -2,16 +2,17 @@
   <h1 class="text-2xl font-bold mb-4">Connections</h1>
 
   <p-toast></p-toast>
-  <p-confirmDialog />
+  <p-confirmDialog></p-confirmDialog>
 
   <div class="flex justify-end mb-4 gap-x-4">
-    <input
-      pInputText
-      type="text"
-      placeholder="Enter username"
+    <p-autoComplete
       [(ngModel)]="newFriendUsername"
+      [suggestions]="filteredUsers"
+      (completeMethod)="searchUsers($event)"
+      field="username"
+      placeholder="Enter username"
       class="p-inputtext-sm p-mr-2"
-    />
+    ></p-autoComplete>
     <button
       pButton
       type="button"
@@ -127,7 +128,13 @@
             ></button>
           </td>
           <td>
-            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded"></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToUserPage(request.receiving_friend)"
+            ></button>
           </td>
         </tr>
       </ng-template>
