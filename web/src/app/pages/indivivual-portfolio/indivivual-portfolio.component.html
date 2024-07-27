@@ -29,7 +29,7 @@
         <td>{{ investment.num_shares }}</td>
         <td>
           <div class="flex gap-x-2">
-              <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
+            <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
             <button pButton type="button" icon="pi pi-plus" class="p-button-success p-button-rounded" (click)="showBuySharesDialog(investment.stock_symbol)"></button>
             <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded" (click)="goToStock(investment.stock_symbol)"></button>
           </div>
@@ -54,7 +54,7 @@
     <div class="p-fluid">
       <div class="p-field mb-4">
         <label for="buyStockSymbol" class="block text-sm font-medium text-gray-700">Stock Symbol</label>
-        <input id="buyStockSymbol" type="text" pInputText [(ngModel)]="buyStockSymbol" (ngModelChange)="calculateTotalCost()" class="mt-1 block w-full" />
+        <p-autoComplete id="buyStockSymbol" [(ngModel)]="buyStockSymbol" (completeMethod)="searchStocks($event)" [suggestions]="filteredStocks" field="stock_symbol" (onSelect)="calculateTotalCost()" class="mt-1 block w-full"></p-autoComplete>
       </div>
       <div class="p-field mb-4">
         <label for="buyNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
@@ -79,7 +79,7 @@
     <div class="p-fluid">
       <div class="p-field mb-4">
         <label for="sellStockSymbol" class="block text-sm font-medium text-gray-700">Stock Symbol</label>
-        <input id="sellStockSymbol" type="text" pInputText [(ngModel)]="sellStockSymbol" (ngModelChange)="calculateTotalGain()" class="mt-1 block w-full" />
+        <p-autoComplete id="sellStockSymbol" [(ngModel)]="sellStockSymbol" (completeMethod)="searchStocks($event)" [suggestions]="filteredStocks" field="stock_symbol" (onSelect)="calculateTotalGain()" class="mt-1 block w-full"></p-autoComplete>
       </div>
       <div class="p-field mb-4">
         <label for="sellNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>

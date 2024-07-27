@@ -7,6 +7,7 @@ import type { StocksList } from "@models/stock-list";
 import { take } from "rxjs";
 import type { Portfolio } from "@models/portfolio";
 import type { Investment } from "@models/investment";
+import { Stock } from "@models/stock";
 
 @Injectable({
 	providedIn: "root",
@@ -209,5 +210,11 @@ export class ApiService {
 	/* STOCK STUFF */
 	getStockPrice(stockSymbol: string): Promise<{ price: number }> {
 		return this.get<{ price: number }>(`/stock/${stockSymbol}/price`);
+	}
+
+	searchStocks(query: string): Promise<{ company: Stock[] }> {
+		return this.get<{ company: Stock[] }>(
+			`/stock/similar/stock-company/${query}`,
+		);
 	}
 }

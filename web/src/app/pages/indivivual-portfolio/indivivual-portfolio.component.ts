@@ -15,6 +15,8 @@ import { TableModule } from "primeng/table";
 import { ToastModule } from "primeng/toast";
 import { Subject } from "rxjs";
 import { DataViewModule } from "primeng/dataview";
+import { AutoCompleteModule } from "primeng/autocomplete";
+import type { Stock } from "@models/stock";
 
 @Component({
 	selector: "app-indivivual-portfolio",
@@ -28,6 +30,7 @@ import { DataViewModule } from "primeng/dataview";
 		InputTextModule,
 		ToastModule,
 		DataViewModule,
+		AutoCompleteModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
@@ -51,6 +54,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 	totalCost = 0;
 	totalGain = 0;
 	hasEnoughFunds = true;
+	filteredStocks: Stock[] = [];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -199,6 +203,15 @@ export class IndivivualPortfolioComponent implements OnInit {
 
 	goToStock(stockSymbol: string) {
 		this.router.navigate(["/stocks", stockSymbol]);
+	}
+
+	async searchStocks(event: any) {
+		try {
+			const results = await this.apiService.searchStocks(event.query);
+			this.filteredStocks = results.company;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
 	}
 
 	logSuccess(summary: string, detail: string) {
