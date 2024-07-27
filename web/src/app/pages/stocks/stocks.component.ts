@@ -194,12 +194,45 @@ export class StocksComponent implements OnInit {
 					label: "Predicted Price",
 					data: this.predictedStockData.map((data) => data.price),
 					fill: false,
-					borderColor: "rgba(75, 192, 192, 1)",
+					borderColor: "rgba(38, 194, 129, 1)",
 					borderWidth: 1,
 				},
 			],
 		};
 	}
+
+    // updatePredictedChart(): void {
+    //     const today = new Date().toISOString().split("T")[0];
+    //     const todayDate = new Date(today);
+    
+    //     const labelsSet = new Set(this.predictedStockData.map(data => data.date));
+    //     const labels = Array.from(labelsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    
+    //     const dataMap = new Map(this.predictedStockData.map(data => [data.date, data.price]));
+    //     const historicData = labels.map(date => new Date(date) <= todayDate ? dataMap.get(date) || null : null);
+    //     const predictedData = labels.map(date => new Date(date) > todayDate ? dataMap.get(date) || null : null);
+    
+    //     this.predictionChartData = {
+    //         labels: labels,
+    //         datasets: [
+    //             {
+    //                 label: "Predicted Price",
+    //                 data: historicData,
+    //                 fill: false,
+    //                 borderColor: "rgba(75, 192, 192, 1)",
+    //                 borderWidth: 1,
+    //             },
+    //             {
+    //                 label: "Predicted Price",
+    //                 data: predictedData,
+    //                 fill: false,
+    //                 borderColor: "rgba(153, 102, 255, 1)",
+    //                 borderWidth: 1,
+    //             }
+    //         ],
+    //     };
+    // }
+    
 
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	onStartDateChange(event: any): void {

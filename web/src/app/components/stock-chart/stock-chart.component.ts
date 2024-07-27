@@ -21,6 +21,7 @@ Chart.register(...registerables, crosshair);
 export class StockChartComponent {
 	@Input() chartData: ChartData<"line"> = { datasets: [] };
 
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	chartOptions: ChartOptions<"line"> & { tooltips: any } = {
 		responsive: true,
 		scales: {
@@ -42,13 +43,13 @@ export class StockChartComponent {
 		plugins: {
 			crosshair: {
 				line: {
-					color: "#F66", // color of the crosshair line
-					width: 1, // width of the crosshair line
+					color: "#F66",
+					width: 1,
 				},
 				sync: {
-					enabled: false, // enable trace line syncing with other charts
-					group: 1, // chart group
-					suppressTooltips: false, // suppress tooltips when showing a synced tracer
+					enabled: false, 
+					group: 1,
+					suppressTooltips: false, 
 				},
 				zoom: {
 					enabled: true, // enable zooming
@@ -58,11 +59,14 @@ export class StockChartComponent {
 					zoomButtonClass: "reset-zoom", // reset zoom button class
 				},
 				callbacks: {
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					beforeZoom: (start: any, end: any) => true,
+					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					afterZoom: (start: any, end: any) => {},
 				},
-			} as any, // Add 'as any' to bypass type checking
-		} as unknown as PluginOptionsByType<"line">, // Add the correct type for plugins
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			} as any,
+		} as unknown as PluginOptionsByType<"line">,
 		interaction: {
 			intersect: false,
 			mode: "index",

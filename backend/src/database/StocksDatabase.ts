@@ -30,6 +30,7 @@ class StocksDatabase {
 			.selectFrom("stocks_daily")
 			.selectAll()
 			.where("stock_symbol", "=", ticker)
+            .orderBy("stock_date", "asc")
 			.execute();
 
 		return stockList.length > 0 ? stockList : null;
