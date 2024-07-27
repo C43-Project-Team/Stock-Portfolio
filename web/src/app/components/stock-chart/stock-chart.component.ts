@@ -47,9 +47,9 @@ export class StockChartComponent {
 					width: 1,
 				},
 				sync: {
-					enabled: false, 
+					enabled: false,
 					group: 1,
-					suppressTooltips: false, 
+					suppressTooltips: false,
 				},
 				zoom: {
 					enabled: true, // enable zooming
@@ -64,7 +64,7 @@ export class StockChartComponent {
 					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					afterZoom: (start: any, end: any) => {},
 				},
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			} as any,
 		} as unknown as PluginOptionsByType<"line">,
 		interaction: {

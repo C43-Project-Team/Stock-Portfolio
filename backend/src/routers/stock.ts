@@ -84,9 +84,9 @@ stockRouter.post("/", async (req, res) => {
 		const { startDate } = req.body;
 		const endDate = new Date().toISOString().substring(0, 10);
 
-        if (!ticker) {
-            return res.status(400).json({ error: "Stock symbol is required" });
-        }
+		if (!ticker) {
+			return res.status(400).json({ error: "Stock symbol is required" });
+		}
 
 		const stockList = await stockDatabase.getStockByTimePeriod(
 			ticker,
@@ -139,18 +139,18 @@ stockRouter.get("/similar/stock-company/:ticker", async (req, res) => {
 });
 
 stockRouter.get("/stock-company/:ticker", async (req, res) => {
-    try {
-        const { ticker } = req.params;
-        const company = await stockDatabase.getStockCompany(ticker);
+	try {
+		const { ticker } = req.params;
+		const company = await stockDatabase.getStockCompany(ticker);
 
-        if (!company) {
-            return res.status(404).json({ error: "Company not found" });
-        }
+		if (!company) {
+			return res.status(404).json({ error: "Company not found" });
+		}
 
-        return res.json({ company });
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
+		return res.json({ company });
+	} catch (error) {
+		return res.status(500).json({ error: error.message });
+	}
 });
 
 stockRouter.get(

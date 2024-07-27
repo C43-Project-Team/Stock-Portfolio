@@ -19,7 +19,7 @@ class StocksDatabase {
 			.selectAll()
 			.where("stock_symbol", "=", ticker)
 			.where((eb) => eb.between("stock_date", startDate, endDate))
-            .orderBy("stock_date", "asc")
+			.orderBy("stock_date", "asc")
 			.execute();
 
 		return stockList.length > 0 ? stockList : null;
@@ -30,7 +30,7 @@ class StocksDatabase {
 			.selectFrom("stocks_daily")
 			.selectAll()
 			.where("stock_symbol", "=", ticker)
-            .orderBy("stock_date", "asc")
+			.orderBy("stock_date", "asc")
 			.execute();
 
 		return stockList.length > 0 ? stockList : null;
@@ -48,26 +48,28 @@ class StocksDatabase {
 	}
 
 	async getStockCompany(ticker: string): Promise<StocksTable | null> {
-		const company = await this.db
+		const company = (await this.db
 			.selectFrom("stocks")
 			.selectAll()
 			.where("stock_symbol", "=", ticker)
-			.execute() as StocksTable[];
-		
+			.execute()) as StocksTable[];
+
 		return company.length > 0 ? company[0] : null;
 	}
 
 	async getAllStocksCompany(): Promise<StocksTable[] | null> {
 		const company = await this.db
-            .selectFrom("stocks")
-            .selectAll()
-            .orderBy("stock_symbol", "asc")
-            .execute();
+			.selectFrom("stocks")
+			.selectAll()
+			.orderBy("stock_symbol", "asc")
+			.execute();
 
 		return company.length > 0 ? company : null;
 	}
 
-	async getRecentStockPrice(stock_symbol: string): Promise<{ close_price: number } | null> {
+	async getRecentStockPrice(
+		stock_symbol: string,
+	): Promise<{ close_price: number } | null> {
 		const recentPrice = await this.db
 			.selectFrom("stocks_daily")
 			.select("close_price")

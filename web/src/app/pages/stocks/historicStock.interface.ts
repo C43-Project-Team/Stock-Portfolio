@@ -6,5 +6,5 @@ export interface HistoricStockInterface {
 	low: number;
 	high: number;
 	volume: number;
-    return: number;
+	return: number;
 }

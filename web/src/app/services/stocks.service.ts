@@ -14,16 +14,16 @@ export class StockService {
 
 	constructor(private http: HttpClient) {}
 
-    getHistoricData(
+	getHistoricData(
 		ticker: string,
 		startDate: string,
 	): Observable<HistoricStockInterface[]> {
-        const params = new HttpParams().set("ticker", ticker);
+		const params = new HttpParams().set("ticker", ticker);
 
 		return this.http.post<HistoricStockInterface[]>(
 			`${this.baseUrl}/stock`,
 			{ startDate },
-            { params }
+			{ params },
 		);
 	}
 
@@ -39,10 +39,14 @@ export class StockService {
 	}
 
 	getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
-		return this.http.get<StockCompany[]>(`${this.baseUrl}/stock/similar/stock-company/${searchTicker.toUpperCase()}`,);
+		return this.http.get<StockCompany[]>(
+			`${this.baseUrl}/stock/similar/stock-company/${searchTicker.toUpperCase()}`,
+		);
 	}
 
 	getStockCompany(ticker: string): Observable<StockCompany> {
-		return this.http.get<StockCompany>(`${this.baseUrl}/stock/stock-company/${ticker.toUpperCase()}`,);
+		return this.http.get<StockCompany>(
+			`${this.baseUrl}/stock/stock-company/${ticker.toUpperCase()}`,
+		);
 	}
 }

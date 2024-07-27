@@ -65,7 +65,7 @@ async function importStocksDailyCsv(filePath) {
 				low: parseFloat(data.Low),
 				high: parseFloat(data.High),
 				volume: parseInt(data.Volume, 10),
-                return: parseFloat(data.Return),
+				return: parseFloat(data.Return),
 			};
 			results.push(transformedData);
 
@@ -83,7 +83,7 @@ async function importStocksDailyCsv(filePath) {
 						console.error("Error inserting chunk:", error);
 						stream.resume();
 					});
-                }
+			}
 		})
 		.on("end", async () => {
 			// Insert any remaining data
@@ -103,12 +103,12 @@ async function importStocksDailyCsv(filePath) {
 
 // Run the import function with a relative path
 async function ingestData() {
-    const exportStockFile = path.resolve(
-        "src",
-        "utils",
-        "data",
-        "stock-companies.csv",
-    );
+	const exportStockFile = path.resolve(
+		"src",
+		"utils",
+		"data",
+		"stock-companies.csv",
+	);
 	// const exportStockDailyFile = path.resolve(
 	// 	"src",
 	// 	"utils",
@@ -128,32 +128,32 @@ async function ingestData() {
 	// 	"stock_data_3.csv",
 	// );
 
-    const exportStockDailyFile = path.resolve(
+	const exportStockDailyFile = path.resolve(
 		"src",
 		"utils",
 		"data",
-        "return",
+		"return",
 		"SP500History-db.csv",
 	);
 	const exportStockRecentFile = path.resolve(
 		"src",
 		"utils",
 		"data",
-        "return",
+		"return",
 		"stock_data_recent.csv",
 	);
 	const exportUptoDateStockFile = path.resolve(
 		"src",
 		"utils",
 		"data",
-        "return",
+		"return",
 		"stock_data_3.csv",
 	);
-    const exportUptoDateStockFile1 = path.resolve(
+	const exportUptoDateStockFile1 = path.resolve(
 		"src",
 		"utils",
 		"data",
-        "return",
+		"return",
 		"stock_data_4.csv",
 	);
 

@@ -1,5 +1,5 @@
 export interface StockCompany {
 	stock_symbol: string;
 	company: string;
-    description: string;
+	description: string;
 }

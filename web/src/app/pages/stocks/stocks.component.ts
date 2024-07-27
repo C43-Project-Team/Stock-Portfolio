@@ -27,7 +27,7 @@ import { StockCompany } from "./stockCompany.interface";
 		FloatLabelModule,
 		DropdownModule,
 		SelectButtonModule,
-        CommonModule,
+		CommonModule,
 	],
 	templateUrl: "./stocks.component.html",
 	styles: [],
@@ -38,7 +38,11 @@ export class StocksComponent implements OnInit {
 	ticker = "";
 	startDate: Date = new Date("2023-07-30");
 	endDate: Date = new Date("2024-12-08");
-    stockCompany: StockCompany = { stock_symbol: "", company: "", description: "" };
+	stockCompany: StockCompany = {
+		stock_symbol: "",
+		company: "",
+		description: "",
+	};
 	aggregationPeriod = "day";
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	aggregationOptions: any[] = [
@@ -59,7 +63,7 @@ export class StocksComponent implements OnInit {
 		{ label: "Max", value: "Max" },
 	];
 
-    selectedDataType = "close_price";
+	selectedDataType = "close_price";
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	dataTypeOptions: any[] = [
 		{ label: "Close Price", value: "close_price" },
@@ -81,16 +85,18 @@ export class StocksComponent implements OnInit {
 		this.route.params.subscribe((params) => {
 			// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 			this.ticker = params["ticker"];
-            this.fetchStockCompany();
+			this.fetchStockCompany();
 			this.fetchHistoricStockData();
 			this.fetchPredictedStockData();
 		});
 	}
 
-    fetchStockCompany(): void {
-		this.stockService.getStockCompany(this.ticker).subscribe((data: StockCompany) => {
-			this.stockCompany = Object.values(data)[0];
-		});
+	fetchStockCompany(): void {
+		this.stockService
+			.getStockCompany(this.ticker)
+			.subscribe((data: StockCompany) => {
+				this.stockCompany = Object.values(data)[0];
+			});
 	}
 
 	fetchHistoricStockData(): void {
@@ -154,8 +160,10 @@ export class StocksComponent implements OnInit {
 			const group = groupedData[key];
 			const averageValue =
 				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-				group.reduce((sum: any, item: any) => sum + item[this.selectedDataType], 0) /
-				group.length;
+				group.reduce(
+					(sum: any, item: any) => sum + item[this.selectedDataType],
+					0,
+				) / group.length;
 			return {
 				stock_date: key,
 				[this.selectedDataType]: averageValue,
@@ -166,18 +174,24 @@ export class StocksComponent implements OnInit {
 	}
 
 	updateHistoricChart(): void {
-		const groupedData = this.aggregationPeriod === "day" ? this.historicStockData : this.groupDataByTimePeriod(this.historicStockData, this.aggregationPeriod as "week" | "month");
+		const groupedData =
+			this.aggregationPeriod === "day"
+				? this.historicStockData
+				: this.groupDataByTimePeriod(
+						this.historicStockData,
+						this.aggregationPeriod as "week" | "month",
+					);
 		this.historicChartData = {
 			// labels: this.historicStockData.map(data => data.stock_date),
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-						labels: groupedData.map((data: any) => data.stock_date),
+			labels: groupedData.map((data: any) => data.stock_date),
 			datasets: [
 				{
 					// label: "Price",
 					label: this.selectedDataType.replace(/_/g, " ").toUpperCase(),
 					// data: this.historicStockData.map((data) => data.close_price),
 					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-										data: groupedData.map((data: any) => data[this.selectedDataType]),
+					data: groupedData.map((data: any) => data[this.selectedDataType]),
 					fill: false,
 					borderColor: "rgba(75, 192, 192, 1)",
 					borderWidth: 1,
@@ -201,38 +215,37 @@ export class StocksComponent implements OnInit {
 		};
 	}
 
-    // updatePredictedChart(): void {
-    //     const today = new Date().toISOString().split("T")[0];
-    //     const todayDate = new Date(today);
-    
-    //     const labelsSet = new Set(this.predictedStockData.map(data => data.date));
-    //     const labels = Array.from(labelsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    
-    //     const dataMap = new Map(this.predictedStockData.map(data => [data.date, data.price]));
-    //     const historicData = labels.map(date => new Date(date) <= todayDate ? dataMap.get(date) || null : null);
-    //     const predictedData = labels.map(date => new Date(date) > todayDate ? dataMap.get(date) || null : null);
-    
-    //     this.predictionChartData = {
-    //         labels: labels,
-    //         datasets: [
-    //             {
-    //                 label: "Predicted Price",
-    //                 data: historicData,
-    //                 fill: false,
-    //                 borderColor: "rgba(75, 192, 192, 1)",
-    //                 borderWidth: 1,
-    //             },
-    //             {
-    //                 label: "Predicted Price",
-    //                 data: predictedData,
-    //                 fill: false,
-    //                 borderColor: "rgba(153, 102, 255, 1)",
-    //                 borderWidth: 1,
-    //             }
-    //         ],
-    //     };
-    // }
-    
+	// updatePredictedChart(): void {
+	//     const today = new Date().toISOString().split("T")[0];
+	//     const todayDate = new Date(today);
+
+	//     const labelsSet = new Set(this.predictedStockData.map(data => data.date));
+	//     const labels = Array.from(labelsSet).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+	//     const dataMap = new Map(this.predictedStockData.map(data => [data.date, data.price]));
+	//     const historicData = labels.map(date => new Date(date) <= todayDate ? dataMap.get(date) || null : null);
+	//     const predictedData = labels.map(date => new Date(date) > todayDate ? dataMap.get(date) || null : null);
+
+	//     this.predictionChartData = {
+	//         labels: labels,
+	//         datasets: [
+	//             {
+	//                 label: "Predicted Price",
+	//                 data: historicData,
+	//                 fill: false,
+	//                 borderColor: "rgba(75, 192, 192, 1)",
+	//                 borderWidth: 1,
+	//             },
+	//             {
+	//                 label: "Predicted Price",
+	//                 data: predictedData,
+	//                 fill: false,
+	//                 borderColor: "rgba(153, 102, 255, 1)",
+	//                 borderWidth: 1,
+	//             }
+	//         ],
+	//     };
+	// }
 
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	onStartDateChange(event: any): void {

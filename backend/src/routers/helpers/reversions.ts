@@ -22,7 +22,6 @@ export const meanReversion = (stockList: any[]) => {
 	return result;
 };
 
-
 export const polyRegression = (closePrices: any[], daysInFuture: number) => {
 	const deg = 7;
 	const x = closePrices.map((_, index) => index);
