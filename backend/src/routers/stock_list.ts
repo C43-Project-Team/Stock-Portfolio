@@ -156,3 +156,120 @@ stockListRouter.get(
 		}
 	},
 );
+
+stockListRouter.patch(
+	"/toggle-visibility",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { stock_list_name } = req.body;
+			const owner = req.user?.username;
+
+			if (!owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const updatedStockList =
+				await stockListDatabase.toggleStockListVisibility(
+					owner,
+					stock_list_name,
+				);
+
+			return res.json(updatedStockList);
+		} catch (error) {
+			if (error instanceof Error && error.message.includes("does not exist")) {
+				return res.status(404).json({ error: error.message });
+			}
+			return res
+				.status(500)
+				.json({ error: "Error toggling stock list visibility" });
+		}
+	},
+);
+
+// Add a stock to a list
+stockListRouter.post(
+	"/:stock_list_name/add",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+			const { stock_symbol, num_shares } = req.body;
+
+			if (!owner || !stock_list_name || !stock_symbol || num_shares == null) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await stockListDatabase.addStockToList(
+				owner,
+				stock_list_name,
+				stock_symbol,
+				num_shares,
+			);
+			return res.json({ message: "Stock added to list successfully" });
+		} catch (error) {
+			return res.status(500).json({ error: "Error adding stock to list" });
+		}
+	},
+);
+
+// Remove a number of shares from a stock in a list
+stockListRouter.post(
+	"/:stock_list_name/remove-shares",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+			const { stock_symbol, num_shares } = req.body;
+
+			if (!owner || !stock_list_name || !stock_symbol || num_shares == null) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await stockListDatabase.removeSharesFromStockList(
+				owner,
+				stock_list_name,
+				stock_symbol,
+				num_shares,
+			);
+			return res.json({
+				message: "Shares removed from stock in list successfully",
+			});
+		} catch (error) {
+			if (error instanceof Error && error.message === "Insufficient shares") {
+				return res.status(400).json({ error: error.message });
+			}
+			return res
+				.status(500)
+				.json({ error: "Error removing shares from stock in list" });
+		}
+	},
+);
+
+// Delete a stock from a list
+stockListRouter.post(
+	"/:stock_list_name/delete-stock",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+			const { stock_symbol } = req.body;
+
+			if (!owner || !stock_list_name || !stock_symbol) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await stockListDatabase.deleteStockFromList(
+				owner,
+				stock_list_name,
+				stock_symbol,
+			);
+			return res.json({ message: "Stock deleted from list successfully" });
+		} catch (error) {
+			return res.status(500).json({ error: "Error deleting stock from list" });
+		}
+	},
+);
