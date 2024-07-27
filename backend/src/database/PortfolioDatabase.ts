@@ -199,6 +199,24 @@ class PortfolioDatabase {
 			.where("portfolio_name", "=", portfolio_name)
 			.where("stock_symbol", "=", stock_symbol)
 			.execute();
+
+		// Check if the number of shares is now zero and delete the entry if it is
+		const updatedInvestment = await this.db
+			.selectFrom("investments")
+			.select("num_shares")
+			.where("owner", "=", owner)
+			.where("portfolio_name", "=", portfolio_name)
+			.where("stock_symbol", "=", stock_symbol)
+			.executeTakeFirst();
+
+		if (updatedInvestment && updatedInvestment.num_shares === 0) {
+			await this.db
+				.deleteFrom("investments")
+				.where("owner", "=", owner)
+				.where("portfolio_name", "=", portfolio_name)
+				.where("stock_symbol", "=", stock_symbol)
+				.execute();
+		}
 	}
 
 	async depositCash(
