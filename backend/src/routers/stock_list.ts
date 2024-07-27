@@ -189,6 +189,71 @@ stockListRouter.patch(
 	},
 );
 
+// Get stocks in a list
+stockListRouter.get(
+	"/:username/:stock_list_name/stocks",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const me = req.user?.username;
+			if (!me) {
+				return res.status(400).json({ error: "Username not found" });
+			}
+			const { username, stock_list_name } = req.params;
+
+			if (!username || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const hasAccess = await stockListDatabase.hasAccess(
+				me,
+				username,
+				stock_list_name,
+			);
+			if (!hasAccess) {
+				return res.status(403).json({ error: "Access denied" });
+			}
+
+			const stocks = await stockListDatabase.getStocksInList(
+				username,
+				stock_list_name,
+			);
+			res.json(stocks);
+		} catch (error) {
+			return res.status(500).json({ error: "Error retrieving stocks in list" });
+		}
+	},
+);
+
+// Check if a stock list is private
+stockListRouter.get(
+	"/:username/:stock_list_name/is-private",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { username, stock_list_name } = req.params;
+
+			if (!username || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const stockList = await stockListDatabase.getStockList(
+				username,
+				stock_list_name,
+			);
+			if (!stockList) {
+				return res.status(404).json({ error: "Stock list not found" });
+			}
+
+			return res.json(stockList.private);
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error checking stock list privacy" });
+		}
+	},
+);
+
 // Add a stock to a list
 stockListRouter.post(
 	"/:stock_list_name/add",
@@ -211,6 +276,7 @@ stockListRouter.post(
 			);
 			return res.json({ message: "Stock added to list successfully" });
 		} catch (error) {
+			console.log(error);
 			return res.status(500).json({ error: "Error adding stock to list" });
 		}
 	},

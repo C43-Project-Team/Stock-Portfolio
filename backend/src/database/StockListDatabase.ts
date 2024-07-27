@@ -177,6 +177,7 @@ class StockListDatabase {
 		stock_symbol: string,
 		num_shares: number,
 	): Promise<void> {
+		console.log(stock_symbol);
 		await this.db
 			.insertInto("contains")
 			.values({
@@ -320,6 +321,10 @@ class StockListDatabase {
 			stock_list_owner,
 			stock_list_name,
 		);
+
+		if (user === stock_list_owner) {
+			return true;
+		}
 
 		if (!stockList) {
 			throw new Error("Stock list not found");

@@ -44,6 +44,19 @@ export class ApiService {
 	}
 
 	// biome-ignore lint/suspicious/noExplicitAny: necessary
+	private async patch<T>(endpoint: string, body: any): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			this.http
+				.patch<T>(encodeURI(`${this.API_URL}${endpoint}`), body)
+				.pipe(take(1))
+				.subscribe({
+					next: (res) => resolve(res),
+					error: (err: HttpErrorResponse) => reject(err),
+				});
+		});
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: necessary
 	private async delete<T>(endpoint: string, body: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.http
@@ -152,6 +165,63 @@ export class ApiService {
 	async getPublicStockListCount(): Promise<{ count: number }> {
 		const endpoint = "/stock-list/public/count";
 		return this.get<{ count: number }>(endpoint);
+	}
+
+	async getStocksInList(
+		username: string,
+		stockListName: string,
+	): Promise<Stock[]> {
+		return this.get<Stock[]>(`/stock-list/${username}/${stockListName}/stocks`);
+	}
+
+	async isStockListPrivate(
+		username: string,
+		stockListName: string,
+	): Promise<boolean> {
+		return this.get<boolean>(
+			`/stock-list/${username}/${stockListName}/is-private`,
+		);
+	}
+
+	async addStockToList(
+		stockListName: string,
+		stockSymbol: string,
+		numShares: number,
+	): Promise<void> {
+		return this.post<void>(`/stock-list/${stockListName}/add`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
+		});
+	}
+
+	async removeSharesFromStockList(
+		stockListName: string,
+		stockSymbol: string,
+		numShares: number,
+	): Promise<void> {
+		return this.post<void>(`/stock-list/${stockListName}/remove-shares`, {
+			stock_symbol: stockSymbol,
+			num_shares: numShares,
+		});
+	}
+
+	async deleteStockFromList(
+		stockListName: string,
+		stockSymbol: string,
+	): Promise<void> {
+		return this.post<void>(`/stock-list/${stockListName}/delete-stock`, {
+			stock_symbol: stockSymbol,
+		});
+	}
+
+	async toggleStockListVisibility(
+		stockListName: string,
+		isPrivate: boolean,
+	): Promise<void> {
+		return this.patch<void>("/stock-list/toggle-visibility", {
+			stock_list_name: stockListName,
+			private: isPrivate,
+		});
 	}
 
 	/* PORTFOLIO STUFF */
