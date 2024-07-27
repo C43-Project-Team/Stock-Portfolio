@@ -42,7 +42,7 @@ export type StocksListUpdate = Updateable<StocksListTable>;
 export interface StocksTable {
 	stock_symbol: string;
 	company: string;
-    description: string;
+	description: string;
 }
 
 export type Stocks = Selectable<StocksTable>;
@@ -68,6 +68,7 @@ export interface ReviewsTable {
 	stock_list_owner: string;
 	stock_list_name: string;
 	content: string;
+	rating: number;
 	review_creation_time: ColumnType<Date, string | undefined, never>;
 	review_last_updated: ColumnType<Date, string | undefined, never>;
 }

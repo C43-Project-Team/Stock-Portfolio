@@ -2,6 +2,7 @@ import { stockListDatabase } from "@/database/StockListDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import { re } from "mathjs";
+import { reviewRouter } from "./review";
 
 export const stockListRouter = Router();
 
@@ -327,4 +328,9 @@ stockListRouter.post(
 			return res.status(500).json({ error: "Error sharing stock list" });
 		}
 	},
+);
+
+stockListRouter.use(
+	"/:stock_list_owner/:stock_list_name/reviews",
+	reviewRouter,
 );

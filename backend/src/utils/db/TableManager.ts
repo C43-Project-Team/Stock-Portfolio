@@ -55,7 +55,7 @@ export class TableManager {
 			.createTable("stocks")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.primaryKey())
 			.addColumn("company", "varchar(200)")
-            .addColumn("description", "varchar(5000)")
+			.addColumn("description", "varchar(5000)")
 			.execute();
 
 		await Promise.all([
@@ -74,7 +74,7 @@ export class TableManager {
 			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("volume", "bigint", (col) => col.notNull())
-            .addColumn("return", "decimal(18, 2)")
+			.addColumn("return", "decimal(18, 2)")
 			.addPrimaryKeyConstraint("stocks_daily_pk", [
 				"stock_symbol",
 				"stock_date",
@@ -87,19 +87,17 @@ export class TableManager {
 			)
 			.execute();
 
-        const createMarketIndexTable = db.schema
-            .createTable("market_index_daily")
-            .addColumn("stock_date", "date", (col) => col.notNull())
-            .addColumn("open_price", "decimal(18, 2)", (col) => col.notNull())
-            .addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
-            .addColumn("low", "decimal(18, 2)", (col) => col.notNull())
-            .addColumn("high", "decimal(18, 2)", (col) => col.notNull())
-            .addColumn("volume", "bigint", (col) => col.notNull())
-            .addColumn("return", "decimal(18, 2)")
-            .addPrimaryKeyConstraint("market_index_daily_pk", [
-                "stock_date",
-            ])
-            .execute();
+		const createMarketIndexTable = db.schema
+			.createTable("market_index_daily")
+			.addColumn("stock_date", "date", (col) => col.notNull())
+			.addColumn("open_price", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("volume", "bigint", (col) => col.notNull())
+			.addColumn("return", "decimal(18, 2)")
+			.addPrimaryKeyConstraint("market_index_daily_pk", ["stock_date"])
+			.execute();
 
 		const createReviewsTable = db.schema
 			.createTable("reviews")
@@ -107,6 +105,7 @@ export class TableManager {
 			.addColumn("stock_list_owner", "varchar(20)")
 			.addColumn("stock_list_name", "varchar(30)")
 			.addColumn("content", "varchar(200)")
+			.addColumn("rating", "numeric(2, 1)")
 			.addColumn("review_creation_time", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
@@ -247,7 +246,7 @@ export class TableManager {
 
 		await Promise.all([
 			createStocksDailyTable,
-            createMarketIndexTable,
+			createMarketIndexTable,
 			createReviewsTable,
 			createFriendsTable,
 			createPrivateAccessTable,
