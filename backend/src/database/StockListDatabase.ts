@@ -3,6 +3,7 @@ import type {
 	Contains,
 	Database,
 	PrivateAccess,
+	Review,
 	StocksList,
 } from "../types/db-schema";
 import type { Kysely } from "kysely";
@@ -20,6 +21,18 @@ class StockListDatabase {
 			.selectAll()
 			.where("owner", "=", owner)
 			.execute();
+	}
+
+	async getStockList(
+		owner: string,
+		stock_list_name: string,
+	): Promise<StocksList | null | undefined> {
+		return await this.db
+			.selectFrom("stocks_list")
+			.selectAll()
+			.where("owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
 	}
 
 	async createStockList(
@@ -296,6 +309,133 @@ class StockListDatabase {
 				stock_list_name,
 			})
 			.execute();
+	}
+
+	async hasAccess(
+		user: string,
+		stock_list_owner: string,
+		stock_list_name: string,
+	): Promise<boolean> {
+		const stockList = await this.getStockList(
+			stock_list_owner,
+			stock_list_name,
+		);
+
+		if (!stockList) {
+			throw new Error("Stock list not found");
+		}
+
+		if (!stockList.private) {
+			return true;
+		}
+
+		const access = await this.db
+			.selectFrom("private_access")
+			.selectAll()
+			.where("user", "=", user)
+			.where("stock_list_owner", "=", stock_list_owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
+
+		return !!access;
+	}
+
+	async createReview(
+		reviewer: string,
+		stock_list_owner: string,
+		stock_list_name: string,
+		content: string,
+		rating: number,
+	): Promise<void> {
+		// Check if the user has access to the stock list
+		const hasAccess = await this.hasAccess(
+			reviewer,
+			stock_list_owner,
+			stock_list_name,
+		);
+		if (!hasAccess) {
+			throw new Error("Access denied");
+		}
+
+		await this.db
+			.insertInto("reviews")
+			.values({
+				reviewer,
+				stock_list_owner,
+				stock_list_name,
+				content,
+				rating,
+			})
+			.execute();
+	}
+
+	async updateReview(
+		reviewer: string,
+		stock_list_owner: string,
+		stock_list_name: string,
+		content: string,
+		rating: number,
+	): Promise<void> {
+		// Check if the user has access to the stock list
+		const hasAccess = await this.hasAccess(
+			reviewer,
+			stock_list_owner,
+			stock_list_name,
+		);
+		if (!hasAccess) {
+			throw new Error("Access denied");
+		}
+
+		await this.db
+			.updateTable("reviews")
+			.set({
+				content,
+				rating,
+				// @ts-ignore
+				review_last_updated: new Date(),
+			})
+			.where("reviewer", "=", reviewer)
+			.where("stock_list_owner", "=", stock_list_owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.execute();
+	}
+
+	async deleteReview(
+		reviewer: string,
+		stock_list_owner: string,
+		stock_list_name: string,
+	): Promise<void> {
+		// Ensure that the review belongs to the authenticated user
+		const review = await this.getReview(
+			reviewer,
+			stock_list_owner,
+			stock_list_name,
+		);
+
+		if (!review) {
+			throw new Error("Review not found");
+		}
+
+		await this.db
+			.deleteFrom("reviews")
+			.where("reviewer", "=", reviewer)
+			.where("stock_list_owner", "=", stock_list_owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.execute();
+	}
+
+	async getReview(
+		reviewer: string,
+		stock_list_owner: string,
+		stock_list_name: string,
+	): Promise<Review | null | undefined> {
+		return await this.db
+			.selectFrom("reviews")
+			.selectAll()
+			.where("reviewer", "=", reviewer)
+			.where("stock_list_owner", "=", stock_list_owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.executeTakeFirst();
 	}
 }
 
