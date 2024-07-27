@@ -225,6 +225,36 @@ stockListRouter.get(
 	},
 );
 
+stockListRouter.get(
+	"/:stock_list_name/search-unshared-users",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { stock_list_name } = req.params;
+			const { query } = req.query;
+			const owner = req.user?.username;
+
+			if (!owner) {
+				return res.status(400).json({ error: "Username not found" });
+			}
+
+			if (!query || typeof query !== "string") {
+				return res.status(400).json({ error: "Query parameter is required" });
+			}
+
+			const users = await stockListDatabase.searchUnsharedUsers(
+				owner,
+				stock_list_name,
+				query,
+			);
+
+			res.json({ users });
+		} catch (error) {
+			return res.status(500).json({ error: "Error searching for users" });
+		}
+	},
+);
+
 // Check if a stock list is private
 stockListRouter.get(
 	"/:username/:stock_list_name/is-private",
@@ -358,7 +388,7 @@ stockListRouter.get(
 				owner,
 				stock_list_name,
 			);
-			res.json(sharedUsers);
+			res.json({ users: sharedUsers });
 		} catch (error) {
 			if (error instanceof Error) {
 				return res.status(500).json({ error: error.message });

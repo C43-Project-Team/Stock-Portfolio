@@ -5,6 +5,7 @@ import type {
 	PrivateAccess,
 	Review,
 	StocksList,
+	User,
 } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
@@ -279,6 +280,26 @@ class StockListDatabase {
 			.selectAll()
 			.where("stock_list_owner", "=", owner)
 			.where("stock_list_name", "=", stock_list_name)
+			.execute();
+	}
+
+	async searchUnsharedUsers(
+		owner: string,
+		stockListName: string,
+		query: string,
+	): Promise<User[]> {
+		const sharedUsers = this.db
+			.selectFrom("private_access")
+			.select("user")
+			.where("stock_list_owner", "=", owner)
+			.where("stock_list_name", "=", stockListName);
+
+		return await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "like", `${query}%`)
+			.where((eb) => eb("username", "not in", sharedUsers))
+			.where("username", "<>", owner)
 			.execute();
 	}
 

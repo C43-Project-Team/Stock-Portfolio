@@ -17,6 +17,7 @@ import type { HttpErrorResponse } from "@angular/common/http";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { AuthService } from "@services/auth.service";
 import { ToggleButtonModule } from "primeng/togglebutton";
+import type { User } from "@models/user";
 
 @Component({
 	selector: "app-individual-stock-list",
@@ -41,12 +42,22 @@ export class IndividualStockListComponent implements OnInit {
 	stockListName = "";
 	stocks: Stock[] = [];
 	displayAddStockDialog = false;
+	displayShareStockListDialog = false;
 	buyStockSymbol: Stock = { stock_symbol: "", company: "", description: "" };
 	buyNumShares = 0;
 	filteredStocks: Stock[] = [];
 	isPrivate = false;
 	isOwner = false;
 	authenticatedUser = "";
+	sharedUsers: User[] = [];
+	filteredUsers: User[] = [];
+	shareWithUser: User = {
+		username: "",
+		password_hash: "",
+		profile_picture: "",
+		full_name: "",
+		user_created_at: new Date(),
+	};
 
 	constructor(
 		private route: ActivatedRoute,
@@ -65,7 +76,11 @@ export class IndividualStockListComponent implements OnInit {
 			this.authService.getCredentials().subscribe((user) => {
 				this.authenticatedUser = user.username;
 				this.isOwner = this.authenticatedUser === this.username;
-				this.loadStockList();
+				this.loadStockList().then(() => {
+					if (this.isOwner && this.isPrivate) {
+						this.loadSharedUsers();
+					}
+				});
 			});
 		});
 	}
@@ -77,11 +92,20 @@ export class IndividualStockListComponent implements OnInit {
 				this.username,
 				this.stockListName,
 			);
-			console.log(this.stocks);
 			this.isPrivate = await this.apiService.isStockListPrivate(
 				this.username,
 				this.stockListName,
 			);
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async loadSharedUsers() {
+		try {
+			const result = await this.apiService.getSharedUsers(this.stockListName);
+			this.sharedUsers = result.users;
+			console.log(this.sharedUsers);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -93,11 +117,14 @@ export class IndividualStockListComponent implements OnInit {
 		this.buyNumShares = 0;
 	}
 
+	showShareStockListDialog() {
+		this.displayShareStockListDialog = true;
+		this.shareWithUser.username = "";
+	}
+
 	async addStock(stock_symbol?: string, num_shares?: number) {
 		const stock_symbol_param = stock_symbol || this.buyStockSymbol.stock_symbol;
 		const num_shares_param = num_shares || this.buyNumShares;
-
-		console.log(this.buyStockSymbol);
 
 		try {
 			await this.apiService.addStockToList(
@@ -160,6 +187,38 @@ export class IndividualStockListComponent implements OnInit {
 		try {
 			const results = await this.apiService.searchStocks(event.query);
 			this.filteredStocks = results.company;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async searchUsers(event: any) {
+		try {
+			const results = await this.apiService.searchUnsharedUsers(
+				this.stockListName,
+				event.query,
+			);
+			console.log(results);
+			this.filteredUsers = results.users;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async shareStockList() {
+		if (!this.shareWithUser) {
+			this.logError("Please select a user to share with.");
+			return;
+		}
+
+		try {
+			await this.apiService.shareStockList(
+				this.stockListName,
+				this.shareWithUser.username,
+			);
+			this.logSuccess("Success", "Stock list shared successfully");
+			this.loadSharedUsers();
+			this.shareWithUser.username = "";
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}

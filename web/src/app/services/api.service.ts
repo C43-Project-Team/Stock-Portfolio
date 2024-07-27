@@ -183,6 +183,21 @@ export class ApiService {
 		);
 	}
 
+	async searchUnsharedUsers(
+		stockListName: string,
+		query: string,
+	): Promise<{ users: User[] }> {
+		return this.get<{ users: User[] }>(
+			`/stock-list/${stockListName}/search-unshared-users?query=${query}`,
+		);
+	}
+
+	async getSharedUsers(stockListName: string): Promise<{ users: User[] }> {
+		return this.get<{ users: User[] }>(
+			`/stock-list/${stockListName}/shared-users`,
+		);
+	}
+
 	async addStockToList(
 		stockListName: string,
 		stockSymbol: string,
@@ -221,6 +236,12 @@ export class ApiService {
 		return this.patch<void>("/stock-list/toggle-visibility", {
 			stock_list_name: stockListName,
 			private: isPrivate,
+		});
+	}
+
+	async shareStockList(stockListName: string, username: string): Promise<void> {
+		return this.post<void>(`/stock-list/${stockListName}/share`, {
+			user: username,
 		});
 	}
 
