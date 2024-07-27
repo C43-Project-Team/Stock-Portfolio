@@ -205,4 +205,9 @@ export class ApiService {
 			num_shares: numShares,
 		});
 	}
+
+	/* STOCK STUFF */
+	getStockPrice(stockSymbol: string): Promise<{ price: number }> {
+		return this.get<{ price: number }>(`/stock/${stockSymbol}/price`);
+	}
 }

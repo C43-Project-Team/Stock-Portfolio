@@ -1,4 +1,4 @@
-<p-toast />
+<p-toast></p-toast>
 <div class="container mx-auto p-4 pt-12">
   <div class="flex items-center mb-4">
     <div>
@@ -29,9 +29,9 @@
         <td>{{ investment.num_shares }}</td>
         <td>
           <div class="flex gap-x-2">
+              <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
+            <button pButton type="button" icon="pi pi-plus" class="p-button-success p-button-rounded" (click)="showBuySharesDialog(investment.stock_symbol)"></button>
             <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded" (click)="goToStock(investment.stock_symbol)"></button>
-            <button pButton type="button" label="Buy" class="p-button-success" (click)="showBuySharesDialog(investment.stock_symbol)"></button>
-            <button pButton type="button" label="Sell" class="p-button-danger" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
           </div>
         </td>
       </tr>
@@ -54,14 +54,23 @@
     <div class="p-fluid">
       <div class="p-field mb-4">
         <label for="buyStockSymbol" class="block text-sm font-medium text-gray-700">Stock Symbol</label>
-        <input id="buyStockSymbol" type="text" pInputText [(ngModel)]="buyStockSymbol" class="mt-1 block w-full" />
+        <input id="buyStockSymbol" type="text" pInputText [(ngModel)]="buyStockSymbol" (ngModelChange)="calculateTotalCost()" class="mt-1 block w-full" />
       </div>
       <div class="p-field mb-4">
         <label for="buyNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
-        <input id="buyNumShares" type="number" pInputText [(ngModel)]="buyNumShares" class="mt-1 block w-full" />
+        <input id="buyNumShares" type="number" pInputText [(ngModel)]="buyNumShares" (ngModelChange)="calculateTotalCost()" class="mt-1 block w-full" />
+      </div>
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold">Current Cash: {{ portfolioCash | currency }}</h3>
+        <h3 class="text-lg">
+          Total Cost: 
+          <span [ngClass]="{ 'text-green-600': hasEnoughFunds, 'text-red-600': !hasEnoughFunds }">
+            {{ totalCost | currency }}
+          </span>
+        </h3>
       </div>
       <div class="text-right">
-        <p-button label="Buy" class="p-button-success" (click)="buyShares()" [disabled]="!buyStockSymbol || !buyNumShares"></p-button>
+        <p-button label="Buy" class="p-button-success" (click)="buyShares()" [disabled]="!buyStockSymbol || !buyNumShares || !hasEnoughFunds"></p-button>
       </div>
     </div>
   </p-dialog>

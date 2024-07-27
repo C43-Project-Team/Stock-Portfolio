@@ -61,6 +61,18 @@ class StocksDatabase {
 		return company.length > 0 ? company : null;
 	}
 
+	async getRecentStockPrice(stock_symbol: string): Promise<{ close_price: number } | null> {
+		const recentPrice = await this.db
+			.selectFrom("stocks_daily")
+			.select("close_price")
+			.where("stock_symbol", "=", stock_symbol)
+			.orderBy("stock_date", "desc")
+			.limit(1)
+			.executeTakeFirst();
+
+		return recentPrice || null;
+	}
+
 	// async insertStock()
 }
 

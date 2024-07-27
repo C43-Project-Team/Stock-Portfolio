@@ -13,6 +13,8 @@ import { DialogModule } from "primeng/dialog";
 import { InputTextModule } from "primeng/inputtext";
 import { TableModule } from "primeng/table";
 import { ToastModule } from "primeng/toast";
+import { Subject } from "rxjs";
+import { DataViewModule } from "primeng/dataview";
 
 @Component({
 	selector: "app-indivivual-portfolio",
@@ -25,6 +27,7 @@ import { ToastModule } from "primeng/toast";
 		CommonModule,
 		InputTextModule,
 		ToastModule,
+		DataViewModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
@@ -41,8 +44,13 @@ export class IndivivualPortfolioComponent implements OnInit {
 	depositAmount = 0;
 	buyStockSymbol = "";
 	buyNumShares = 0;
+	buyPricePerShare = 0;
 	sellStockSymbol = "";
 	sellNumShares = 0;
+	sellPricePerShare = 0;
+	totalCost = 0;
+	hasEnoughFunds = true;
+	debouncedStockSymbol = new Subject<string>();
 
 	constructor(
 		private route: ActivatedRoute,
@@ -67,11 +75,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 			const portfolio = await this.apiService.getPortfolio(this.portfolioName);
 			this.portfolioCash = portfolio.cash;
 		} catch (error) {
-			this.messageService.add({
-				severity: "error",
-				summary: "Error",
-				detail: (error as HttpErrorResponse).error.error,
-			});
+			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
 
@@ -81,11 +85,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 				this.portfolioName,
 			);
 		} catch (error) {
-			this.messageService.add({
-				severity: "error",
-				summary: "Error",
-				detail: (error as HttpErrorResponse).error.error,
-			});
+			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
 
@@ -96,11 +96,15 @@ export class IndivivualPortfolioComponent implements OnInit {
 	showBuyNewStockDialog() {
 		this.displayBuySharesDialog = true;
 		this.buyStockSymbol = "";
+		this.buyNumShares = 0;
+		this.totalCost = 0;
 	}
 
 	showBuySharesDialog(stockSymbol: string) {
 		this.displayBuySharesDialog = true;
 		this.buyStockSymbol = stockSymbol;
+		this.buyNumShares = 0;
+		this.totalCost = 0;
 	}
 
 	showSellSharesDialog(stockSymbol: string) {
@@ -150,6 +154,25 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.loadPortfolio();
 			this.loadInvestments();
 		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async calculateTotalCost() {
+		if (!this.buyStockSymbol || !this.buyNumShares) {
+			this.totalCost = 0;
+			this.hasEnoughFunds = true;
+			return;
+		}
+
+		try {
+			const response = await this.apiService.getStockPrice(this.buyStockSymbol);
+			this.buyPricePerShare = response.price;
+			this.totalCost = this.buyPricePerShare * this.buyNumShares;
+			this.hasEnoughFunds = this.portfolioCash >= this.totalCost;
+		} catch (error) {
+			this.totalCost = 0;
+			this.hasEnoughFunds = true;
 			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}

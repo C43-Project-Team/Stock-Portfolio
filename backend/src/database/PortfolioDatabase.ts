@@ -119,8 +119,7 @@ class PortfolioDatabase {
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
-				// @ts-ignore
-				cash: eb.bxp(`cash - ${totalCost}`),
+				cash: eb("cash", "-", totalCost),
 			}))
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
@@ -137,8 +136,7 @@ class PortfolioDatabase {
 			})
 			.onConflict((oc) =>
 				oc.columns(["owner", "portfolio_name", "stock_symbol"]).doUpdateSet({
-					// @ts-ignore
-					num_shares: (eb) => eb.bxp(`num_shares + ${num_shares}`),
+					num_shares: (eb) => eb("investments.num_shares", "+", num_shares),
 				}),
 			)
 			.execute();
@@ -185,8 +183,7 @@ class PortfolioDatabase {
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
-				// @ts-ignore
-				cash: eb.bxp(`cash + ${totalProceeds}`),
+				cash: eb("cash", "+", totalProceeds),
 			}))
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
@@ -196,8 +193,7 @@ class PortfolioDatabase {
 		await this.db
 			.updateTable("investments")
 			.set((eb) => ({
-				// @ts-ignore
-				num_shares: eb.bxp(`num_shares - ${num_shares}`),
+				num_shares: eb("investments.num_shares", "-", num_shares),
 			}))
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
@@ -213,8 +209,7 @@ class PortfolioDatabase {
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
-				// @ts-ignore
-				cash: eb.bxp(`cash + ${amount}`),
+				cash: eb("cash", "+", amount),
 			}))
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)

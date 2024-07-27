@@ -1,8 +1,9 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import { stockDatabase } from "../database/StocksDatabase";
 import type { StocksDaily, StocksTable } from "../types/db-schema";
 import { meanReversion, polyRegression } from "./helpers/reversions";
 import "dotenv/config";
+import { verifyToken, AuthedRequest } from "@/middleware/auth";
 
 export const stockRouter = Router();
 
@@ -146,3 +147,27 @@ stockRouter.get("/stock-company/:ticker", async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 });
+
+stockRouter.get(
+	"/:stock_symbol/price",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { stock_symbol } = req.params;
+
+			if (!stock_symbol) {
+				return res.status(400).json({ error: "Stock symbol is required" });
+			}
+
+			const recentPrice = await stockDatabase.getRecentStockPrice(stock_symbol);
+
+			if (!recentPrice) {
+				return res.status(404).json({ error: "Stock not found" });
+			}
+
+			res.json({ price: recentPrice.close_price });
+		} catch (error) {
+			return res.status(500).json({ error: "Error retrieving stock price" });
+		}
+	},
+);
