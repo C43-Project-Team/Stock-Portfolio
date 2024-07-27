@@ -49,8 +49,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	sellNumShares = 0;
 	sellPricePerShare = 0;
 	totalCost = 0;
+	totalGain = 0;
 	hasEnoughFunds = true;
-	debouncedStockSymbol = new Subject<string>();
 
 	constructor(
 		private route: ActivatedRoute,
@@ -110,6 +110,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	showSellSharesDialog(stockSymbol: string) {
 		this.displaySellSharesDialog = true;
 		this.sellStockSymbol = stockSymbol;
+		this.sellNumShares = 0;
+		this.totalGain = 0;
 	}
 
 	async depositMoney() {
@@ -173,6 +175,24 @@ export class IndivivualPortfolioComponent implements OnInit {
 		} catch (error) {
 			this.totalCost = 0;
 			this.hasEnoughFunds = true;
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async calculateTotalGain() {
+		if (!this.sellStockSymbol || !this.sellNumShares) {
+			this.totalGain = 0;
+			return;
+		}
+
+		try {
+			const response = await this.apiService.getStockPrice(
+				this.sellStockSymbol,
+			);
+			this.sellPricePerShare = response.price;
+			this.totalGain = this.sellPricePerShare * this.sellNumShares;
+		} catch (error) {
+			this.totalGain = 0;
 			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
