@@ -10,6 +10,7 @@ import { StocksComponent } from "@pages/stocks/stocks.component";
 import { UserComponent } from "@pages/user/user.component";
 import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stock-lists.component";
 import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivivual-portfolio.component";
+import { IndividualStockListComponent } from "@pages/individual-stock-list/individual-stock-list.component";
 
 export const routes: Routes = [
 	{ path: "", component: HomeComponent },
@@ -37,7 +38,15 @@ export const routes: Routes = [
 		path: "stock-lists",
 		component: LayoutComponent,
 		canActivate: [authGuard],
-		children: [{ path: "public", component: PublicStockListsComponent }],
+		children: [
+			{ path: "public", component: PublicStockListsComponent },
+			{
+				path: "user/:username",
+				children: [
+					{ path: ":stock_list_name", component: IndividualStockListComponent },
+				],
+			},
+		],
 	},
 	{ path: "stocks/:ticker", component: StocksComponent },
 	{ path: "**", redirectTo: "" },

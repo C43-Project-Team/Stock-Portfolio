@@ -252,8 +252,8 @@ export class UserComponent implements OnInit {
 		});
 	}
 
-	goToStock(stockListName: string) {
-		this.router.navigate(["/stocks", stockListName]);
+	goToStockList(stockListName: string) {
+		this.router.navigate(["/stock-lists/user/", this.username, stockListName]);
 	}
 
 	goToPortfolio(portfolioName: string) {
