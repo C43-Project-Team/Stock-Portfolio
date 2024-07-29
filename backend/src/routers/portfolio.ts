@@ -2,6 +2,7 @@ import { portfolioDatabase } from "@/database/PortfolioDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import "dotenv/config";
+import { re } from "mathjs";
 
 export const portfolioRouter = Router();
 
@@ -208,3 +209,39 @@ portfolioRouter.post(
 		}
 	},
 );
+
+portfolioRouter.post("/portfolio-beta", async (req, res) => {
+	const { owner, portfolio_name } = req.body;
+	try {
+		const portfolioBeta = await portfolioDatabase.portfolioBeta(
+			owner,
+			portfolio_name,
+		);
+		res.json({ portfolio_beta: portfolioBeta });
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ error: "Error retrieving portfolio beta" });
+	}
+});
+
+portfolioRouter.post("/stock-beta", async (req, res) => {
+	const { stock_ticker } = req.body;
+	try {
+		const stockBeta = await portfolioDatabase.stockBeta(stock_ticker);
+		res.json({ stock_beta: stockBeta });
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ error: "Error retrieving stock beta" });
+	}
+});
+
+portfolioRouter.post("/stock-correlations", async (req, res) => {
+	const { stocks } = req.body;
+	try {
+		const stockCorrelations = await portfolioDatabase.stockCorrelations(stocks);
+		res.json(stockCorrelations);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ error: "Error retrieving stock correlations" });
+	}
+});

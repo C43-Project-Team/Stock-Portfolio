@@ -1,6 +1,6 @@
 import { db } from "@utils/db/db-controller";
 import type { Database, Portfolio, Investments } from "../types/db-schema";
-import type { Kysely } from "kysely";
+import { sql, type Kysely } from "kysely";
 
 class PortfolioDatabase {
 	private db: Kysely<Database>;
@@ -232,6 +232,36 @@ class PortfolioDatabase {
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
 			.execute();
+	}
+
+	async portfolioBeta(owner: string, portfolio_name: string): Promise<number> {
+		const query = sql`SELECT public.calculate_portfolio_beta(${owner}, ${portfolio_name})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { calculate_portfolio_beta: number })
+			.calculate_portfolio_beta;
+	}
+
+	async stockBeta(stock_ticker: string): Promise<number> {
+		const query = sql`SELECT public.calculate_stock_beta(${stock_ticker});`;
+		const res = (await query.execute(db)) as unknown as {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			rows: any;
+			calculate_stock_beta: number;
+		};
+		return (res.rows[0] as { calculate_stock_beta: number })
+			.calculate_stock_beta;
+	}
+
+	async stockCorrelations(
+		stock_symbols: string[],
+	): Promise<{ stock1: string; stock2: string; correlation: number }[]> {
+		const query = sql`SELECT * FROM public.correlation_matrix(${stock_symbols})`;
+		const res = (await query.execute(this.db)) as unknown as {
+			stock1: string;
+			stock2: string;
+			correlation: number;
+		}[];
+		return res;
 	}
 
 	// TODO: Transfer money between portfolios
