@@ -45,7 +45,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 	displayBuySharesDialog = false;
 	displaySellSharesDialog = false;
 	depositAmount = 0;
-	buyStockSymbol = "";
+	buyStockSymbol: any = "";
 	buyNumShares = 0;
 	buyPricePerShare = 0;
 	sellStockSymbol = "";
@@ -136,7 +136,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 		try {
 			await this.apiService.buyShares(
 				this.portfolioName,
-				this.buyStockSymbol,
+				this.buyStockSymbol.stock_symbol,
 				this.buyNumShares,
 			);
 			this.logSuccess("Success", "Shares bought successfully");
@@ -165,14 +165,14 @@ export class IndivivualPortfolioComponent implements OnInit {
 	}
 
 	async calculateTotalCost() {
-		if (!this.buyStockSymbol || !this.buyNumShares) {
+		if (!this.buyStockSymbol.stock_symbol || !this.buyNumShares) {
 			this.totalCost = 0;
 			this.hasEnoughFunds = true;
 			return;
 		}
 
 		try {
-			const response = await this.apiService.getStockPrice(this.buyStockSymbol);
+			const response = await this.apiService.getStockPrice(this.buyStockSymbol.stock_symbol);
 			this.buyPricePerShare = response.price;
 			this.totalCost = this.buyPricePerShare * this.buyNumShares;
 			this.hasEnoughFunds = this.portfolioCash >= this.totalCost;
