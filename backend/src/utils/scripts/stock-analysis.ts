@@ -121,3 +121,28 @@
 // END;
 
 ////////////////////////////////////////////////////////////////////////
+
+// CORRELATION MATRIX
+
+// BEGIN
+//     RETURN QUERY
+//     WITH CombinedData AS (
+//         SELECT
+//             r1.stock_symbol::TEXT AS stock1,
+//             r2.stock_symbol::TEXT AS stock2,
+//             r1.return AS return1,
+//             r2.return AS return2
+//         FROM stocks_daily r1
+//         JOIN stocks_daily r2
+//         ON r1.stock_date = r2.stock_date
+//         WHERE r1.stock_symbol = ANY(stock_symbols) AND r2.stock_symbol = ANY(stock_symbols)
+//     )
+//     SELECT
+//         cd.stock1,
+//         cd.stock2,
+//         CORR(cd.return1, cd.return2) AS correlation
+//     FROM CombinedData cd
+//     GROUP BY cd.stock1, cd.stock2
+//     HAVING cd.stock1 < cd.stock2;
+// END;
+

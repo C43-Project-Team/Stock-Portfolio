@@ -256,15 +256,36 @@ class PortfolioDatabase {
 		stock_symbols: string[],
 	): Promise<{ stock1: string; stock2: string; correlation: number }[]> {
 		const query = sql`SELECT * FROM public.correlation_matrix(${stock_symbols})`;
-		const res = (await query.execute(this.db)) as unknown as {
-			stock1: string;
-			stock2: string;
-			correlation: number;
-		}[];
-		return res;
+		const { rows } = await query.execute(this.db) as { rows: { stock1: string; stock2: string; correlation: number }[] };
+		return rows;
 	}
 
-	// TODO: Transfer money between portfolios
+    async stockCoffectientOfVariation(stock_symbol: string): Promise<number> {
+        const query = sql`SELECT public.cov(${stock_symbol})`;
+        const res = await query.execute(this.db);
+		return (res.rows[0] as { cov: number }).cov;
+    }
+
+	// TODO: Transfer money between portfolios - DONE!!!!!!!!!!!
+    async interportfolioCashTransfer(owner: string, sending_portfolio: string, receiving_portfolio: string, amount: number) {
+        await this.db
+            .updateTable("portfolios")
+            .set((eb) => ({
+                cash: eb("cash", "-", amount),
+            }))
+            .where("owner", "=", owner)
+            .where("portfolio_name", "=", sending_portfolio)
+            .execute();
+
+        await this.db
+            .updateTable("portfolios")
+            .set((eb) => ({
+                cash: eb("cash", "+", amount),
+            }))
+            .where("owner", "=", owner)
+            .where("portfolio_name", "=", receiving_portfolio)
+            .execute();
+    }
 }
 
 export const portfolioDatabase = new PortfolioDatabase();

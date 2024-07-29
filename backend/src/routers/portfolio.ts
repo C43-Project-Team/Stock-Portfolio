@@ -3,6 +3,7 @@ import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import "dotenv/config";
 import { re } from "mathjs";
+import { REPLCommand } from "repl";
 
 export const portfolioRouter = Router();
 
@@ -210,13 +211,18 @@ portfolioRouter.post(
 	},
 );
 
-portfolioRouter.post("/portfolio-beta", async (req, res) => {
+portfolioRouter.post("/portfolio-beta", async (req: AuthedRequest, res: Response) => {
 	const { owner, portfolio_name } = req.body;
 	try {
 		const portfolioBeta = await portfolioDatabase.portfolioBeta(
 			owner,
 			portfolio_name,
 		);
+
+        if (!owner || !portfolio_name) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
 		res.json({ portfolio_beta: portfolioBeta });
 	} catch (error) {
 		console.log(error);
@@ -224,10 +230,15 @@ portfolioRouter.post("/portfolio-beta", async (req, res) => {
 	}
 });
 
-portfolioRouter.post("/stock-beta", async (req, res) => {
+portfolioRouter.post("/stock-beta", async (req: AuthedRequest, res: Response) => {
 	const { stock_ticker } = req.body;
 	try {
 		const stockBeta = await portfolioDatabase.stockBeta(stock_ticker);
+
+        if (!stock_ticker) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
 		res.json({ stock_beta: stockBeta });
 	} catch (error) {
 		console.log(error);
@@ -235,13 +246,51 @@ portfolioRouter.post("/stock-beta", async (req, res) => {
 	}
 });
 
-portfolioRouter.post("/stock-correlations", async (req, res) => {
+portfolioRouter.post("/stock-correlations", async (req: AuthedRequest, res: Response) => {
 	const { stocks } = req.body;
 	try {
 		const stockCorrelations = await portfolioDatabase.stockCorrelations(stocks);
-		res.json(stockCorrelations);
+
+        if (!stocks) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
+		res.json({ stock_correlations: stockCorrelations });
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({ error: "Error retrieving stock correlations" });
 	}
+});
+
+portfolioRouter.post("/stock-cov", async (req: AuthedRequest, res: Response) => {
+    const { stock_symbol } = req.body;
+    try {
+        const stockCov = await portfolioDatabase.stockCoffectientOfVariation(stock_symbol);
+
+        if (!stock_symbol) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
+        res.json({ stock_cov: stockCov });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Error retrieving stock cov" });
+    }
+});
+
+portfolioRouter.post("/portfolio-cash-transfer", verifyToken, async (req: AuthedRequest, res: Response) => {
+    const owner = req.user?.username;
+    const { from_portfolio_name, to_portfolio_name, amount } = req.body;
+
+    if (!owner || !from_portfolio_name || !to_portfolio_name || amount == null) {
+        return res.status(400).json({ error: "Missing required parameters" });
+    }
+
+    try {
+        await portfolioDatabase.interportfolioCashTransfer(owner, from_portfolio_name, to_portfolio_name, amount);
+        return res.json({ message: "Cash transferred successfully" });
+    } catch (error) {
+        return res.status(500).json({ error: "Error transferring cash" });
+    }
+    
 });
