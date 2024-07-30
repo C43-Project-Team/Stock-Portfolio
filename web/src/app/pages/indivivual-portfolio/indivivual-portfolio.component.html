@@ -18,34 +18,40 @@
 
   <p-table [value]="investments" class="p-datatable-sm">
     <ng-template pTemplate="header">
-      <tr>
-        <th>Stock Symbol</th>
-        <th>Number of Shares</th>
-        <th>Coefficient of Variation</th>
-        <th>Stock Beta</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+            <th>Stock Symbol</th>
+            <th>Number of Shares</th>
+            <th>Coefficient of Variation</th>
+            <th>Stock Beta</th>
+            <th>Actions</th>
+        </tr>
     </ng-template>
     <ng-template pTemplate="body" let-investment>
-      <tr>
-        <td>{{ investment.stock_symbol }}</td>
-        <td>{{ investment.num_shares }}</td>
-        <td [ngClass]="{
-            'text-green-600': investment.stock_cov < 10,
-            'text-yellow-600': investment.stock_cov >= 10 && investment.stock_cov <= 30,
-            'text-red-600': investment.stock_cov > 30
-        }">{{ investment.stock_cov + ' %'}}</td>
-        <td>{{ investment.stock_beta }}</td>
-        <td>
-          <div class="flex gap-x-2">
-            <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
-            <button pButton type="button" icon="pi pi-plus" class="p-button-success p-button-rounded" (click)="showBuySharesDialog(investment.stock_symbol)"></button>
-            <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded" (click)="goToStock(investment.stock_symbol)"></button>
-          </div>
-        </td>
-      </tr>
+        <tr>
+            <td>{{ investment.stock_symbol }}</td>
+            <td>{{ investment.num_shares }}</td>
+            <td [ngClass]="{
+                'text-green-600': investment.stock_cov < 10,
+                'text-yellow-600': investment.stock_cov >= 10 && investment.stock_cov <= 30,
+                'text-red-600': investment.stock_cov > 30
+            }">{{ investment.stock_cov + ' %'}}</td>
+            <td>{{ investment.stock_beta }}</td>
+            <td>
+                <div class="flex gap-x-2">
+                    <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>
+                    <button pButton type="button" icon="pi pi-plus" class="p-button-success p-button-rounded" (click)="showBuySharesDialog(investment.stock_symbol)"></button>
+                    <button pButton type="button" icon="pi pi-arrow-right" class="p-button-rounded" (click)="goToStock(investment.stock_symbol)"></button>
+                </div>
+            </td>
+        </tr>
     </ng-template>
   </p-table>
+
+  <div class="mt-10 pt-3 flex">
+    <h3 class="text-xl font-bold mb-4 items-center">Stocks Correlation Matrix</h3>
+    <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
+    <app-stock-matrix [correlations]="correlations"></app-stock-matrix>
+</div>
 
   <p-dialog header="Deposit Money" [(visible)]="displayDepositDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" [style]="{ width: '20rem' }" [baseZIndex]="10000">
     <div class="p-fluid">
