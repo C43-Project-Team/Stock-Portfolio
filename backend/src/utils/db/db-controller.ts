@@ -10,7 +10,7 @@ const numericTypeId = 1700;
 const dateTypeId = 1082;
 const boolTypeId = 16;
 
-function parseBool(value) {
+function parseBool(value: string) {
 	return (
 		value === "TRUE" ||
 		value === "t" ||

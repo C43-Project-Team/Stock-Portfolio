@@ -1,8 +1,11 @@
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const mean = (stockList: any[]) => {
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	const sum = stockList.reduce((a: any, b: any) => a + b, 0);
 	return sum / stockList.length;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const std = (stockList: any[]): number => {
 	const meanValue = mean(stockList);
 	const variance =
@@ -15,7 +18,8 @@ export const std = (stockList: any[]): number => {
 };
 
 export const rollingMeanAndStd = (
-	stockList: string | any[],
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	stockList: any[],
 	windowSize: number,
 ) => {
 	const means = [];
@@ -34,7 +38,7 @@ export const rollingMeanAndStd = (
 };
 
 export const variance = (prices: number[]): number => {
-	const meanPrice = mean(price);
+	const meanPrice = mean(prices);
 	const sum = prices
 		.map((price) => (price - meanPrice) ** 2)
 		.reduce((a: number, b: number) => a + b, 0);

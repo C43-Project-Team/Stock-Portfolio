@@ -63,6 +63,19 @@ export type StocksDaily = Selectable<StocksDailyTable>;
 export type NewStocksDaily = Insertable<StocksDailyTable>;
 export type StocksDailyUpdate = Updateable<StocksDailyTable>;
 
+export interface MarketIndexDailyTable {
+	stock_date: ColumnType<Date, string | undefined, never>;
+	open_price: number;
+	close_price: number;
+	low: number;
+	high: number;
+	volume: number;
+}
+
+export type MarketIndexDaily = Selectable<MarketIndexDailyTable>;
+export type NewMarketIndexDaily = Insertable<MarketIndexDailyTable>;
+export type MarketIndexDailyUpdate = Updateable<MarketIndexDailyTable>;
+
 export interface ReviewsTable {
 	reviewer: string;
 	stock_list_owner: string;

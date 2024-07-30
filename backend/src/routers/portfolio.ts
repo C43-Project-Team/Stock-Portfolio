@@ -2,8 +2,6 @@ import { portfolioDatabase } from "@/database/PortfolioDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import "dotenv/config";
-import { re } from "mathjs";
-import { REPLCommand } from "repl";
 
 export const portfolioRouter = Router();
 

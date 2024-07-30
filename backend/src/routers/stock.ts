@@ -1,29 +1,13 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import { Router, Response } from "express";
 import { stockDatabase } from "../database/StocksDatabase";
 import type { StocksDaily, StocksTable } from "../types/db-schema";
 import { meanReversion, polyRegression } from "./helpers/reversions";
 import "dotenv/config";
+// biome-ignore lint/style/useImportType: <explanation>
 import { verifyToken, AuthedRequest } from "@/middleware/auth";
 
 export const stockRouter = Router();
-
-const processStockList = (stockList: StocksDaily[], predictAmount: number) => {
-	// Convert stock_date to ISO string
-	for (const stock of stockList) {
-		stock.stock_date = new Date(stock.stock_date)
-			.toISOString()
-			.substring(0, 10);
-	}
-
-	// Calculate the mean reversion and polynomial regression
-	const processedData = meanReversion(stockList);
-
-	const closePrices = stockList.map((d) => d.close_price);
-	const daysAhead = predictAmount;
-	const predictedPrices = polyRegression(closePrices, daysAhead);
-
-	return { processedData, predictedPrices };
-};
 
 // Endpoint to get stock prediction by ticker and on long into future time period you want to predict
 // Excludes todays date in the return data
@@ -55,23 +39,35 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 
 		const closePrices = stockList.map((stock) => stock.close_price);
 		const predictedPrices = polyRegression(closePrices, predictAmount);
-		const monthData = stockList
-			.slice(stockList.length - 100, stockList.length)
-			.map((stock) => ({ date: stock.stock_date, price: stock.close_price }));
+		// const monthData = stockList
+		// 	.slice(stockList.length - 100, stockList.length)
+		// 	.map((stock) => ({ date: stock.stock_date, price: stock.close_price }));
+
+        type StockDate = Date | string;
+
+        const monthData = stockList
+        .slice(stockList.length - 100, stockList.length)
+        .map((stock) => {
+            const date: StockDate = stock.stock_date;
+            return { date, price: stock.close_price };
+        });
 
 		const predictedData = [...monthData];
 		for (let i = 0; i < predictAmount; i++) {
-			const date = new Date(startDate);
+			const date: Date | string = new Date(startDate);
 			date.setDate(date.getDate() + i + 1);
+			const formattedDate = date.toISOString().split("T")[0];
 			predictedData.push({
-				date: date.toISOString().split("T")[0],
-				price: predictedPrices[i],
+				// date: new Date(formattedDate) as string,
+				date: formattedDate as unknown as Date,
+                price: predictedPrices[i],
 			});
 		}
 
 		return res.json({ predictedData });
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return res.status(500).json({ error: (error as any).message });
 	}
 });
 
@@ -80,7 +76,7 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 // stockRouter.post("/:ticker", async (req, res) => {
 stockRouter.post("/", async (req, res) => {
 	try {
-		const { ticker } = req.query;
+		const ticker = req.query.ticker as string;
 		const { startDate } = req.body;
 		const endDate = new Date().toISOString().substring(0, 10);
 
@@ -100,7 +96,8 @@ stockRouter.post("/", async (req, res) => {
 
 		return res.json({ stockList });
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return res.status(500).json({ error: (error as any).message });
 	}
 });
 
@@ -114,14 +111,15 @@ stockRouter.get("/stock-companies", async (req, res) => {
 
 		return res.json({ companyList });
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return res.status(500).json({ error: (error as any).message });
 	}
 });
 
 stockRouter.get("/similar/stock-company/:ticker", async (req, res) => {
 	try {
 		const { ticker } = req.params;
-		let company: StocksTable[] = [];
+		let company: StocksTable[] | null = null;
 		if (ticker === "*") {
 			company = await stockDatabase.getAllStocksCompany();
 		} else {
@@ -136,7 +134,8 @@ stockRouter.get("/similar/stock-company/:ticker", async (req, res) => {
 
 		return res.json({ company });
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return res.status(500).json({ error: (error as any).message });
 	}
 });
 
@@ -151,7 +150,8 @@ stockRouter.get("/stock-company/:ticker", async (req, res) => {
 
 		return res.json({ company });
 	} catch (error) {
-		return res.status(500).json({ error: error.message });
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		return res.status(500).json({ error: (error as any).message });
 	}
 });
 

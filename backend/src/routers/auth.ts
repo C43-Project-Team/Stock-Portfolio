@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import multer from "multer";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import path from "path";
 import { fileURLToPath } from "node:url";
 

@@ -1,4 +1,5 @@
 import Docker from "dockerode";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import * as path from "path";
 import tar from "tar-fs";
 
@@ -64,13 +65,14 @@ async function createDirectoryInContainer(
 
 	const stream = await exec.start();
 	return new Promise<void>((resolve, reject) => {
-		stream.on("data", (data) => {
+		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		stream.on("data", (data: { toString: () => any }) => {
 			console.log(data.toString());
 		});
 		stream.on("end", () => {
 			resolve();
 		});
-		stream.on("error", (err) => {
+		stream.on("error", (err: any) => {
 			reject(err);
 		});
 	});
@@ -113,7 +115,7 @@ async function importCsvFileToDb(filePath: string, tableName: string) {
 
 		const stream = await exec.start();
 
-		stream.on("data", (data) => {
+		stream.on("data", (data: { toString: () => any }) => {
 			console.log(data.toString());
 		});
 
