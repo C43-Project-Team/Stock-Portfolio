@@ -303,6 +303,22 @@ export class ApiService {
 		});
 	}
 
+    async getPortfolioBeta(owner: string, portfolioName: string): Promise<{ portfolio_beta: number }> {
+        return this.post<{ portfolio_beta: number }>('/portfolio/portfolio-beta', { owner: owner, portfolio_name: portfolioName });
+    }
+
+    async getPortfolioStocksBeta(stockTicker: string): Promise<{ stock_beta: number}> {
+        return this.post<{ stock_beta: number}>('/portfolio/stock-beta', { stock_ticker: stockTicker });
+    }
+
+    async getStockCorrelations(stocks: string[]): Promise<{ stock_correlations: { stock1: string, stock2: string, correlation: number }[] }> {
+        return this.post<{ stock_correlations: { stock1: string, stock2: string, correlation: number }[] }>('/portfolio/stock-correlations', { stocks });
+    }
+
+    async getPortfolioStockCOV(stockSymbol: string): Promise<{ stock_cov: number }> {
+        return this.post<{ stock_cov: number }>('/portfolio/stock-cov', { stock_symbol: stockSymbol });
+    }
+
 	/* STOCK STUFF */
 	getStockPrice(stockSymbol: string): Promise<{ price: number }> {
 		return this.get<{ price: number }>(`/stock/${stockSymbol}/price`);

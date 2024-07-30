@@ -2,7 +2,7 @@
 <div class="container mx-auto p-4 pt-12">
   <div class="flex items-center mb-4">
     <div>
-      <h1 class="text-2xl font-bold">{{ portfolioName }}</h1>
+      <h1 class="text-4xl font-bold">{{ portfolioName }}</h1>
       <h2 class="text-xl">By {{ username }}</h2>
     </div>
     <div class="ml-auto">
@@ -11,8 +11,9 @@
     </div>
   </div>
 
-  <div class="mb-4">
+  <div class="mb-4 flex flex-row">
     <h3 class="text-lg font-semibold">Current Cash: {{ portfolioCash | currency }}</h3>
+    <h3 class="text-lg font-semibold ml-10">Portfolio Beta: {{ portfolioBeta }}</h3>
   </div>
 
   <p-table [value]="investments" class="p-datatable-sm">
@@ -20,6 +21,8 @@
       <tr>
         <th>Stock Symbol</th>
         <th>Number of Shares</th>
+        <th>Coefficient of Variation</th>
+        <th>Stock Beta</th>
         <th>Actions</th>
       </tr>
     </ng-template>
@@ -27,6 +30,12 @@
       <tr>
         <td>{{ investment.stock_symbol }}</td>
         <td>{{ investment.num_shares }}</td>
+        <td [ngClass]="{
+            'text-green-600': investment.stock_cov < 10,
+            'text-yellow-600': investment.stock_cov >= 10 && investment.stock_cov <= 30,
+            'text-red-600': investment.stock_cov > 30
+        }">{{ investment.stock_cov + ' %'}}</td>
+        <td>{{ investment.stock_beta }}</td>
         <td>
           <div class="flex gap-x-2">
             <button pButton type="button" icon="pi pi-minus" class="p-button-danger p-button-rounded" (click)="showSellSharesDialog(investment.stock_symbol)"></button>

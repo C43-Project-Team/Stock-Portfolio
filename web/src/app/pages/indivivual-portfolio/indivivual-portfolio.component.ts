@@ -53,6 +53,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 	sellPricePerShare = 0;
 	totalCost = 0;
 	totalGain = 0;
+    portfolioBeta = 0;
 	hasEnoughFunds = true;
 	filteredStocks: Stock[] = [];
 
@@ -71,6 +72,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.portfolioName = params["portfolio_name"];
 			this.loadPortfolio();
 			this.loadInvestments();
+            this.loadPortfolioBeta();
 		});
 	}
 
@@ -88,6 +90,26 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.investments = await this.apiService.getPortfolioInvestments(
 				this.portfolioName,
 			);
+
+            for (const investment of this.investments) {
+                const stockBeta = await this.apiService.getPortfolioStocksBeta(investment.stock_symbol);
+                investment.stock_beta = Math.round(stockBeta.stock_beta * 1000) / 1000;
+
+                const stockCOV = await this.apiService.getPortfolioStockCOV(investment.stock_symbol);
+                investment.stock_cov = Math.round(stockCOV.stock_cov * 1000) / 1000;
+            }
+
+            console.log(this.investments);
+
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async loadPortfolioBeta() {
+		try {
+			const response = await this.apiService.getPortfolioBeta(this.username, this.portfolioName);
+            this.portfolioBeta = Math.round(response.portfolio_beta * 1000) / 1000;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}

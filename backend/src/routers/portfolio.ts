@@ -211,7 +211,7 @@ portfolioRouter.post(
 	},
 );
 
-portfolioRouter.post("/portfolio-beta", async (req: AuthedRequest, res: Response) => {
+portfolioRouter.post("/portfolio-beta", verifyToken, async (req: AuthedRequest, res: Response) => {
 	const { owner, portfolio_name } = req.body;
 	try {
 		const portfolioBeta = await portfolioDatabase.portfolioBeta(
@@ -230,7 +230,7 @@ portfolioRouter.post("/portfolio-beta", async (req: AuthedRequest, res: Response
 	}
 });
 
-portfolioRouter.post("/stock-beta", async (req: AuthedRequest, res: Response) => {
+portfolioRouter.post("/stock-beta", verifyToken, async (req: AuthedRequest, res: Response) => {
 	const { stock_ticker } = req.body;
 	try {
 		const stockBeta = await portfolioDatabase.stockBeta(stock_ticker);
@@ -246,7 +246,7 @@ portfolioRouter.post("/stock-beta", async (req: AuthedRequest, res: Response) =>
 	}
 });
 
-portfolioRouter.post("/stock-correlations", async (req: AuthedRequest, res: Response) => {
+portfolioRouter.post("/stock-correlations", verifyToken, async (req: AuthedRequest, res: Response) => {
 	const { stocks } = req.body;
 	try {
 		const stockCorrelations = await portfolioDatabase.stockCorrelations(stocks);
@@ -262,7 +262,7 @@ portfolioRouter.post("/stock-correlations", async (req: AuthedRequest, res: Resp
 	}
 });
 
-portfolioRouter.post("/stock-cov", async (req: AuthedRequest, res: Response) => {
+portfolioRouter.post("/stock-cov", verifyToken, async (req: AuthedRequest, res: Response) => {
     const { stock_symbol } = req.body;
     try {
         const stockCov = await portfolioDatabase.stockCoffectientOfVariation(stock_symbol);
