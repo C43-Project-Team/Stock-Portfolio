@@ -35,7 +35,8 @@
       </ng-template>
       <ng-template pTemplate="body" let-connection>
         <tr>
-          <td>{{ connection.requesting_friend }}</td>
+          <td *ngIf="connection.requesting_friend === myId">{{ connection.receiving_friend }}</td>
+          <td *ngIf="connection.requesting_friend !== myId">{{ connection.requesting_friend }}</td>
           <td>
             <button
               *ngIf="!connection.pending"
@@ -52,7 +53,7 @@
               type="button"
               icon="pi pi-arrow-right"
               class="p-button-rounded"
-              (click)="goToUserPage(connection.requesting_friend)"
+              (click)="goToUserPage(connection.requesting_friend === myId ? connection.receiving_friend : connection.requesting_friend)"
             ></button>
           </td>
         </tr>

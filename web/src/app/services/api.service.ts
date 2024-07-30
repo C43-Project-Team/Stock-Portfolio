@@ -9,6 +9,8 @@ import type { Portfolio } from "@models/portfolio";
 import type { Investment } from "@models/investment";
 import { Stock } from "@models/stock";
 import { User } from "@models/user";
+import { Review } from "@models/review";
+import { SharedUser } from "@models/shared-user";
 
 @Injectable({
 	providedIn: "root",
@@ -162,6 +164,15 @@ export class ApiService {
 		return this.get<StocksList[]>(endpoint);
 	}
 
+	async hasAccessToStockList(
+		username: string,
+		stockListName: string,
+	): Promise<boolean> {
+		return this.get<boolean>(
+			`/stock-list/${username}/${stockListName}/has-access`,
+		);
+	}
+
 	async getPublicStockListCount(): Promise<{ count: number }> {
 		const endpoint = "/stock-list/public/count";
 		return this.get<{ count: number }>(endpoint);
@@ -183,17 +194,25 @@ export class ApiService {
 		);
 	}
 
-	async searchUnsharedUsers(
+	async searchUnsharedFriends(
 		stockListName: string,
 		query: string,
 	): Promise<{ users: User[] }> {
 		return this.get<{ users: User[] }>(
-			`/stock-list/${stockListName}/search-unshared-users?query=${query}`,
+			`/stock-list/${stockListName}/search-unshared-friends?query=${query}`,
 		);
 	}
 
-	async getSharedUsers(stockListName: string): Promise<{ users: User[] }> {
-		return this.get<{ users: User[] }>(
+	async revokeSharing(stockListName: string, user: string): Promise<void> {
+		return this.post<void>(`/stock-list/${stockListName}/revoke`, {
+			user: user,
+		});
+	}
+
+	async getSharedUsers(
+		stockListName: string,
+	): Promise<{ users: SharedUser[] }> {
+		return this.get<{ users: SharedUser[] }>(
 			`/stock-list/${stockListName}/shared-users`,
 		);
 	}
@@ -327,6 +346,50 @@ export class ApiService {
 	searchStocks(query: string): Promise<{ company: Stock[] }> {
 		return this.get<{ company: Stock[] }>(
 			`/stock/similar/stock-company/${query}`,
+		);
+	}
+
+	/* REVIEW STUFF */
+	async addReview(
+		stockListOwner: string,
+		stockListName: string,
+		content: string,
+		rating: number,
+	): Promise<void> {
+		return this.post<void>(
+			`/stock-list/${stockListOwner}/${stockListName}/reviews`,
+			{ content, rating },
+		);
+	}
+
+	async getReviews(
+		stock_list_owner: string,
+		stock_list_name: string,
+	): Promise<Review[]> {
+		return this.get<Review[]>(
+			`/stock-list/${stock_list_owner}/${stock_list_name}/reviews`,
+		);
+	}
+
+	async updateReview(
+		stockListOwner: string,
+		stockListName: string,
+		content: string,
+		rating: number,
+	): Promise<void> {
+		return this.patch<void>(
+			`/stock-list/${stockListOwner}/${stockListName}/reviews`,
+			{ content, rating },
+		);
+	}
+
+	async deleteReview(
+		stockListOwner: string,
+		stockListName: string,
+	): Promise<void> {
+		return this.delete<void>(
+			`/stock-list/${stockListOwner}/${stockListName}/reviews`,
+			{},
 		);
 	}
 }

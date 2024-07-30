@@ -226,7 +226,36 @@ stockListRouter.get(
 );
 
 stockListRouter.get(
-	"/:stock_list_name/search-unshared-users",
+	"/:username/:stock_list_name/has-access",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const authenticatedUser = req.user?.username;
+			const { username, stock_list_name } = req.params;
+
+			if (!authenticatedUser) {
+				return res.status(400).json({ error: "Authenticated user not found" });
+			}
+
+			if (!username || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const hasAccess = await stockListDatabase.hasAccess(
+				authenticatedUser,
+				username,
+				stock_list_name,
+			);
+
+			res.json(hasAccess);
+		} catch (error) {
+			return res.status(500).json({ error: "Error checking access" });
+		}
+	},
+);
+
+stockListRouter.get(
+	"/:stock_list_name/search-unshared-friends",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
@@ -242,7 +271,7 @@ stockListRouter.get(
 				return res.status(400).json({ error: "Query parameter is required" });
 			}
 
-			const users = await stockListDatabase.searchUnsharedUsers(
+			const users = await stockListDatabase.searchUnsharedFriends(
 				owner,
 				stock_list_name,
 				query,
@@ -415,6 +444,11 @@ stockListRouter.post(
 				return res.status(400).json({ error: "Missing user parameter" });
 			}
 
+			const isFriend = await stockListDatabase.isFriend(owner, user);
+			if (!isFriend) {
+				return res.status(400).json({ error: "Can only share with friends" });
+			}
+
 			await stockListDatabase.shareStockList(owner, stock_list_name, user);
 			res.json({ message: "Stock list shared successfully" });
 		} catch (error) {
@@ -426,7 +460,31 @@ stockListRouter.post(
 	},
 );
 
+stockListRouter.post(
+	"/:stock_list_name/revoke",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const owner = req.user?.username;
+			const { stock_list_name } = req.params;
+			const { user } = req.body;
+
+			if (!owner || !user) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			await stockListDatabase.revokeSharing(owner, stock_list_name, user);
+			return res.json({ message: "Sharing revoked successfully" });
+		} catch (error) {
+			return res.status(500).json({ error: "Error revoking sharing" });
+		}
+	},
+);
+
 stockListRouter.use(
 	"/:stock_list_owner/:stock_list_name/reviews",
+	(req, res, next) => {
+		next();
+	},
 	reviewRouter,
 );
