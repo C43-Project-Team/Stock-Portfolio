@@ -108,7 +108,7 @@ friendsRouter.get(
 			const connections = await friendsDatabase.getConnections(username);
 			const incomingRequests =
 				await friendsDatabase.getIncomingRequests(username);
-
+			console.log(connections, incomingRequests);
 			return res.json({ connections, incomingRequests });
 		} catch (error) {
 			console.error(error);

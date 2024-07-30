@@ -2,7 +2,7 @@ import { stockListDatabase } from "@/database/StockListDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 
-export const reviewRouter = Router();
+export const reviewRouter = Router({ mergeParams: true });
 
 reviewRouter.post(
 	"/",
@@ -74,6 +74,32 @@ reviewRouter.patch(
 				return res.status(403).json({ error: error.message });
 			}
 			return res.status(500).json({ error: "Error updating review" });
+		}
+	},
+);
+
+reviewRouter.get(
+	"/",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			console.log("hello");
+			const { stock_list_owner, stock_list_name } = req.params;
+
+			console.log(stock_list_owner, stock_list_name);
+
+			if (!stock_list_owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const reviews = await stockListDatabase.getReviews(
+				stock_list_owner,
+				stock_list_name,
+			);
+
+			res.json(reviews);
+		} catch (error) {
+			return res.status(500).json({ error: "Error fetching reviews" });
 		}
 	},
 );

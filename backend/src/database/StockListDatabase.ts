@@ -283,7 +283,7 @@ class StockListDatabase {
 			.execute();
 	}
 
-	async searchUnsharedUsers(
+	async searchUnsharedFriends(
 		owner: string,
 		stockListName: string,
 		query: string,
@@ -294,11 +294,25 @@ class StockListDatabase {
 			.where("stock_list_owner", "=", owner)
 			.where("stock_list_name", "=", stockListName);
 
+		const friends = this.db
+			.selectFrom("friends")
+			.select("receiving_friend as username")
+			.where("requesting_friend", "=", owner)
+			.where("pending", "=", false)
+			.union(
+				this.db
+					.selectFrom("friends")
+					.select("requesting_friend as username")
+					.where("receiving_friend", "=", owner)
+					.where("pending", "=", false),
+			);
+
 		return await this.db
 			.selectFrom("users")
 			.selectAll()
 			.where("username", "like", `${query}%`)
 			.where((eb) => eb("username", "not in", sharedUsers))
+			.where((eb) => eb("username", "in", friends))
 			.where("username", "<>", owner)
 			.execute();
 	}
@@ -330,6 +344,42 @@ class StockListDatabase {
 				stock_list_owner: owner,
 				stock_list_name,
 			})
+			.execute();
+	}
+
+	async isFriend(owner: string, user: string): Promise<boolean> {
+		const friend = await this.db
+			.selectFrom("friends")
+			.selectAll()
+			.where((eb) =>
+				eb.or([
+					eb.and([
+						eb("requesting_friend", "=", owner),
+						eb("receiving_friend", "=", user),
+						eb("pending", "=", false),
+					]),
+					eb.and([
+						eb("requesting_friend", "=", user),
+						eb("receiving_friend", "=", owner),
+						eb("pending", "=", false),
+					]),
+				]),
+			)
+			.executeTakeFirst();
+
+		return !!friend;
+	}
+
+	async revokeSharing(
+		owner: string,
+		stock_list_name: string,
+		user: string,
+	): Promise<void> {
+		await this.db
+			.deleteFrom("private_access")
+			.where("stock_list_owner", "=", owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.where("user", "=", user)
 			.execute();
 	}
 
@@ -423,6 +473,19 @@ class StockListDatabase {
 			.where("reviewer", "=", reviewer)
 			.where("stock_list_owner", "=", stock_list_owner)
 			.where("stock_list_name", "=", stock_list_name)
+			.execute();
+	}
+
+	async getReviews(
+		stock_list_owner: string,
+		stock_list_name: string,
+	): Promise<Review[]> {
+		return await this.db
+			.selectFrom("reviews")
+			.selectAll()
+			.where("stock_list_owner", "=", stock_list_owner)
+			.where("stock_list_name", "=", stock_list_name)
+			.orderBy("review_creation_time", "desc")
 			.execute();
 	}
 

@@ -125,7 +125,9 @@ stockRouter.get("/similar/stock-company/:ticker", async (req, res) => {
 		if (ticker === "*") {
 			company = await stockDatabase.getAllStocksCompany();
 		} else {
-			company = await stockDatabase.getSimilarStockCompany(ticker);
+			company = await stockDatabase.getSimilarStockCompany(
+				ticker.toUpperCase(),
+			);
 		}
 
 		if (!company) {

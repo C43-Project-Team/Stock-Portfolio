@@ -18,6 +18,9 @@ import type { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@services/auth.service";
 import { ToggleButtonModule } from "primeng/togglebutton";
 import type { User } from "@models/user";
+import { Review } from "@models/review";
+import { RatingModule } from "primeng/rating";
+import { SharedUser } from "@models/shared-user";
 
 @Component({
 	selector: "app-individual-stock-list",
@@ -32,6 +35,7 @@ import type { User } from "@models/user";
 		ToastModule,
 		AutoCompleteModule,
 		ToggleButtonModule,
+		RatingModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./individual-stock-list.component.html",
@@ -43,13 +47,14 @@ export class IndividualStockListComponent implements OnInit {
 	stocks: Stock[] = [];
 	displayAddStockDialog = false;
 	displayShareStockListDialog = false;
+	displayAddReviewDialog = false;
 	buyStockSymbol: Stock = { stock_symbol: "", company: "", description: "" };
 	buyNumShares = 0;
 	filteredStocks: Stock[] = [];
 	isPrivate = false;
 	isOwner = false;
 	authenticatedUser = "";
-	sharedUsers: User[] = [];
+	sharedUsers: SharedUser[] = [];
 	filteredUsers: User[] = [];
 	shareWithUser: User = {
 		username: "",
@@ -58,6 +63,14 @@ export class IndividualStockListComponent implements OnInit {
 		full_name: "",
 		user_created_at: new Date(),
 	};
+	reviewContent = "";
+	reviewRating = 0;
+	reviews: Review[] = [];
+	userReview: Review | null = null;
+	otherReviews: Review[] = [];
+	displayEditReviewDialog = false;
+	reviewToEdit: Review | null = null;
+	hasAccess = true;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -69,18 +82,28 @@ export class IndividualStockListComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.route.params.subscribe((params) => {
-			// biome-ignore lint/complexity/useLiteralKeys: Angular needs it like this
+			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.username = params["username"];
-			// biome-ignore lint/complexity/useLiteralKeys: Angular needs it like this
+			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.stockListName = params["stock_list_name"];
-			this.authService.getCredentials().subscribe((user) => {
+			this.authService.getCredentials().subscribe(async (user) => {
 				this.authenticatedUser = user.username;
 				this.isOwner = this.authenticatedUser === this.username;
-				this.loadStockList().then(() => {
-					if (this.isOwner && this.isPrivate) {
-						this.loadSharedUsers();
-					}
-				});
+				this.hasAccess = await this.apiService.hasAccessToStockList(
+					this.username,
+					this.stockListName,
+				);
+				console.log(this.hasAccess);
+				if (this.hasAccess) {
+					this.loadStockList().then(() => {
+						if (this.isOwner && this.isPrivate) {
+							this.loadSharedUsers();
+						}
+					});
+					this.loadReviews();
+				} else {
+					this.logError("You do not have access to this stock list.");
+				}
 			});
 		});
 	}
@@ -101,11 +124,69 @@ export class IndividualStockListComponent implements OnInit {
 		}
 	}
 
+	showEditReviewDialog(review: Review) {
+		this.reviewToEdit = { ...review };
+		this.displayEditReviewDialog = true;
+	}
+
+	async updateReview() {
+		if (
+			!this.reviewToEdit ||
+			!this.reviewToEdit.content ||
+			this.reviewToEdit.rating < 0 ||
+			this.reviewToEdit.rating > 5
+		) {
+			this.logError("Please provide valid review content and rating (0-5).");
+			return;
+		}
+
+		try {
+			await this.apiService.updateReview(
+				this.username,
+				this.stockListName,
+				this.reviewToEdit.content,
+				this.reviewToEdit.rating,
+			);
+			this.logSuccess("Success", "Review updated successfully");
+			this.displayEditReviewDialog = false;
+			this.loadReviews();
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async deleteReview(review: Review) {
+		try {
+			await this.apiService.deleteReview(review.reviewer, this.stockListName);
+			this.logSuccess("Success", "Review deleted successfully");
+			this.loadReviews();
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async loadReviews() {
+		try {
+			console.log(this.username, this.stockListName);
+			const reviews = await this.apiService.getReviews(
+				this.username,
+				this.stockListName,
+			);
+			this.userReview =
+				reviews.find((review) => review.reviewer === this.authenticatedUser) ||
+				null;
+			this.otherReviews = reviews.filter(
+				(review) => review.reviewer !== this.authenticatedUser,
+			);
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
 	async loadSharedUsers() {
 		try {
 			const result = await this.apiService.getSharedUsers(this.stockListName);
 			this.sharedUsers = result.users;
-			console.log(this.sharedUsers);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -122,6 +203,12 @@ export class IndividualStockListComponent implements OnInit {
 		this.shareWithUser.username = "";
 	}
 
+	showAddReviewDialog() {
+		this.displayAddReviewDialog = true;
+		this.reviewContent = "";
+		this.reviewRating = 0;
+	}
+
 	async addStock(stock_symbol?: string, num_shares?: number) {
 		const stock_symbol_param = stock_symbol || this.buyStockSymbol.stock_symbol;
 		const num_shares_param = num_shares || this.buyNumShares;
@@ -135,6 +222,16 @@ export class IndividualStockListComponent implements OnInit {
 			this.logSuccess("Success", "Stock added successfully");
 			this.displayAddStockDialog = false;
 			this.loadStockList();
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async revokeSharing(user: SharedUser) {
+		try {
+			await this.apiService.revokeSharing(this.stockListName, user.user);
+			this.logSuccess("Success", "Sharing revoked successfully");
+			this.loadSharedUsers();
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -194,11 +291,10 @@ export class IndividualStockListComponent implements OnInit {
 
 	async searchUsers(event: any) {
 		try {
-			const results = await this.apiService.searchUnsharedUsers(
+			const results = await this.apiService.searchUnsharedFriends(
 				this.stockListName,
 				event.query,
 			);
-			console.log(results);
 			this.filteredUsers = results.users;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
@@ -219,6 +315,27 @@ export class IndividualStockListComponent implements OnInit {
 			this.logSuccess("Success", "Stock list shared successfully");
 			this.loadSharedUsers();
 			this.shareWithUser.username = "";
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async addReview() {
+		if (!this.reviewContent || this.reviewRating < 0 || this.reviewRating > 5) {
+			this.logError("Please provide valid review content and rating (0-5).");
+			return;
+		}
+
+		try {
+			await this.apiService.addReview(
+				this.username,
+				this.stockListName,
+				this.reviewContent,
+				this.reviewRating,
+			);
+			this.logSuccess("Success", "Review added successfully");
+			this.displayAddReviewDialog = false;
+			this.loadReviews();
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
