@@ -13,14 +13,14 @@ import { portfolioRouter } from "./routers/portfolio";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:4200";
+console.log("FRONTEND_URL: ", FRONTEND_URL);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:4200",
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: FRONTEND_URL,
   credentials: true,
 }));
 
