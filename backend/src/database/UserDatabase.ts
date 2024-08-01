@@ -1,4 +1,4 @@
-import { db } from "../utils/db/database"; // Adjust the import path accordingly
+import { db } from "@utils/db/db-controller"; // Adjust the import path accordingly
 import type { Database, User } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
@@ -23,6 +23,7 @@ class UserDatabase {
 		username: string,
 		password_hash: string,
 		full_name: string,
+		profile_picture: string,
 	): Promise<User> {
 		const [user] = await this.db
 			.insertInto("users")
@@ -31,17 +32,26 @@ class UserDatabase {
 				password_hash,
 				full_name,
 				user_created_at: new Date(),
+				profile_picture,
 			})
 			.returning([
-				"id",
 				"username",
 				"password_hash",
 				"full_name",
 				"user_created_at",
+				"profile_picture",
 			])
 			.execute();
 
 		return user;
+	}
+
+	async searchUsersByUsername(query: string): Promise<User[]> {
+		return await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "like", `${query}%`)
+			.execute();
 	}
 }
 

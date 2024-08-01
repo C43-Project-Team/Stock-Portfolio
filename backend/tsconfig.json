@@ -20,7 +20,16 @@
 		/* Additional Options */
 		"strictPropertyInitialization": false /* Disable strict checking of property initialization in classes */,
 		"experimentalDecorators": true /* Enable experimental support for decorators */,
-		"emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files */
+		"emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files */,
+
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["src/*"],
+			"@routers/*": ["src/routers/*"],
+			"@middleware/*": ["src/middleware/*"],
+			"@database/*": ["src/database/*"],
+			"@utils/*": ["src/utils/*"]
+		}
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"],

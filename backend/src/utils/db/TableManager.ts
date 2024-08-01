@@ -1,10 +1,6 @@
 import { FileMigrationProvider, type Kysely, Migrator, sql } from "kysely";
 import path, { dirname, join } from "node:path";
 import { promises as fs } from "fs";
-import {
-	up as fixUserNamingUp,
-	down as fixUserNamingDown,
-} from "./migrations/20240710_fix_user_naming";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,17 +9,16 @@ const __dirname = dirname(__filename);
 /* TODO: We should put as a large header comment a summary of what SQL commands we ran here */
 
 export class TableManager {
-	migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
+	// migrations = [{ up: fixUserNamingUp, down: fixUserNamingDown }];
 
 	// biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 	async createDBTables(db: Kysely<any>): Promise<void> {
 		const createUsersTable = db.schema
 			.createTable("users")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("username", "varchar(20)", (col) => col.unique().notNull())
-			.addColumn("password_hash", "varchar(20)")
-			.addColumn("first_name", "varchar(20)")
-			.addColumn("surname", "varchar(20)")
+			.addColumn("username", "varchar(20)", (col) => col.primaryKey())
+			.addColumn("password_hash", "varchar(255)")
+			.addColumn("full_name", "varchar(40)")
+			.addColumn("profile_picture", "varchar(255)")
 			.addColumn("user_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
@@ -31,25 +26,36 @@ export class TableManager {
 
 		const createPortfoliosTable = db.schema
 			.createTable("portfolios")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("portfolio_name", "varchar(30)")
+			.addColumn("owner", "varchar(20)", (col) =>
+				col.notNull().references("users.username").onDelete("cascade"),
+			)
+			.addColumn("portfolio_name", "varchar(30)", (col) => col.notNull())
 			.addColumn("cash", "decimal(18, 2)")
 			.addColumn("portfolio_created_at", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
+			.addPrimaryKeyConstraint("portfolios_pkey", ["owner", "portfolio_name"])
 			.execute();
 
 		const createStocksListTable = db.schema
 			.createTable("stocks_list")
-			.addColumn("id", "serial", (col) => col.primaryKey())
-			.addColumn("private", "boolean")
+			.addColumn("owner", "varchar(20)")
 			.addColumn("stock_list_name", "varchar(30)")
+			.addColumn("private", "boolean")
+			.addPrimaryKeyConstraint("stocks_list_primary", [
+				"owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("stocks_list_owner_fk", ["owner"], "users", [
+				"username",
+			])
 			.execute();
 
 		const createStocksTable = db.schema
 			.createTable("stocks")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.primaryKey())
-			.addColumn("comapany", "varchar(20)")
+			.addColumn("company", "varchar(200)")
+			.addColumn("description", "varchar(5000)")
 			.execute();
 
 		await Promise.all([
@@ -67,7 +73,8 @@ export class TableManager {
 			.addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
 			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
-			.addColumn("volume", "integer", (col) => col.notNull())
+			.addColumn("volume", "bigint", (col) => col.notNull())
+			.addColumn("return", "decimal(18, 2)")
 			.addPrimaryKeyConstraint("stocks_daily_pk", [
 				"stock_symbol",
 				"stock_date",
@@ -80,53 +87,73 @@ export class TableManager {
 			)
 			.execute();
 
+		const createMarketIndexTable = db.schema
+			.createTable("market_index_daily")
+			.addColumn("stock_date", "date", (col) => col.notNull())
+			.addColumn("open_price", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("close_price", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("low", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("high", "decimal(18, 2)", (col) => col.notNull())
+			.addColumn("volume", "bigint", (col) => col.notNull())
+			.addColumn("return", "decimal(18, 2)")
+			.addPrimaryKeyConstraint("market_index_daily_pk", ["stock_date"])
+			.execute();
+
 		const createReviewsTable = db.schema
 			.createTable("reviews")
-			.addColumn("user_id", "integer")
-			.addColumn("stock_list_id", "integer")
+			.addColumn("reviewer", "varchar(20)")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
 			.addColumn("content", "varchar(200)")
+			.addColumn("rating", "numeric(2, 1)")
 			.addColumn("review_creation_time", "timestamp", (col) =>
 				col.defaultTo(sql`now()`).notNull(),
 			)
 			.addColumn("review_last_updated", "timestamp")
-			.addPrimaryKeyConstraint("review_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("review_user_foreign1", ["user_id"], "users", [
-				"id",
+			.addPrimaryKeyConstraint("review_pk", [
+				"reviewer",
+				"stock_list_owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("review_reviewer_fk", ["reviewer"], "users", [
+				"username",
 			])
 			.addForeignKeyConstraint(
-				"review_user_foreign2",
-				["stock_list_id"],
+				"review_stock_list_fk",
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.execute();
 
 		const createFriendsTable = db.schema
 			.createTable("friends")
-			.addColumn("friend1", "integer")
-			.addColumn("friend2", "integer")
-			.addColumn("requesting_friend", "integer")
+			.addColumn("requesting_friend", "varchar(20)")
+			.addColumn("receiving_friend", "varchar(20)")
 			.addColumn("pending", "boolean")
-			.addPrimaryKeyConstraint("friend_primary", ["friend1", "friend2"])
-			.addForeignKeyConstraint("friend_user_foreign1", ["friend1"], "users", [
-				"id",
-			])
-			.addForeignKeyConstraint("friend_user_foreign2", ["friend2"], "users", [
-				"id",
+			.addPrimaryKeyConstraint("friend_primary", [
+				"requesting_friend",
+				"receiving_friend",
 			])
 			.addForeignKeyConstraint(
-				"friend_user_foreign3",
+				"friend_user_foreign1",
 				["requesting_friend"],
 				"users",
-				["id"],
+				["username"],
+			)
+			.addForeignKeyConstraint(
+				"friend_user_foreign2",
+				["receiving_friend"],
+				"users",
+				["username"],
 			)
 			.execute();
 
-		// Maybe fix the expiry time here or when entering value with the +5 minutes
+		// Maybe fix the expiry time here or when entering value with the +5 minutes using a trigger in the database
 		const createRequestTimeoutTable = db.schema
 			.createTable("request_timeout")
-			.addColumn("request_user", "integer")
-			.addColumn("receive_user", "integer")
+			.addColumn("request_user", "varchar(20)")
+			.addColumn("receive_user", "varchar(20)")
 			.addColumn("expiry_time", "timestamp")
 			.addPrimaryKeyConstraint("request_primary", [
 				"request_user",
@@ -136,46 +163,32 @@ export class TableManager {
 				"request_user_foreign1",
 				["request_user"],
 				"users",
-				["id"],
+				["username"],
 			)
 			.addForeignKeyConstraint(
 				"request_user_foreign2",
 				["receive_user"],
 				"users",
-				["id"],
+				["username"],
 			)
-			.execute();
-
-		const createOwnsTable = db.schema
-			.createTable("owns")
-			.addColumn("portfolio_id", "integer")
-			.addColumn("user_id", "integer")
-			.addPrimaryKeyConstraint("owns_primary", ["portfolio_id"])
-			.addForeignKeyConstraint(
-				"owns_foreign1",
-				["portfolio_id"],
-				"portfolios",
-				["id"],
-			)
-			.addForeignKeyConstraint("owns_foreign2", ["user_id"], "users", ["id"])
 			.execute();
 
 		const createInvestmentsTable = db.schema
 			.createTable("investments")
-			.addColumn("portfolio_id", "integer")
+			.addColumn("owner", "varchar(20)")
+			.addColumn("portfolio_name", "varchar(30)")
 			.addColumn("stock_symbol", "varchar(10)")
-			.addColumn("stock_date", "date")
 			.addColumn("num_shares", "integer")
 			.addPrimaryKeyConstraint("investment_primary", [
-				"portfolio_id",
+				"owner",
+				"portfolio_name",
 				"stock_symbol",
-				"stock_date",
 			])
 			.addForeignKeyConstraint(
 				"investment_foreign1",
-				["portfolio_id"],
+				["owner", "portfolio_name"],
 				"portfolios",
-				["id"],
+				["owner", "portfolio_name"],
 			)
 			.addForeignKeyConstraint(
 				"investment_foreign2",
@@ -185,35 +198,43 @@ export class TableManager {
 			)
 			.execute();
 
-		const createAccessTable = db.schema
-			.createTable("access")
-			.addColumn("user_id", "integer")
-			.addColumn("stock_list_id", "integer")
-			.addColumn("is_owner", "boolean")
-			.addPrimaryKeyConstraint("access_primary", ["user_id", "stock_list_id"])
-			.addForeignKeyConstraint("access_foreign1", ["user_id"], "users", ["id"])
+		const createPrivateAccessTable = db.schema
+			.createTable("private_access")
+			.addColumn("user", "varchar(20)")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
+			.addPrimaryKeyConstraint("private_access_primary", [
+				"user",
+				"stock_list_owner",
+				"stock_list_name",
+			])
+			.addForeignKeyConstraint("private_access_user_fk", ["user"], "users", [
+				"username",
+			])
 			.addForeignKeyConstraint(
-				"access_foreign2",
-				["stock_list_id"],
+				"private_access_stock_list_fk",
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.execute();
 
 		const createContainsTable = db.schema
 			.createTable("contains")
-			.addColumn("stock_list_id", "integer")
+			.addColumn("stock_list_owner", "varchar(20)")
+			.addColumn("stock_list_name", "varchar(30)")
 			.addColumn("stock_symbol", "varchar(10)")
 			.addColumn("num_shares", "integer", (col) => col.defaultTo(0))
 			.addPrimaryKeyConstraint("contains_primary", [
-				"stock_list_id",
+				"stock_list_owner",
+				"stock_list_name",
 				"stock_symbol",
 			])
 			.addForeignKeyConstraint(
 				"contains_foreign1",
-				["stock_list_id"],
+				["stock_list_owner", "stock_list_name"],
 				"stocks_list",
-				["id"],
+				["owner", "stock_list_name"],
 			)
 			.addForeignKeyConstraint(
 				"contains_foreign2",
@@ -225,12 +246,12 @@ export class TableManager {
 
 		await Promise.all([
 			createStocksDailyTable,
+			createMarketIndexTable,
 			createReviewsTable,
 			createFriendsTable,
+			createPrivateAccessTable,
 			createRequestTimeoutTable,
-			createOwnsTable,
 			createInvestmentsTable,
-			createAccessTable,
 			createContainsTable,
 		]);
 	}
@@ -280,5 +301,26 @@ export class TableManager {
 		}
 
 		await db.destroy();
+	}
+
+	// biome-ignore lint/suspicious/noExplicitAny: necessary for kysely
+	async createIndexes(db: Kysely<any>) {
+		await db.schema
+			.createIndex("idx_username")
+			.on("users")
+			.column("username")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_requesting_friend")
+			.on("friends")
+			.column("requesting_friend")
+			.execute();
+
+		await db.schema
+			.createIndex("idx_receiving_friend")
+			.on("friends")
+			.column("receiving_friend")
+			.execute();
 	}
 }

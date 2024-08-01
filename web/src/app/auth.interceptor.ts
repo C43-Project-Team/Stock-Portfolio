@@ -3,16 +3,16 @@ import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import type {
 	HttpRequest,
-	HttpHandler,
 	HttpEvent,
 	HttpErrorResponse,
 } from "@angular/common/http";
-import { Observable, throwError } from "rxjs";
+import { type Observable, throwError } from "rxjs";
 import { catchError } from "rxjs/operators";
 import environment from "../environments/environment";
 
 export const authInterceptor: HttpInterceptorFn = (
-	req: HttpRequest<any>, next: HttpHandlerFn
+	req: HttpRequest<any>,
+	next: HttpHandlerFn,
 ): Observable<HttpEvent<any>> => {
 	const TOKEN_KEY = environment.token_key;
 	const token = localStorage.getItem(TOKEN_KEY);
@@ -33,7 +33,8 @@ export const authInterceptor: HttpInterceptorFn = (
 				// Handle unauthorized access
 				router.navigate(["/signin"]);
 			}
-			return throwError(() => new Error(error.message));
+			console.log(error);
+			return throwError(() => error);
 		}),
 	);
 };

@@ -38,6 +38,8 @@ pnpm-debug.log*
 **/.DS_Store
 **/Thumbs.db
 
+**/uploads
+
 # IDE-specific files
 .vscode/
 .idea/
@@ -74,4 +76,7 @@ pnpm-debug.log*
 
 # Temporary
 **/.cache
+
+# For Python environments
+**/.venv/
 

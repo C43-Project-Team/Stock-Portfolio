@@ -1,27 +1,64 @@
-import { Router } from "express";
-import bcrypt from "bcrypt";
-import { userDatabase } from "../database/UserDatabase";
+import { Router, type Response } from "express";
+import { userDatabase } from "@database/UserDatabase";
+import { type AuthedRequest, verifyToken } from "@middleware/auth";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import "dotenv/config";
-import { type AuthedRequest, verifyToken } from "../middleware/auth";
+import multer from "multer";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import path from "path";
+import { fileURLToPath } from "node:url";
 
 export const authRouter = Router();
 
-authRouter.post("/signup", async (req, res) => {
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Set storage engine
+const storage = multer.diskStorage({
+	destination: path.resolve(__dirname, "../uploads"),
+	filename: (req, file, cb) => {
+		const username = req.body.username || "user";
+		const timestamp = Date.now();
+		const extension = path.extname(file.originalname);
+		cb(null, `${username}-${timestamp}${extension}`);
+	},
+});
+
+// Initialize upload
+const upload = multer({
+	storage: storage,
+	limits: { fileSize: 1000000 },
+}).single("profilePicture");
+
+authRouter.post("/signup", upload, async (req, res) => {
 	try {
 		const { fullName, username, password } = req.body;
+		const profilePicture = req.file ? `/uploads/${req.file.filename}` : null;
+
+		if (!profilePicture) {
+			return res.status(400).json({ error: "Profile picture is required" });
+		}
+
+		const existingUser = await userDatabase.getUserByUsername(username);
+		if (existingUser) {
+			return res.status(400).json({ error: "Username already exists" });
+		}
+
 		const passwordHash = await bcrypt.hash(password, 10);
 		const newUser = await userDatabase.createUser(
 			username,
 			passwordHash,
 			fullName,
+			profilePicture,
 		);
 		const token = jwt.sign(
-			{ id: newUser.id, username: newUser.username },
+			{ username: newUser.username },
 			process.env.JWT_SECRET || "stockms",
 		);
 
-		res.json({ user: newUser, token });
+		res.json({ username: newUser.username, token });
 	} catch (error) {
 		return res.status(500).json({ error: "Error signing up" });
 	}
@@ -42,10 +79,10 @@ authRouter.post("/signin", async (req, res) => {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
 		const token = jwt.sign(
-			{ id: user.id, username: user.username },
+			{ username: user.username },
 			process.env.JWT_SECRET || "stockms",
 		);
-		return res.json({ token });
+		return res.json({ username, token });
 	} catch (error) {
 		res.status(500).json({ error: "Error logging in" });
 	}

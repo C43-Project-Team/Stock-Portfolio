@@ -1,4 +1,5 @@
 const environment = {
+	production: false,
 	api_url: "",
 	token_key: "",
 };

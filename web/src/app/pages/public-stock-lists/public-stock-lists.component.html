@@ -1,0 +1,37 @@
+<div class="container mx-auto p-4 pt-12">
+  <h1 class="text-2xl font-bold mb-4">Public Stock Lists</h1>
+
+  <p-table
+    [value]="publicStockLists"
+    [paginator]="true"
+    [rows]="10"
+    [totalRecords]="totalRecords"
+    [lazy]="true"
+    (onLazyLoad)="onPageChange($event)"
+    [loading]="loading"
+    class="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Owner</th>
+        <th>Stock List Name</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-stockList>
+      <tr>
+        <td>{{ stockList.owner }}</td>
+        <td>{{ stockList.stock_list_name }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-arrow-right"
+            class="p-button-rounded"
+            (click)="goToStockList(stockList)"
+          ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

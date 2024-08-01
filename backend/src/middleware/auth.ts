@@ -17,10 +17,10 @@ export const verifyToken = (
 	next: NextFunction,
 ) => {
 	const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(403).json({ error: "No token provided" });
-    }
-	const token = authHeader.split(' ')[1];
+	if (!authHeader) {
+		return res.status(403).json({ error: "No token provided" });
+	}
+	const token = authHeader.split(" ")[1];
 	jwt.verify(token, process.env.JWT_SECRET || "stockms", (err, decoded) => {
 		if (err) {
 			return res.status(500).json({ error: "Failed to authenticate token" });

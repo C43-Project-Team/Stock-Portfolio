@@ -1,8 +1,8 @@
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { catchError, map, type Observable, take, throwError } from "rxjs";
-import environment from "../../environments/environment";
+import { catchError, map, type Observable, of, take, throwError } from "rxjs";
+import environment from "@environment";
 
 @Injectable({
 	providedIn: "root",
@@ -27,22 +27,14 @@ export class AuthService {
 				}),
 				catchError((error) => {
 					console.error("Login error:", error);
-					return throwError(() => new Error(error.message || "Login failed"));
+					return throwError(() => error);
 				}),
 			);
 	}
 
-	signUp(
-		fullName: string,
-		username: string,
-		password: string,
-	): Observable<any> {
+	signUp(formData: FormData): Observable<any> {
 		return this.http
-			.post<{ token: string }>(`${this.API_URL}/auth/signup`, {
-				fullName,
-				username,
-				password,
-			})
+			.post<{ token: string }>(`${this.API_URL}/auth/signup`, formData)
 			.pipe(
 				take(1), // Ensure the subscription completes after the first emission
 				map((response) => {
@@ -51,19 +43,27 @@ export class AuthService {
 				}),
 				catchError((error) => {
 					console.error("Sign-up error:", error);
-					return throwError(() => new Error(error.message || "Login failed"));
+					return throwError(() => error);
 				}),
 			);
 	}
 
 	getCredentials(): Observable<any> {
 		return this.http.get<{ user: any }>(`${this.API_URL}/auth/me`).pipe(
+			take(1),
 			map((response) => response.user),
 			catchError((error) => {
 				return throwError(
 					() => new Error(error.message || "Failed to fetch credentials"),
 				);
 			}),
+		);
+	}
+
+	isAuthenticated(): Observable<boolean> {
+		return this.http.get<{ user: any }>(`${this.API_URL}/auth/me`).pipe(
+			map((response) => !!response.user),
+			catchError(() => of(false)),
 		);
 	}
 
