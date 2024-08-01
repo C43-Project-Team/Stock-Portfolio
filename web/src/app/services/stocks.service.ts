@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { HistoricStockInterface } from "../pages/stocks/historicStock.interface";
 import { PredictedStockInterface } from "../pages/stocks/predictedStock.interface";
@@ -18,19 +18,35 @@ export class StockService {
 		ticker: string,
 		startDate: string,
 	): Observable<HistoricStockInterface[]> {
-        // console.log(this.baseUrl + "/stock/" + ticker); 
-		return this.http.post<HistoricStockInterface[]>(`${this.baseUrl}/stock/${ticker}`, { startDate });
+		const params = new HttpParams().set("ticker", ticker);
+
+		return this.http.post<HistoricStockInterface[]>(
+			`${this.baseUrl}/stock`,
+			{ startDate },
+			{ params },
+		);
 	}
 
 	getPredictions(
 		ticker: string,
 		endDate: string,
 	): Observable<PredictedStockInterface[]> {
-        // console.log(this.baseUrl + "/stock/prediction/" + ticker);
-		return this.http.post<PredictedStockInterface[]>(`${this.baseUrl}/stock/prediction/${ticker}`, { endDate });
+		// console.log(this.baseUrl + "/stock/prediction/" + ticker);
+		return this.http.post<PredictedStockInterface[]>(
+			`${this.baseUrl}/stock/prediction/${ticker}`,
+			{ endDate },
+		);
 	}
 
-    getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
-        return this.http.get<StockCompany[]>(`${this.baseUrl}/stock/stock-company/${searchTicker.toUpperCase()}`);
-    }
+	getStockCompanies(searchTicker: string): Observable<StockCompany[]> {
+		return this.http.get<StockCompany[]>(
+			`${this.baseUrl}/stock/similar/stock-company/${searchTicker.toUpperCase()}`,
+		);
+	}
+
+	getStockCompany(ticker: string): Observable<StockCompany> {
+		return this.http.get<StockCompany>(
+			`${this.baseUrl}/stock/stock-company/${ticker.toUpperCase()}`,
+		);
+	}
 }

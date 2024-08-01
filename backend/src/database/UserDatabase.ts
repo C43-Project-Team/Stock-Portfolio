@@ -1,4 +1,4 @@
-import { db } from "../utils/db/db-controller"; // Adjust the import path accordingly
+import { db } from "@utils/db/db-controller"; // Adjust the import path accordingly
 import type { Database, User } from "../types/db-schema";
 import type { Kysely } from "kysely";
 
@@ -44,6 +44,14 @@ class UserDatabase {
 			.execute();
 
 		return user;
+	}
+
+	async searchUsersByUsername(query: string): Promise<User[]> {
+		return await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "like", `${query}%`)
+			.execute();
 	}
 }
 

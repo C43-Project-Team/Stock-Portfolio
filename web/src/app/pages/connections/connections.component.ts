@@ -13,6 +13,10 @@ import type { HttpErrorResponse } from "@angular/common/http";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { AuthService } from "@services/auth.service";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
+// biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
+import { Router } from "@angular/router";
+import { AutoCompleteModule } from "primeng/autocomplete";
+import type { User } from "@models/user";
 
 @Component({
 	selector: "app-connections",
@@ -25,6 +29,7 @@ import { ConfirmDialogModule } from "primeng/confirmdialog";
 		InputTextModule,
 		ButtonModule,
 		ConfirmDialogModule,
+		AutoCompleteModule,
 	],
 	providers: [ConfirmationService, MessageService],
 	templateUrl: "./connections.component.html",
@@ -35,6 +40,7 @@ export class ConnectionsComponent implements OnInit {
 	incomingRequests: FriendsTable[] = [];
 	sentRequests: FriendsTable[] = [];
 	newFriendUsername = "";
+	filteredUsers: User[] = [];
 	myId = "";
 
 	constructor(
@@ -42,6 +48,7 @@ export class ConnectionsComponent implements OnInit {
 		private authService: AuthService,
 		private confirmationService: ConfirmationService,
 		private messageService: MessageService,
+		private router: Router,
 	) {}
 
 	ngOnInit(): void {
@@ -64,6 +71,16 @@ export class ConnectionsComponent implements OnInit {
 				summary: "Error",
 				detail: (error as HttpErrorResponse).error.error,
 			});
+		}
+	}
+
+	async searchUsers(event: any) {
+		try {
+			const query = event.query;
+			const response = await this.apiService.searchUsers(query);
+			this.filteredUsers = response.users;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
 
@@ -93,6 +110,10 @@ export class ConnectionsComponent implements OnInit {
 				this.logError((error as HttpErrorResponse).error.error);
 			}
 		}
+	}
+
+	goToUserPage(username: string) {
+		this.router.navigate([`/user/id/${username}`]);
 	}
 
 	async acceptRequest(request: FriendsTable) {

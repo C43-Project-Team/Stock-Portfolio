@@ -1,10 +1,20 @@
 import { db } from "./db-controller";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import fs from "fs";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import { createReadStream } from "fs";
 import csv from "csv-parser";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import path from "path";
+// biome-ignore lint/style/useImportType: <explanation>
+import { Database } from "@/types/db-schema";
+// biome-ignore lint/style/useImportType: <explanation>
+import { InsertExpression } from "kysely/dist/cjs/parser/insert-values-parser";
 
-async function insertDataStock(data) {
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+async function insertDataStock(
+	data: any[] | InsertExpression<Database, "stocks">,
+) {
 	try {
 		await db.insertInto("stocks").values(data).execute();
 		console.log("Data inserted successfully");
@@ -13,8 +23,9 @@ async function insertDataStock(data) {
 	}
 }
 
-async function importStockCompanyCsv(filePath) {
-	const results = [];
+async function importStockCompanyCsv(filePath: fs.PathLike) {
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const results: any[] = [];
 
 	const stream = fs
 		.createReadStream(filePath)
@@ -39,7 +50,10 @@ async function importStockCompanyCsv(filePath) {
 	});
 }
 
-async function insertStocksDailyData(data) {
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+async function insertStocksDailyData(
+	data: any[] | InsertExpression<Database, "stocks_daily">,
+) {
 	try {
 		await db.insertInto("stocks_daily").values(data).execute();
 		console.log("Data inserted successfully");
@@ -49,8 +63,9 @@ async function insertStocksDailyData(data) {
 }
 
 // Read and parse the CSV file, then insert data into the database
-async function importStocksDailyCsv(filePath) {
-	const results = [];
+async function importStocksDailyCsv(filePath: fs.PathLike) {
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	const results: any[] = [];
 	const chunkSize = 5000;
 	let chunkCount = 0;
 
@@ -60,11 +75,12 @@ async function importStocksDailyCsv(filePath) {
 			const transformedData = {
 				stock_symbol: data.Code,
 				stock_date: new Date(data.Timestamp).toISOString().split("T")[0],
-				open_price: parseFloat(data.Open),
-				close_price: parseFloat(data.Close),
-				low: parseFloat(data.Low),
-				high: parseFloat(data.High),
-				volume: parseInt(data.Volume, 10),
+				open_price: Number.parseFloat(data.Open),
+				close_price: Number.parseFloat(data.Close),
+				low: Number.parseFloat(data.Low),
+				high: Number.parseFloat(data.High),
+				volume: Number.parseInt(data.Volume, 10),
+				return: Number.parseFloat(data.Return),
 			};
 			results.push(transformedData);
 
@@ -102,36 +118,66 @@ async function importStocksDailyCsv(filePath) {
 
 // Run the import function with a relative path
 async function ingestData() {
-	const exportStockDailyFile = path.resolve(
-		"src",
-		"utils",
-		"data",
-		"SP500History-db.csv",
-	);
 	const exportStockFile = path.resolve(
 		"src",
 		"utils",
 		"data",
 		"stock-companies.csv",
 	);
-    const exportStockRecentFile = path.resolve(
+	// const exportStockDailyFile = path.resolve(
+	// 	"src",
+	// 	"utils",
+	// 	"data",
+	// 	"SP500History-db.csv",
+	// );
+	// const exportStockRecentFile = path.resolve(
+	// 	"src",
+	// 	"utils",
+	// 	"data",
+	// 	"stock_data_recent.csv",
+	// );
+	// const exportUptoDateStockFile = path.resolve(
+	// 	"src",
+	// 	"utils",
+	// 	"data",
+	// 	"stock_data_3.csv",
+	// );
+
+	const exportStockDailyFile = path.resolve(
 		"src",
 		"utils",
 		"data",
+		"return",
+		"SP500History-db.csv",
+	);
+	const exportStockRecentFile = path.resolve(
+		"src",
+		"utils",
+		"data",
+		"return",
 		"stock_data_recent.csv",
 	);
-    const exportUptoDateStockFile = path.resolve(
+	const exportUptoDateStockFile = path.resolve(
 		"src",
 		"utils",
 		"data",
+		"return",
 		"stock_data_3.csv",
+	);
+	const exportUptoDateStockFile1 = path.resolve(
+		"src",
+		"utils",
+		"data",
+		"return",
+		"stock_data_4.csv",
 	);
 
 	// Import the data from the CSV files to the database
 	await importStockCompanyCsv(exportStockFile);
 	await importStocksDailyCsv(exportStockDailyFile);
 	await importStocksDailyCsv(exportStockRecentFile);
-    await importStocksDailyCsv(exportUptoDateStockFile);
+	await importStocksDailyCsv(exportUptoDateStockFile);
+	await importStocksDailyCsv(exportUptoDateStockFile1);
 }
 
 ingestData().then(() => {

@@ -1,0 +1,20 @@
+<div class="container mx-auto p-4">
+    <table class="min-w-full bg-white border-collapse">
+      <thead>
+        <tr>
+          <th class="border-b px-4 py-2"></th>
+          <th *ngFor="let stock of stockNames" class="border-b px-4 py-2">{{ stock }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let stock of stockNames; let i = index">
+          <th class="border-b px-4 py-2">{{ stock }}</th>
+          <td *ngFor="let j of stockNames; let jIndex = index" 
+              class="border-b px-4 py-2"
+              [ngClass]="getCellColor(correlationMatrix[i][jIndex])">
+            {{ correlationMatrix[i][jIndex] | number: '1.2-2' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+</div>

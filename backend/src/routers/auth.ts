@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import multer from "multer";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 import path from "path";
 import { fileURLToPath } from "node:url";
 
@@ -57,7 +58,7 @@ authRouter.post("/signup", upload, async (req, res) => {
 			process.env.JWT_SECRET || "stockms",
 		);
 
-		res.json({ user: newUser, token });
+		res.json({ username: newUser.username, token });
 	} catch (error) {
 		return res.status(500).json({ error: "Error signing up" });
 	}
@@ -81,7 +82,7 @@ authRouter.post("/signin", async (req, res) => {
 			{ username: user.username },
 			process.env.JWT_SECRET || "stockms",
 		);
-		return res.json({ token });
+		return res.json({ username, token });
 	} catch (error) {
 		res.status(500).json({ error: "Error logging in" });
 	}
