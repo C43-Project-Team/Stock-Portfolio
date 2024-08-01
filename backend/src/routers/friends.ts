@@ -181,4 +181,27 @@ friendsRouter.get(
 	},
 );
 
+friendsRouter.get(
+	"/search",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { query } = req.query;
+			if (!query || typeof query !== "string") {
+				return res.status(400).json({ error: "Query parameter is required" });
+			}
+      const username = req.user?.username;
+      if (!username) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+			const users = await friendsDatabase.searchForNewFriends(username, query);
+
+			res.json({ users });
+		} catch (error) {
+			return res.status(500).json({ error: "Error searching for users" });
+		}
+	},
+);
+
 export default friendsRouter;

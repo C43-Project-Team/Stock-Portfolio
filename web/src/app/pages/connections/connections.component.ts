@@ -77,7 +77,7 @@ export class ConnectionsComponent implements OnInit {
 	async searchUsers(event: any) {
 		try {
 			const query = event.query;
-			const response = await this.apiService.searchUsers(query);
+			const response = await this.apiService.searchForPotentialFriends(query);
 			this.filteredUsers = response.users;
       console.log(this.filteredUsers);
 		} catch (error) {

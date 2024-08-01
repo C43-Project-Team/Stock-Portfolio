@@ -124,6 +124,10 @@ export class ApiService {
 		return this.post<FriendsTable>("/friends/withdraw", { friend: username });
 	}
 
+  async searchForPotentialFriends(query: string): Promise<{ users: User[] }> {
+		return this.get<{ users: User[] }>(`/friends/search?query=${query}`);
+	}
+
 	/* STOCK LIST STUFF */
 
 	async getUserStockLists(): Promise<StocksList[]> {
