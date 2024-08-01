@@ -24,10 +24,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(
-	cors({
-		origin: "http://localhost:4200",
-		credentials: true,
-	}),
+	cors(),
 );
 
 app.use("/api/auth", authRouter);
