@@ -104,7 +104,7 @@ export class IndivivualPortfolioComponent implements OnInit {
                 this.portfolioName,
             );
             this.covariances = res.stock_covariances;
-            console.log(this.covariances);
+            // console.log(this.covariances);
         } catch (error) {
             console.error("Error fetching stock covariances:", error);
         }
