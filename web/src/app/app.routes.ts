@@ -11,9 +11,10 @@ import { UserComponent } from "@pages/user/user.component";
 import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stock-lists.component";
 import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivivual-portfolio.component";
 import { IndividualStockListComponent } from "@pages/individual-stock-list/individual-stock-list.component";
+import { LandingComponent } from "@pages/landing/landing.component";
 
 export const routes: Routes = [
-	{ path: "", component: HomeComponent },
+	{ path: "", component: LandingComponent },
 	{ path: "sign-in", component: SignInComponent },
 	{ path: "sign-up", component: SignUpComponent },
 	{
