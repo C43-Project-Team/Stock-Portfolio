@@ -40,6 +40,10 @@ app.use("/api/stock-list", stockListRouter);
 
 app.use("/api/uploads", express.static(path.join(__dirname, "./uploads")));
 
+app.get("/api/test", (req: Request, res: Response) => {
+  return res.json({ message: "Hello, world!" });
+});
+
 app.listen(PORT, () => {
 	console.log("HTTP server on http://localhost:%s", PORT);
 });

@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { MenubarModule } from 'primeng/menubar';
 // biome-ignore lint/style/useImportType: angular needs the whole module for elements passed in constructor 
 import { AuthService } from '@services/auth.service';
+import { ApiService } from '@services/api.service';
 
 @Component({
   selector: 'app-landing',
@@ -23,13 +24,16 @@ export class LandingComponent implements OnInit {
   isAuthenticated$!: Observable<boolean>;
   user$!: Observable<any>;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private apiService: ApiService) {}
 
   ngOnInit() {
     this.isAuthenticated$ = this.authService.isAuthenticated();
     this.user$ = this.authService.getCredentials().pipe(
       catchError(() => of(null))
     );
+    this.apiService.test().then((res) => {
+      console.log(res);
+    });
   }
 
   navigateTo(path: string) {

@@ -427,4 +427,8 @@ export class ApiService {
 			{},
 		);
 	}
+
+  async test() {
+    return this.get<any>("/test");
+  }
 }
