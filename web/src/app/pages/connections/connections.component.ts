@@ -39,7 +39,7 @@ export class ConnectionsComponent implements OnInit {
 	connections: FriendsTable[] = [];
 	incomingRequests: FriendsTable[] = [];
 	sentRequests: FriendsTable[] = [];
-	newFriendUsername = "";
+	newFriend: User | null = null;
 	filteredUsers: User[] = [];
 	myId = "";
 
@@ -79,6 +79,7 @@ export class ConnectionsComponent implements OnInit {
 			const query = event.query;
 			const response = await this.apiService.searchUsers(query);
 			this.filteredUsers = response.users;
+      console.log(this.filteredUsers);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -97,18 +98,24 @@ export class ConnectionsComponent implements OnInit {
 	}
 
 	async addFriend() {
-		if (this.newFriendUsername.trim()) {
+    if (!this.newFriend) {
+      return;
+    }
+    const newFriendUsername = this.newFriend.username;
+		if (newFriendUsername.trim()) {
 			try {
-				await this.apiService.requestFriend(this.newFriendUsername);
+				await this.apiService.requestFriend(newFriendUsername);
 				this.logSuccess(
 					"Friend Request Sent",
-					`Friend request sent to ${this.newFriendUsername}`,
+					`Friend request sent to ${newFriendUsername}`,
 				);
-				this.newFriendUsername = "";
+        
 				this.loadSentRequests(); // Reload sent requests to reflect the new request
 			} catch (error) {
 				this.logError((error as HttpErrorResponse).error.error);
-			}
+			} finally {
+        this.newFriend = null;
+      }
 		}
 	}
 

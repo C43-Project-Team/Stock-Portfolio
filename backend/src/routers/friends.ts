@@ -40,7 +40,7 @@ friendsRouter.post(
 		} catch (error) {
 			if (
 				error instanceof Error &&
-				error.message.includes("Timeout for friend request")
+				(error.message.includes("Timeout for friend request") || error.message.includes("already"))
 			) {
 				return res.status(403).json({ error: error.message });
 			}
