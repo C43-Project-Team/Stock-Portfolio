@@ -9,7 +9,7 @@ import type { Portfolio } from "@models/portfolio";
 import type { Investment } from "@models/investment";
 import { Stock } from "@models/stock";
 import { User } from "@models/user";
-import { StockCorrelationsResponse } from "@components/stock-matrix/stock-correlation.interface";
+import { StockCorrelationsResponse, StockCovarianceResponse } from "@components/stock-matrix/stock-correlation-covariance.interface";
 import { Review } from "@models/review";
 import { SharedUser } from "@models/shared-user";
 
@@ -350,6 +350,16 @@ export class ApiService {
 			{ owner, portfolio_name },
 		);
 	}
+
+    async StockCovariances(
+        owner: string,
+        portfolio_name: string,
+    ): Promise<StockCovarianceResponse> {
+        return this.post<StockCovarianceResponse>(
+            "/portfolio/stock-covariance",
+            { owner, portfolio_name },
+        );
+    }
 
 	async getPortfolioStockCOV(
 		stockSymbol: string,

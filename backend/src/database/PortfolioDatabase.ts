@@ -262,6 +262,14 @@ class PortfolioDatabase {
 		return rows;
 	}
 
+    async stockCovariance(stock_symbols: string[]): Promise<{stock1: string, stock2: string, covariance: number}[]> {
+        const query = sql`SELECT * FROM public.covariance_matrix(${stock_symbols})`;
+		const { rows } = (await query.execute(this.db)) as {
+			rows: { stock1: string; stock2: string; covariance: number }[];
+		};
+		return rows;
+    }
+
 	async stockCoffectientOfVariation(stock_symbol: string): Promise<number> {
 		const query = sql`SELECT public.cov(${stock_symbol})`;
 		const res = await query.execute(this.db);

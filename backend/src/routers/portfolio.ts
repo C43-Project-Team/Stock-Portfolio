@@ -278,6 +278,31 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
+	"/stock-covariance",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, portfolio_name } = req.body;
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const investments = await portfolioDatabase.getInvestments(
+				owner,
+				portfolio_name,
+			);
+			const stocks = investments.map((investment) => investment.stock_symbol);
+			const stockCovariances =
+				await portfolioDatabase.stockCovariance(stocks);
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+portfolioRouter.post(
 	"/stock-cov",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
