@@ -1,6 +1,8 @@
   <p-menubar [model]="items" styleClass="py-3 px-8">
     <ng-template pTemplate="start">
-      <img src="assets/images/navbar_logo.svg" class="w-[15rem]" alt="Logo" />
+      <a routerLink="/">
+        <img src="assets/images/navbar_logo.svg" class="w-[15rem]" alt="Logo" />
+      </a>
     </ng-template>
     <ng-template pTemplate="end">
       <div class="flex align-items-center gap-3">

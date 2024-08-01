@@ -12,7 +12,6 @@
 		"create-tables": "tsx src/utils/db/create-tables.ts",
 		"create-indexes": "tsx src/utils/db/create-indexes.ts",
 		"migrations": "tsx src/utils/db/run-migrations.ts",
-		"export-docker-stock-data": "tsx src/utils/db/export-docker-stock-data.ts",
 		"export-gcp-stock-data": "tsx src/utils/db/export-gcp-stock-data.ts"
 	},
 	"author": "",

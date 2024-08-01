@@ -1,0 +1,34 @@
+<p-menubar class="bg-white shadow-md px-4">
+  <ng-template pTemplate="start">
+    <a routerLink="/" class="flex items-center no-underline">
+      <img src="/assets/images/navbar_logo.svg" alt="StockMS Logo" class="h-8 mr-2">
+    </a>
+  </ng-template>
+  <ng-template pTemplate="end">
+    <ng-container *ngIf="isAuthenticated$ | async; else signIn">
+      <ng-container *ngIf="user$ | async as user">
+        <button pButton label="Dashboard" icon="pi pi-chart-line" class="p-button-outlined" (click)="navigateTo('/user/id/' + user.username)"></button>
+      </ng-container>
+    </ng-container>
+    <ng-template #signIn>
+      <button pButton label="Sign In" icon="pi pi-sign-in" class="p-button-outlined" (click)="navigateTo('/sign-in')"></button>
+    </ng-template>
+  </ng-template>
+</p-menubar>
+
+<div class="bg-gray-100 py-16 text-center">
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-4xl font-bold mb-4 text-gray-900">Welcome to StockMS</h1>
+    <p class="text-lg text-gray-600 mb-6">
+      Manage your portfolios, track stock performance, analyze and predict market trends. Join us to take control of your investments with powerful data insights.
+    </p>
+    <ng-container *ngIf="isAuthenticated$ | async; else signInButton">
+      <ng-container *ngIf="user$ | async as user">
+        <button pButton label="Get Started" icon="pi pi-arrow-right" class="p-button-raised p-button-primary" (click)="navigateTo('/user/id/' + user.username)"></button>
+      </ng-container>
+    </ng-container>
+    <ng-template #signInButton>
+      <button pButton label="Get Started" icon="pi pi-arrow-right" class="p-button-raised p-button-primary" (click)="navigateTo('/sign-in')"></button>
+    </ng-template>
+  </div>
+</div>

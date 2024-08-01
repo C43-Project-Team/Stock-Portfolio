@@ -11,8 +11,8 @@
           <th class="border-b px-4 py-2">{{ stock }}</th>
           <td *ngFor="let j of stockNames; let jIndex = index" 
               class="border-b px-4 py-2"
-              [ngClass]="getCellColor(correlationMatrix[i][jIndex])">
-            {{ correlationMatrix[i][jIndex] | number: '1.2-2' }}
+              [ngClass]="getCellColor(matrix[i][jIndex])">
+            {{ matrix[i][jIndex] | number: '1.2-2' }}
           </td>
         </tr>
       </tbody>

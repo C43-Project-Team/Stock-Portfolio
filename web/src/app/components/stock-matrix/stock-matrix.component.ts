@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import {
 	Component,
 	Input,
@@ -6,14 +5,14 @@ import {
 	OnChanges,
 	SimpleChanges,
 } from "@angular/core";
-// biome-ignore lint/style/useImportType: <explanation>
 import { ApiService } from "@services/api.service";
 import { CommonModule } from "@angular/common";
-// biome-ignore lint/style/useImportType: <explanation>
 import {
 	StockCorrelation,
 	StockCorrelationsResponse,
-} from "./stock-correlation.interface";
+    StockCovariance,
+    StockCovarianceResponse
+} from "./stock-correlation-covariance.interface";
 
 @Component({
 	selector: "app-stock-matrix",
@@ -23,33 +22,32 @@ import {
 	styles: "",
 })
 export class StockMatrixComponent implements OnInit, OnChanges {
-	// @Input() owner_name = '';
-	// @Input() portfolio_name = '';
-	@Input() correlations: any;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	@Input() data: any;
+	@Input() matrixType: 'correlation' | 'covariance' = 'correlation';
 	stockNames: string[] = [];
-	correlationMatrix: number[][] = [];
+	matrix: number[][] = [];
 
 	constructor(private apiService: ApiService) {}
 
 	ngOnInit(): void {
-		// this.fetchStockCorrelations();
 		this.updateMatrixDisplay();
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
-		if (changes["correlations"]) {
+		if (changes["data"]) {
 			this.updateMatrixDisplay();
 		}
 	}
 
 	private updateMatrixDisplay(): void {
-		if (!this.correlations || this.correlations.length === 0) {
+		if (!this.data || this.data.length === 0) {
 			return;
 		}
 
 		this.stockNames = Array.from(
 			new Set(
-				this.correlations.flatMap((cor: { stock1: any; stock2: any }) => [
+				this.data.flatMap((cor: { stock1: string; stock2: string }) => [
 					cor.stock1,
 					cor.stock2,
 				]),
@@ -58,64 +56,43 @@ export class StockMatrixComponent implements OnInit, OnChanges {
 		this.buildMatrixDisplay();
 	}
 
-	// async fetchStockCorrelations() {
-	//     try {
-	//         // const res = await this.apiService.StockCorrelations(this.owner_name, this.portfolio_name);
-	//         // const correlations = res.stock_correlations;
-	//         this.stockNames = Array.from(new Set(this.correlations.flatMap((cor: { stock1: any; stock2: any; }) => [cor.stock1, cor.stock2])));
-	//         this.buildMatrixDisplay(this.correlations);
-	//     } catch (error) {
-	//         console.error('Error fetching stock correlations:', error);
-	//     }
-	// }
-
-	// buildMatrixDisplay(correlations: StockCorrelation[]): void {
-	//     console.log('Building matrix with correlations:', correlations);
-	//     const size = this.stockNames.length;
-	//     this.correlationMatrix = Array.from({ length: size }, () => Array(size).fill(0));
-
-	//     // biome-ignore lint/complexity/noForEach: <explanation>
-	//         correlations.forEach(correlation => {
-	//         const i = this.stockNames.indexOf(correlation.stock1);
-	//         const j = this.stockNames.indexOf(correlation.stock2);
-	//         if (i !== -1 && j !== -1) {  // Ensure indices are valid
-	//             this.correlationMatrix[i][j] = correlation.correlation;
-	//         }
-	//     });
-	//     console.log('Correlation Matrix:', this.correlationMatrix);
-	// }
-
 	private buildMatrixDisplay(): void {
 		const size = this.stockNames.length;
-		this.correlationMatrix = Array.from({ length: size }, () =>
+		this.matrix = Array.from({ length: size }, () =>
 			Array(size).fill(0),
 		);
 
 		// biome-ignore lint/complexity/noForEach: <explanation>
-		this.correlations.forEach(
-			(correlation: {
+		this.data.forEach(
+			(item: {
 				stock1: string;
 				stock2: string;
-				correlation: number;
+				correlation?: number;
+				covariance?: number;
 			}) => {
-				const i = this.stockNames.indexOf(correlation.stock1);
-				const j = this.stockNames.indexOf(correlation.stock2);
+				const i = this.stockNames.indexOf(item.stock1);
+				const j = this.stockNames.indexOf(item.stock2);
 				if (i !== -1 && j !== -1) {
-					this.correlationMatrix[i][j] = correlation.correlation;
+					this.matrix[i][j] = this.matrixType === 'correlation' ? item.correlation ?? 0 : item.covariance ?? 0;
 				}
 			},
 		);
 	}
 
-	getCellColor(correlation: number): string {
-		if (correlation >= 0.7) {
-			return "bg-green-500 text-white";
+	getCellColor(value: number): string {
+		if (this.matrixType === 'correlation') {
+			if (value >= 0.7) {
+				return "bg-green-500 text-white";
 			// biome-ignore lint/style/noUselessElse: <explanation>
-		} else if (correlation >= 0.4) {
-			return "bg-yellow-500 text-black";
+			} else if (value >= 0.4) {
+				return "bg-yellow-500 text-black";
 			// biome-ignore lint/style/noUselessElse: <explanation>
+			} else {
+				return "bg-red-500 text-white";
+			}
+		// biome-ignore lint/style/noUselessElse: <explanation>
 		} else {
-			return "bg-red-500 text-white";
+			return "bg-blue-500 text-white";
 		}
 	}
 }

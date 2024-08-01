@@ -47,11 +47,17 @@
     </ng-template>
   </p-table>
 
-  <div class="mt-10 pt-3 flex">
-    <h3 class="text-xl font-bold mb-4 items-center">Stocks Correlation Matrix</h3>
-    <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
-    <app-stock-matrix [correlations]="correlations"></app-stock-matrix>
-</div>
+    <div class="mt-10 pt-3 flex">
+        <h3 class="text-xl font-bold mb-4 items-center">Stocks Correlation Matrix</h3>
+        <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
+        <app-stock-matrix [data]="correlations"></app-stock-matrix>
+    </div>
+
+    <div class="mt-10 pt-3 flex">
+        <h3 class="text-xl font-bold mb-4 items-center">Stocks Covariance Matrix</h3>
+        <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
+        <app-stock-matrix [data]="covariances"></app-stock-matrix>
+    </div>
 
   <p-dialog header="Deposit Money" [(visible)]="displayDepositDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" [style]="{ width: '20rem' }" [baseZIndex]="10000">
     <div class="p-fluid">

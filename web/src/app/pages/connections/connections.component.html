@@ -6,7 +6,7 @@
 
   <div class="flex justify-end mb-4 gap-x-4">
     <p-autoComplete
-      [(ngModel)]="newFriendUsername"
+      [(ngModel)]="newFriend"
       [suggestions]="filteredUsers"
       (completeMethod)="searchUsers($event)"
       field="username"
@@ -19,7 +19,7 @@
       icon="pi pi-user-plus"
       class="p-button-success"
       (click)="addFriend()"
-      [disabled]="!newFriendUsername.trim()"
+      [disabled]="!newFriend"
     ></button>
   </div>
 

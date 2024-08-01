@@ -47,6 +47,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 	displayBuySharesDialog = false;
 	displaySellSharesDialog = false;
 	depositAmount = 0;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	buyStockSymbol: any = "";
 	buyNumShares = 0;
 	buyPricePerShare = 0;
@@ -58,7 +59,10 @@ export class IndivivualPortfolioComponent implements OnInit {
 	portfolioBeta = 0;
 	hasEnoughFunds = true;
 	filteredStocks: Stock[] = [];
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	correlations: any[] = [];
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    covariances: any[] = [];
 
 	constructor(
 		private route: ActivatedRoute,
@@ -77,6 +81,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.loadInvestments();
 			this.loadPortfolioBeta();
 			this.loadCorrelationMatrix();
+            this.loadCovarianceMatrix();
 		});
 	}
 
@@ -91,6 +96,19 @@ export class IndivivualPortfolioComponent implements OnInit {
 			console.error("Error fetching stock correlations:", error);
 		}
 	}
+
+    async loadCovarianceMatrix() {
+        try {
+            const res = await this.apiService.StockCovariances(
+                this.username,
+                this.portfolioName,
+            );
+            this.covariances = res.stock_covariances;
+            console.log(this.covariances);
+        } catch (error) {
+            console.error("Error fetching stock covariances:", error);
+        }
+    }
 
 	async loadPortfolio() {
 		try {
