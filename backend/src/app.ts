@@ -17,9 +17,13 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(
-	cors(),
-);
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:4200",
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
 // application/json parser
 app.use(bodyParser.json());
 
