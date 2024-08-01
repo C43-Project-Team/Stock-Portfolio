@@ -17,15 +17,15 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(
+	cors(),
+);
 // application/json parser
 app.use(bodyParser.json());
 
 // application/x-www-form-urlencoded parser
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(
-	cors(),
-);
 
 app.use("/api/auth", authRouter);
 app.use("/api/stock", stockRouter);
