@@ -12,6 +12,7 @@ import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivi
 import { IndividualStockListComponent } from "@pages/individual-stock-list/individual-stock-list.component";
 import { LandingComponent } from "@pages/landing/landing.component";
 import { authRedirectGuard } from "@guards/auth-redirect.guard";
+import { PortfoliosComponent } from "@pages/portfolios/portfolios.component";
 
 export const routes: Routes = [
 	{ path: "", component: LandingComponent },
@@ -31,6 +32,7 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 		children: [
 			{ path: "connections", component: ConnectionsComponent },
+			{ path: "portfolios", component: PortfoliosComponent },
 			{
 				path: "id/:username",
 				children: [
