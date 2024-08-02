@@ -17,6 +17,10 @@ class StockListDatabase {
 	}
 
 	async getUserStockLists(owner: string): Promise<StocksList[]> {
+        /**
+         * select * from stocks_list
+         * where owner = owner;
+         */
 		return await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -28,6 +32,11 @@ class StockListDatabase {
 		owner: string,
 		stock_list_name: string,
 	): Promise<StocksList | null | undefined> {
+        /**
+         * select * from stocks_list
+         * where owner = owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		return await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -41,6 +50,11 @@ class StockListDatabase {
 		stock_list_name: string,
 		isPrivate: boolean,
 	): Promise<StocksList> {
+        /**
+         * select * from stocks_list
+         * where owner = owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		// Check if a stock list with the same name already exists
 		const existingStockList = await this.db
 			.selectFrom("stocks_list")
@@ -55,6 +69,11 @@ class StockListDatabase {
 			);
 		}
 
+        /**
+         * insert into stocks_list (owner, stock_list_name, private)
+         * values (owner, stock_list_name, isPrivate)
+         * returning owner, stock_list_name, private;
+         */
 		const [stockList] = await this.db
 			.insertInto("stocks_list")
 			.values({
@@ -68,6 +87,10 @@ class StockListDatabase {
 		return stockList;
 	}
 
+    /**
+     * delete from stocks_list
+     * where owner = owner and stock_list_name = stock_list_name;
+     */
 	async deleteStockList(owner: string, stock_list_name: string): Promise<void> {
 		await this.db
 			.deleteFrom("stocks_list")
@@ -80,6 +103,12 @@ class StockListDatabase {
 		authenticatedUser: string,
 		stockListOwner: string,
 	): Promise<StocksList[]> {
+        /**
+         * select * from private_access
+         * inner join stocks_list
+         * on private_access.stock_list_owner = stocks_list.owner and private_access.stock_list_name = stocks_list.stock_list_name
+         * where private_access.user = authenticatedUser and private_access.stock_list_owner = stockListOwner;
+         */
 		return await this.db
 			.selectFrom("private_access")
 			.innerJoin("stocks_list", (join) =>
@@ -101,6 +130,10 @@ class StockListDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from stocks_list
+     * where owner = username and private = false;
+     */
 	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
 		return await this.db
 			.selectFrom("stocks_list")
@@ -114,6 +147,12 @@ class StockListDatabase {
 		limit: number,
 		offset: number,
 	): Promise<StocksList[]> {
+        /**
+         * select * from stocks_list
+         * where private = false
+         * limit limit
+         * offset offset;
+         */
 		return await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -123,6 +162,11 @@ class StockListDatabase {
 			.execute();
 	}
 
+    /**
+     * select count(owner) as count from stocks_list
+     * where private = false;
+     * limit 1;
+     */
 	async getPublicStockListCount(): Promise<number> {
 		const result = await this.db
 			.selectFrom("stocks_list")
@@ -136,6 +180,11 @@ class StockListDatabase {
 		owner: string,
 		stock_list_name: string,
 	): Promise<StocksList | undefined> {
+        /**
+         * select * from stocks_list
+         * where owner = owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		const existingStockList = await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -149,6 +198,13 @@ class StockListDatabase {
 			);
 		}
 
+        /**
+         * update stocks_list
+         * set private = !existingStockList.private
+         * where owner = owner and stock_list_name = stock_list_name
+         * returning owner, stock_list_name, private
+         * limit 1;
+         */
 		const updatedStockList = await this.db
 			.updateTable("stocks_list")
 			.set({ private: !existingStockList.private })
@@ -164,6 +220,10 @@ class StockListDatabase {
 		owner: string,
 		stock_list_name: string,
 	): Promise<Contains[]> {
+        /**
+         * select * from contains
+         * where stock_list_owner = owner and stock_list_name = stock_list_name;
+         */
 		return await this.db
 			.selectFrom("contains")
 			.selectAll()
@@ -178,7 +238,12 @@ class StockListDatabase {
 		stock_symbol: string,
 		num_shares: number,
 	): Promise<void> {
-		console.log(stock_symbol);
+        /**
+         * insert into contains (stock_list_owner, stock_list_name, stock_symbol, num_shares)
+         * values (owner, stock_list_name, stock_symbol, num_shares)
+         * on conflict (stock_list_owner, stock_list_name, stock_symbol)
+         * do update set num_shares = num_shares + num_shares;
+         */
 		await this.db
 			.insertInto("contains")
 			.values({
@@ -203,6 +268,11 @@ class StockListDatabase {
 		stock_symbol: string,
 		num_shares: number,
 	): Promise<void> {
+        /**
+         * select num_shares from contains
+         * where stock_list_owner = owner and stock_list_name = stock_list_name and stock_symbol = stock_symbol
+         * limit 1;
+         */
 		const investment = await this.db
 			.selectFrom("contains")
 			.select("num_shares")
@@ -215,6 +285,11 @@ class StockListDatabase {
 			throw new Error("Insufficient shares");
 		}
 
+        /**
+         * update contains
+         * set num_shares = contains.num_shares - num_shares
+         * where stock_list_owner = owner and stock_list_name = stock_list_name and stock_symbol = stock_symbol;
+         */
 		await this.db
 			.updateTable("contains")
 			.set((eb) => ({
@@ -225,6 +300,10 @@ class StockListDatabase {
 			.where("stock_symbol", "=", stock_symbol)
 			.execute();
 
+        /**
+         * select num_shares from contains
+         * where stock_list_owner = owner and stock_list_name = stock_list_name and stock_symbol = stock_symbol
+         */
 		const updatedInvestment = await this.db
 			.selectFrom("contains")
 			.select("num_shares")
@@ -234,6 +313,10 @@ class StockListDatabase {
 			.executeTakeFirst();
 
 		if (updatedInvestment && updatedInvestment.num_shares === 0) {
+            /**
+             * delete from contains
+             * where stock_list_owner = owner and stock_list_name = stock_list_name and stock_symbol = stock_symbol;
+             */
 			await this.db
 				.deleteFrom("contains")
 				.where("stock_list_owner", "=", owner)
@@ -248,6 +331,10 @@ class StockListDatabase {
 		stock_list_name: string,
 		stock_symbol: string,
 	): Promise<void> {
+        /**
+         * delete from contains
+         * where stock_list_owner = owner and stock_list_name = stock_list_name and stock_symbol = stock_symbol;
+         */
 		await this.db
 			.deleteFrom("contains")
 			.where("stock_list_owner", "=", owner)
@@ -260,6 +347,11 @@ class StockListDatabase {
 		owner: string,
 		stock_list_name: string,
 	): Promise<PrivateAccess[]> {
+        /**
+         * select * from stocks_list
+         * where owner = owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		const stockList = await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -275,6 +367,10 @@ class StockListDatabase {
 			throw new Error("Cannot list shared users for a public stock list");
 		}
 
+        /**
+         * select * from private_access
+         * where stock_list_owner = owner and stock_list_name = stock_list_name;
+         */
 		return await this.db
 			.selectFrom("private_access")
 			.selectAll()
@@ -288,12 +384,23 @@ class StockListDatabase {
 		stockListName: string,
 		query: string,
 	): Promise<User[]> {
+        /**
+         * select user from private_access
+         * where stock_list_owner = owner and stock_list_name = stock_list_name;
+         */
 		const sharedUsers = this.db
 			.selectFrom("private_access")
 			.select("user")
 			.where("stock_list_owner", "=", owner)
 			.where("stock_list_name", "=", stockListName);
 
+        /**
+         * select receiving_friend as username from friends
+         * where requesting_friend = owner and pending = false
+         * union
+         * select requesting_friend as username from friends
+         * where receiving_friend = owner and pending = false;
+         */
 		const friends = this.db
 			.selectFrom("friends")
 			.select("receiving_friend as username")
@@ -307,6 +414,10 @@ class StockListDatabase {
 					.where("pending", "=", false),
 			);
 
+        /**
+         * select * from users
+         * where username like 'query%' and username not in sharedUsers and username in friends and username <> owner;
+         */
 		return await this.db
 			.selectFrom("users")
 			.selectAll()
@@ -322,6 +433,11 @@ class StockListDatabase {
 		stock_list_name: string,
 		user: string,
 	): Promise<void> {
+        /**
+         * select * from stocks_list
+         * where owner = owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		const stockList = await this.db
 			.selectFrom("stocks_list")
 			.selectAll()
@@ -337,6 +453,10 @@ class StockListDatabase {
 			throw new Error("Cannot share a public stock list");
 		}
 
+        /**
+         * insert into private_access (user, stock_list_owner, stock_list_name)
+         * values (user, owner, stock_list_name);
+         */
 		await this.db
 			.insertInto("private_access")
 			.values({
@@ -348,6 +468,11 @@ class StockListDatabase {
 	}
 
 	async isFriend(owner: string, user: string): Promise<boolean> {
+        /**
+         * select * from friends
+         * where (requesting_friend = owner and receiving_friend = user and pending = false) or (requesting_friend = user and receiving_friend = owner and pending = false)
+         * limit 1;
+         */
 		const friend = await this.db
 			.selectFrom("friends")
 			.selectAll()
@@ -375,6 +500,10 @@ class StockListDatabase {
 		stock_list_name: string,
 		user: string,
 	): Promise<void> {
+        /**
+         * delete from private_access
+         * where stock_list_owner = owner and stock_list_name = stock_list_name and user = user;
+         */
 		await this.db
 			.deleteFrom("private_access")
 			.where("stock_list_owner", "=", owner)
@@ -405,6 +534,11 @@ class StockListDatabase {
 			return true;
 		}
 
+        /**
+         * select * from private_access
+         * where user = user and stock_list_owner = stock_list_owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		const access = await this.db
 			.selectFrom("private_access")
 			.selectAll()
@@ -433,6 +567,10 @@ class StockListDatabase {
 			throw new Error("Access denied");
 		}
 
+        /**
+         * insert into reviews (reviewer, stock_list_owner, stock_list_name, content, rating)
+         * values (reviewer, stock_list_owner, stock_list_name, content, rating);
+         */
 		await this.db
 			.insertInto("reviews")
 			.values({
@@ -462,6 +600,11 @@ class StockListDatabase {
 			throw new Error("Access denied");
 		}
 
+        /**
+         * update reviews
+         * set content = content, rating = rating, review_last_updated = now()
+         * where reviewer = reviewer and stock_list_owner = stock_list_owner and stock_list_name = stock_list_name;
+         */
 		await this.db
 			.updateTable("reviews")
 			.set({
@@ -480,6 +623,11 @@ class StockListDatabase {
 		stock_list_owner: string,
 		stock_list_name: string,
 	): Promise<Review[]> {
+        /**
+         * select * from reviews
+         * where stock_list_owner = stock_list_owner and stock_list_name = stock_list_name
+         * order by review_creation_time desc;
+         */
 		return await this.db
 			.selectFrom("reviews")
 			.selectAll()
@@ -508,6 +656,10 @@ class StockListDatabase {
 			throw new Error("Review not found");
 		}
 
+        /**
+         * delete from reviews
+         * where reviewer = reviewer and stock_list_owner = stock_list_owner and stock_list_name = stock_list_name;
+         */
 		await this.db
 			.deleteFrom("reviews")
 			.where("reviewer", "=", reviewer)
@@ -521,6 +673,11 @@ class StockListDatabase {
 		stock_list_owner: string,
 		stock_list_name: string,
 	): Promise<Review | null | undefined> {
+        /**
+         * select * from reviews
+         * where reviewer = reviewer and stock_list_owner = stock_list_owner and stock_list_name = stock_list_name
+         * limit 1;
+         */
 		return await this.db
 			.selectFrom("reviews")
 			.selectAll()
