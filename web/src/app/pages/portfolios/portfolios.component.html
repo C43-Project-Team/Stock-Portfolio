@@ -1,0 +1,88 @@
+<p-toast></p-toast>
+<div class="container mx-auto p-4 pt-12">
+  <div class="flex justify-between mb-4">
+    <h2 class="text-xl font-semibold">My Portfolios</h2>
+    <p-button
+      label="Create Portfolio"
+      icon="pi pi-plus"
+      class="p-button-success"
+      (click)="showCreatePortfolioDialog()"
+    ></p-button>
+  </div>
+
+  <p-table [value]="portfolios" class="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Portfolio Name</th>
+        <th>Cash</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-portfolio>
+      <tr>
+        <td>{{ portfolio.portfolio_name }}</td>
+        <td>{{ portfolio.cash }}</td>
+        <td>
+          <div class="flex gap-x-2">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToPortfolio(portfolio.portfolio_name)"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-danger p-button-rounded"
+              (click)="confirmDeletePortfolio(portfolio.portfolio_name)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    header="Create Portfolio"
+    [(visible)]="displayCreatePortfolioDialog"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [responsive]="true"
+    [style]="{ width: '20rem' }"
+    [baseZIndex]="10000"
+  >
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <label for="portfolioName" class="block text-sm font-medium text-gray-700">Portfolio Name</label>
+        <input
+          id="portfolioName"
+          type="text"
+          pInputText
+          [(ngModel)]="newPortfolioName"
+          class="mt-1 block w-full"
+        />
+      </div>
+      <div class="p-field mb-4">
+        <label for="initialDeposit" class="block text-sm font-medium text-gray-700">Initial Deposit</label>
+        <input
+          id="initialDeposit"
+          type="number"
+          pInputText
+          [(ngModel)]="initialDeposit"
+          class="mt-1 block w-full"
+        />
+      </div>
+      <div class="text-right">
+        <p-button
+          label="Create"
+          class="p-button-success"
+          (click)="createPortfolio()"
+          [disabled]="!newPortfolioName.trim() || !initialDeposit"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

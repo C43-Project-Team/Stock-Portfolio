@@ -18,6 +18,9 @@ import { DataViewModule } from "primeng/dataview";
 import { AutoCompleteModule } from "primeng/autocomplete";
 import type { Stock } from "@models/stock";
 import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.component";
+import { Portfolio } from "@models/portfolio";
+import { DropdownModule } from "primeng/dropdown";
+import { AuthService } from "@services/auth.service";
 
 @Component({
 	selector: "app-indivivual-portfolio",
@@ -33,6 +36,7 @@ import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.comp
 		DataViewModule,
 		AutoCompleteModule,
 		StockMatrixComponent,
+		DropdownModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
@@ -46,6 +50,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	displayDepositDialog = false;
 	displayBuySharesDialog = false;
 	displaySellSharesDialog = false;
+	displayDepositOptionsDialog = false;
+	displayBetweenPortfoliosDialog = false;
 	depositAmount = 0;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	buyStockSymbol: any = "";
@@ -61,14 +67,18 @@ export class IndivivualPortfolioComponent implements OnInit {
 	filteredStocks: Stock[] = [];
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	correlations: any[] = [];
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    covariances: any[] = [];
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	covariances: any[] = [];
+	portfolios: Portfolio[] = [];
+	selectedPortfolio: Portfolio | null = null;
+	hasAccess = false;
 
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
 		private apiService: ApiService,
 		private messageService: MessageService,
+		private authService: AuthService,
 	) {}
 
 	ngOnInit(): void {
@@ -77,12 +87,31 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.username = params["username"];
 			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.portfolioName = params["portfolio_name"];
-			this.loadPortfolio();
-			this.loadInvestments();
-			this.loadPortfolioBeta();
-			this.loadCorrelationMatrix();
-            this.loadCovarianceMatrix();
+			this.authService.getCredentials().subscribe(async (user) => {
+				if (user.username !== this.username) {
+					this.logError("You do not have access to this portfolio.");
+					return;
+				}
+				this.hasAccess = true;
+				await this.loadPortfolio();
+				this.loadInvestments();
+				this.loadPortfolioBeta();
+				this.loadCorrelationMatrix();
+				this.loadCovarianceMatrix();
+				this.loadUserPortfolios();
+			});
 		});
+	}
+
+	async loadUserPortfolios() {
+		try {
+			this.portfolios = await this.apiService.getUserPortfolios();
+			this.portfolios = this.portfolios.filter(
+				(portfolio) => portfolio.portfolio_name !== this.portfolioName,
+			);
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
 	}
 
 	async loadCorrelationMatrix() {
@@ -97,18 +126,18 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
-    async loadCovarianceMatrix() {
-        try {
-            const res = await this.apiService.StockCovariances(
-                this.username,
-                this.portfolioName,
-            );
-            this.covariances = res.stock_covariances;
-            console.log(this.covariances);
-        } catch (error) {
-            console.error("Error fetching stock covariances:", error);
-        }
-    }
+	async loadCovarianceMatrix() {
+		try {
+			const res = await this.apiService.StockCovariances(
+				this.username,
+				this.portfolioName,
+			);
+			this.covariances = res.stock_covariances;
+			// console.log(this.covariances);
+		} catch (error) {
+			console.error("Error fetching stock covariances:", error);
+		}
+	}
 
 	async loadPortfolio() {
 		try {
@@ -153,8 +182,21 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
+	showDepositOptionsDialog() {
+		// New
+		this.displayDepositOptionsDialog = true;
+	}
+
 	showDepositDialog() {
+		// Updated
 		this.displayDepositDialog = true;
+		this.displayDepositOptionsDialog = false;
+	}
+
+	showBetweenPortfoliosDialog() {
+		// New
+		this.displayBetweenPortfoliosDialog = true;
+		this.displayDepositOptionsDialog = false;
 	}
 
 	showBuyNewStockDialog() {
@@ -186,6 +228,29 @@ export class IndivivualPortfolioComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Money deposited successfully");
 			this.displayDepositDialog = false;
+			this.loadPortfolio();
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async transferBetweenPortfolios() {
+		if (!this.selectedPortfolio) return;
+
+		if (this.depositAmount > this.selectedPortfolio.cash) {
+			this.logError("Not enough funds in the selected portfolio");
+			return;
+		}
+
+		try {
+			await this.apiService.depositBetweenPortfolios(
+				this.username,
+				this.selectedPortfolio.portfolio_name,
+				this.portfolioName,
+				this.depositAmount,
+			);
+			this.logSuccess("Success", "Funds transferred successfully");
+			this.displayBetweenPortfoliosDialog = false;
 			this.loadPortfolio();
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);

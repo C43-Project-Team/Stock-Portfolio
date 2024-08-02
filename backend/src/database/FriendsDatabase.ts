@@ -15,6 +15,11 @@ class FriendsDatabase {
 	): Promise<Friend | null | undefined> {
 		const now = new Date();
 
+        /**
+         * select * from request_timeout 
+         * where request_user = requestingFriend and receive_user = receivingFriend and expiry_time > now()
+         * limit 1;
+         */
 		const activeTimeout = await this.db
 			.selectFrom("request_timeout")
 			.selectAll()
@@ -33,6 +38,11 @@ class FriendsDatabase {
 			);
 		}
 
+        /**
+         * select * from friends 
+         * where (requesting_friend = requestingFriend and receiving_friend = receivingFriend) or (receiving_friend = requestingFriend and requesting_friend = receivingFriend)
+         * limit 1;
+         */
 		const existingRequest = await this.db
 			.selectFrom("friends")
 			.selectAll()
@@ -57,6 +67,11 @@ class FriendsDatabase {
 			throw new Error("You are already friends");
 		}
 
+        /**
+         * insert into friends (requesting_friend, receiving_friend, pending)
+         * values (requestingFriend, receivingFriend, true)
+         * returning *;
+         */
 		const newFriendRequest = await this.db
 			.insertInto("friends")
 			.values({
@@ -70,6 +85,11 @@ class FriendsDatabase {
 		return newFriendRequest;
 	}
 
+    /**
+     * update friends 
+     * set pending = false
+     * where requesting_friend = requestingFriend and receiving_friend = receivingFriend
+     */
 	async acceptFriendRequest(
 		requestingFriend: string,
 		receivingFriend: string,
@@ -88,6 +108,10 @@ class FriendsDatabase {
 			.execute();
 	}
 
+    /**
+     * delete from friends
+     * where (requesting_friend = requestingFriend and receiving_friend = receivingFriend) or (receiving_friend = requestingFriend and requesting_friend = receivingFriend)
+     */
 	async removeFriend(
 		requestingFriend: string,
 		receivingFriend: string,
@@ -110,6 +134,11 @@ class FriendsDatabase {
 
 		const expiryTime = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
 
+        /**
+         * select * from request_timeout
+         * where request_user = requestingFriend and receive_user = receivingFriend
+         * limit 1;
+         */
 		// Check if a timeout already exists
 		const existingTimeout = await this.db
 			.selectFrom("request_timeout")
@@ -123,6 +152,11 @@ class FriendsDatabase {
 			.executeTakeFirst();
 
 		if (existingTimeout) {
+            /**
+             * update request_timeout
+             * set expiry_time = expiryTime
+             * where request_user = requestingFriend and receive_user = receivingFriend;
+             */
 			// Update the existing timeout
 			await this.db
 				.updateTable("request_timeout")
@@ -136,6 +170,10 @@ class FriendsDatabase {
 				)
 				.execute();
 		} else {
+            /**
+             * insert into request_timeout (request_user, receive_user, expiry_time)
+             * values (requestingFriend, receivingFriend, expiryTime);
+             */
 			// Insert a new timeout
 			await this.db
 				.insertInto("request_timeout")
@@ -148,37 +186,49 @@ class FriendsDatabase {
 		}
 	}
 
-  async searchForNewFriends(username: string, query: string): Promise<User[]> {
-  const results = await this.db
-    .selectFrom('users')
-    .selectAll()
-    .where('username', 'like', `${query}%`)
-    .where((eb) =>
-      eb.not(
-        eb.exists(
-          this.db
-            .selectFrom('friends')
-            .select('requesting_friend')
-            .where((subEb) =>
-              subEb.or([
-                subEb.and([
-                  subEb('requesting_friend', '=', username),
-                  subEb('receiving_friend', '=', eb.ref('users.username')),
-                ]),
-                subEb.and([
-                  subEb('receiving_friend', '=', username),
-                  subEb('requesting_friend', '=', eb.ref('users.username')),
-                ]),
-              ])
-            )
-        )
-      )
-    )
-    .execute();
+    /**
+     * select * from users
+     * where username != username and username like 'query%' and not exists (
+     *    select requesting_friend from friends
+     *    where (requesting_friend = username and receiving_friend = users.username) or (receiving_friend = username and requesting_friend = users.username)
+     * );
+     */
+	async searchForNewFriends(username: string, query: string): Promise<User[]> {
+		const results = await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "!=", username)
+			.where("username", "like", `${query}%`)
+			.where((eb) =>
+				eb.not(
+					eb.exists(
+						this.db
+							.selectFrom("friends")
+							.select("requesting_friend")
+							.where((subEb) =>
+								subEb.or([
+									subEb.and([
+										subEb("requesting_friend", "=", username),
+										subEb("receiving_friend", "=", eb.ref("users.username")),
+									]),
+									subEb.and([
+										subEb("receiving_friend", "=", username),
+										subEb("requesting_friend", "=", eb.ref("users.username")),
+									]),
+								]),
+							),
+					),
+				),
+			)
+			.execute();
 
-  return results;
-}
+		return results;
+	}
 
+    /**
+     * delete from friends
+     * where (requesting_friend = requestingFriend and receiving_friend = receivingFriend) or (receiving_friend = requestingFriend and requesting_friend = receivingFriend);
+     */
 	async withdrawFriendRequest(
 		requestingFriend: string,
 		receivingFriend: string,
@@ -200,6 +250,10 @@ class FriendsDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from friends
+     * where (requesting_friend = username or receiving_friend = username) and pending = false;
+     */
 	async getConnections(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")
@@ -216,6 +270,10 @@ class FriendsDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from friends
+     * where receiving_friend = username and pending = true;
+     */
 	async getIncomingRequests(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")
@@ -229,6 +287,10 @@ class FriendsDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from friends
+     * where requesting_friend = username and pending = true;
+     */
 	async getSentRequests(username: string): Promise<Friend[]> {
 		return this.db
 			.selectFrom("friends")
@@ -242,6 +304,16 @@ class FriendsDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from users
+     * where username != username and not exists (
+     *     select * from friends
+     *     where (requesting_friend = username and receiving_friend = users.username)
+     * ) and not exists (
+     *     select * from friends 
+     *     where (receiving_friend = username and requesting_friend = users.username)
+     * ); 
+     */
 	async getNonFriends(username: string): Promise<User[]> {
 		return this.db
 			.selectFrom("users")

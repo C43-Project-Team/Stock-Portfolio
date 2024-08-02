@@ -60,13 +60,13 @@ export class NavbarComponent implements OnInit {
 					{
 						label: "My Stock Lists",
 						command: () => {
-							this.router.navigate(["/user/stock-lists/my"]);
+							this.router.navigate(["/stock-lists/mine"]);
 						},
 					},
 					{
 						label: "Shared Stock Lists",
 						command: () => {
-							this.router.navigate(["/user/stock-lists/shared"]);
+							this.router.navigate(["/stock-lists/shared"]);
 						},
 					},
 					{

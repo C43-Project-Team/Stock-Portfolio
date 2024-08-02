@@ -175,7 +175,7 @@
     <div class="mt-8">
         <h2 class="text-2xl font-bold mb-4">Reviews</h2>
         <div class="flex justify-end mb-4">
-            <p-button label="Add Review" icon="pi pi-plus" class="p-button-info" (click)="showAddReviewDialog()" *ngIf="!isOwner"></p-button>
+            <p-button label="Add Review" icon="pi pi-plus" class="p-button-info" (click)="showAddReviewDialog()" *ngIf="!isOwner && !userReview"></p-button>
         </div>
         <div *ngIf="userReview" class="mb-4 p-4 border rounded shadow">
             <div class="flex justify-between items-center mb-2">
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <p-table [value]="otherReviews" [scrollable]="true" scrollHeight="400px">
+        <p-table [value]="otherReviews" [scrollable]="true" scrollHeight="400px" *ngIf="isOwner || !isPrivate">
             <ng-template pTemplate="body" let-review>
                 <tr>
                     <td class="p-4 border-b">

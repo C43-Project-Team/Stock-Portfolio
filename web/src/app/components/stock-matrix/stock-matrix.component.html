@@ -12,7 +12,7 @@
           <td *ngFor="let j of stockNames; let jIndex = index" 
               class="border-b px-4 py-2"
               [ngClass]="getCellColor(matrix[i][jIndex])">
-            {{ matrix[i][jIndex] | number: '1.2-2' }}
+            {{ matrix[i][jIndex] }}
           </td>
         </tr>
       </tbody>

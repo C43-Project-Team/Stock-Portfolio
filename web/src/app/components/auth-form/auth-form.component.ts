@@ -18,7 +18,6 @@ import { AuthService } from "../../services/auth.service";
 import { Router } from "@angular/router";
 import { ToastModule } from "primeng/toast";
 import { MessageService } from "primeng/api";
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 @Component({
 	selector: "app-auth-form",
