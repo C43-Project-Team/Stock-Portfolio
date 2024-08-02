@@ -14,6 +14,7 @@ import { LandingComponent } from "@pages/landing/landing.component";
 import { authRedirectGuard } from "@guards/auth-redirect.guard";
 import { PortfoliosComponent } from "@pages/portfolios/portfolios.component";
 import { StockListsMineComponent } from "@pages/stock-lists-mine/stock-lists-mine.component";
+import { StockListsSharedComponent } from "@pages/stock-lists-shared/stock-lists-shared.component";
 
 export const routes: Routes = [
 	{ path: "", component: LandingComponent },
@@ -53,6 +54,7 @@ export const routes: Routes = [
 		children: [
 			{ path: "public", component: PublicStockListsComponent },
 			{ path: "mine", component: StockListsMineComponent },
+			{ path: "shared", component: StockListsSharedComponent },
 			{
 				path: "user/:username",
 				children: [

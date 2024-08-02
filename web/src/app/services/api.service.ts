@@ -159,6 +159,10 @@ export class ApiService {
 		return this.get<StocksList[]>(`/stock-list/private-shared/${username}`);
 	}
 
+	async getAllPrivateStockListsSharedWithUser(): Promise<StocksList[]> {
+		return this.get<StocksList[]>("/stock-list/private-shared");
+	}
+
 	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
 		const endpoint = `/stock-list/public/user/${username}`;
 		return this.get<StocksList[]>(endpoint);
