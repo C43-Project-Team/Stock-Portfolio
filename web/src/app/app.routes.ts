@@ -13,6 +13,7 @@ import { IndividualStockListComponent } from "@pages/individual-stock-list/indiv
 import { LandingComponent } from "@pages/landing/landing.component";
 import { authRedirectGuard } from "@guards/auth-redirect.guard";
 import { PortfoliosComponent } from "@pages/portfolios/portfolios.component";
+import { StockListsMineComponent } from "@pages/stock-lists-mine/stock-lists-mine.component";
 
 export const routes: Routes = [
 	{ path: "", component: LandingComponent },
@@ -51,6 +52,7 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 		children: [
 			{ path: "public", component: PublicStockListsComponent },
+			{ path: "mine", component: StockListsMineComponent },
 			{
 				path: "user/:username",
 				children: [

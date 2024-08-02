@@ -495,6 +495,9 @@ class StockListDatabase {
 		stock_list_name: string,
 	): Promise<void> {
 		// Ensure that the review belongs to the authenticated user
+		console.log("Reviewer: ", reviewer);
+		console.log("Stock list owner: ", stock_list_owner);
+		console.log("Stock list name: ", stock_list_name);
 		const review = await this.getReview(
 			reviewer,
 			stock_list_owner,

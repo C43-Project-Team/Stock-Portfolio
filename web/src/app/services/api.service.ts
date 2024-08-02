@@ -438,10 +438,11 @@ export class ApiService {
 	async deleteReview(
 		stockListOwner: string,
 		stockListName: string,
+		reviewer: string,
 	): Promise<void> {
 		return this.delete<void>(
 			`/stock-list/${stockListOwner}/${stockListName}/reviews`,
-			{},
+			{ reviewer },
 		);
 	}
 }

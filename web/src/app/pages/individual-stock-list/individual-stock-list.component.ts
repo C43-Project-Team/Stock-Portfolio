@@ -21,6 +21,7 @@ import type { User } from "@models/user";
 import { Review } from "@models/review";
 import { RatingModule } from "primeng/rating";
 import { SharedUser } from "@models/shared-user";
+import { InputTextareaModule } from "primeng/inputtextarea";
 
 @Component({
 	selector: "app-individual-stock-list",
@@ -36,6 +37,7 @@ import { SharedUser } from "@models/shared-user";
 		AutoCompleteModule,
 		ToggleButtonModule,
 		RatingModule,
+		InputTextareaModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./individual-stock-list.component.html",
@@ -157,7 +159,12 @@ export class IndividualStockListComponent implements OnInit {
 
 	async deleteReview(review: Review) {
 		try {
-			await this.apiService.deleteReview(review.reviewer, this.stockListName);
+			console.log(review);
+			await this.apiService.deleteReview(
+				review.stock_list_owner,
+				review.stock_list_name,
+				review.reviewer,
+			);
 			this.logSuccess("Success", "Review deleted successfully");
 			this.loadReviews();
 		} catch (error) {
