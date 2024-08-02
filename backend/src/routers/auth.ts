@@ -70,6 +70,8 @@ authRouter.post("/signin", async (req, res) => {
 
 		const { username, password } = req.body;
 		const user = await userDatabase.getUserByUsername(username);
+		console.log("text 1.5");
+		console.log(user);
 		if (!user) {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
