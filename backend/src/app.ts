@@ -10,6 +10,7 @@ import friendsRouter from "@routers/friends";
 import { userRouter } from "@routers/user";
 import { stockListRouter } from "@routers/stock_list";
 import { portfolioRouter } from "./routers/portfolio";
+import { userDatabase } from "./database/UserDatabase";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
@@ -41,8 +42,9 @@ app.use("/api/stock-list", stockListRouter);
 
 app.use("/api/uploads", express.static(path.join(__dirname, "./uploads")));
 
-app.get("/api/test", (req: Request, res: Response) => {
-  return res.json({ message: "Hello, world!" });
+app.get("/api/test", async (req: Request, res: Response) => {
+  const user = await userDatabase.getUserByUsername("murphylee10")
+  return res.json(user);
 });
 
 app.listen(PORT, () => {
