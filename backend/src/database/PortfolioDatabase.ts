@@ -10,6 +10,11 @@ class PortfolioDatabase {
 	}
 
 	async getUserPortfolios(owner: string): Promise<Portfolio[]> {
+
+        /**
+         * select * from portfolios
+         * where owner = owner;
+         */
 		return await this.db
 			.selectFrom("portfolios")
 			.selectAll()
@@ -22,6 +27,11 @@ class PortfolioDatabase {
 		portfolio_name: string,
 		initialDeposit: number,
 	): Promise<Portfolio> {
+        /**
+         * select * from portfolios
+         * where owner = owner and portfolio_name = portfolio_name
+         * limit 1;
+         */
 		// Check if a portfolio with the same name already exists
 		const existingPortfolio = await this.db
 			.selectFrom("portfolios")
@@ -36,6 +46,11 @@ class PortfolioDatabase {
 			);
 		}
 
+        /**
+         * insert into portfolios (owner, portfolio_name, cash)
+         * values (owner, portfolio_name, initialDeposit)
+         * returning owner, portfolio_name, cash, portfolio_created_at;
+         */
 		const [portfolio] = await this.db
 			.insertInto("portfolios")
 			.values({
@@ -49,6 +64,10 @@ class PortfolioDatabase {
 		return portfolio;
 	}
 
+    /**
+     * delete from portfolios
+     * where owner = owner and portfolio_name = portfolio_name;
+     */
 	async deletePortfolio(owner: string, portfolio_name: string): Promise<void> {
 		await this.db
 			.deleteFrom("portfolios")
@@ -57,6 +76,11 @@ class PortfolioDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from portfolios
+     * where owner = owner and portfolio_name = portfolio_name
+     * limit 1;
+     */
 	async getPortfolioFromName(
 		owner: string,
 		portfolio_name: string,
@@ -69,6 +93,10 @@ class PortfolioDatabase {
 			.executeTakeFirst();
 	}
 
+    /**
+     * select * from investments
+     * where owner = owner and portfolio_name = portfolio_name;
+     */
 	async getInvestments(
 		owner: string,
 		portfolio_name: string,
@@ -81,6 +109,13 @@ class PortfolioDatabase {
 			.execute();
 	}
 
+    /**
+     * select close_price from investments
+     * from stocks_daily
+     * where stock_symbol = stock_symbol
+     * order by stock_date desc
+     * limit 1;
+     */
 	async buyShares(
 		owner: string,
 		portfolio_name: string,
@@ -103,6 +138,11 @@ class PortfolioDatabase {
 		const price_per_share = recentPrice.close_price;
 		const totalCost = num_shares * price_per_share;
 
+        /**
+         * select cash from portfolios
+         * where owner = owner and portfolio_name = portfolio_name
+         * limit 1;
+         */
 		// Check if the portfolio has enough cash
 		const portfolio = await this.db
 			.selectFrom("portfolios")
@@ -115,6 +155,11 @@ class PortfolioDatabase {
 			throw new Error("Insufficient funds");
 		}
 
+        /**
+         * update portfolios
+         * set cash = cash - totalCost
+         * where owner = owner and portfolio_name = portfolio_name;
+         */
 		// Update the portfolio's cash
 		await this.db
 			.updateTable("portfolios")
@@ -125,6 +170,12 @@ class PortfolioDatabase {
 			.where("portfolio_name", "=", portfolio_name)
 			.execute();
 
+        /**
+         * insert into investments (owner, portfolio_name, stock_symbol, num_shares)
+         * values (owner, portfolio_name, stock_symbol, num_shares)
+         * on conflict (owner, portfolio_name, stock_symbol)
+         * do update set num_shares = num_shares + num_shares;
+         */
 		// Update the investments table
 		await this.db
 			.insertInto("investments")
@@ -148,6 +199,11 @@ class PortfolioDatabase {
 		stock_symbol: string,
 		num_shares: number,
 	): Promise<void> {
+        /**
+         * select num_shares from investments
+         * where owner = owner and portfolio_name = portfolio_name and stock_symbol = stock_symbol
+         * limit 1;
+         */
 		// Check if the portfolio has enough shares
 		const investment = await this.db
 			.selectFrom("investments")
@@ -161,6 +217,12 @@ class PortfolioDatabase {
 			throw new Error("Insufficient shares");
 		}
 
+        /**
+         * select close_price from stocks_daily
+         * where stock_symbol = stock_symbol
+         * order by stock_date desc
+         * limit 1;
+         */
 		// Fetch the most recent close price for the stock symbol
 		const recentPrice = await this.db
 			.selectFrom("stocks_daily")
@@ -179,6 +241,11 @@ class PortfolioDatabase {
 		const price_per_share = recentPrice.close_price;
 		const totalProceeds = num_shares * price_per_share;
 
+        /**
+         * update portfolios
+         * set cash = cash + totalProceeds
+         * where owner = owner and portfolio_name = portfolio_name;
+         */
 		// Update the portfolio's cash
 		await this.db
 			.updateTable("portfolios")
@@ -189,6 +256,11 @@ class PortfolioDatabase {
 			.where("portfolio_name", "=", portfolio_name)
 			.execute();
 
+        /**
+         * update investments
+         * set num_shares = num_shares - num_shares
+         * where owner = owner and portfolio_name = portfolio_name and stock_symbol = stock_symbol;
+         */
 		// Update the investments table
 		await this.db
 			.updateTable("investments")
@@ -200,6 +272,11 @@ class PortfolioDatabase {
 			.where("stock_symbol", "=", stock_symbol)
 			.execute();
 
+        /**
+         * select num_shares from investments
+         * where owner = owner and portfolio_name = portfolio_name and stock_symbol = stock_symbol
+         * limit 1;
+         */
 		// Check if the number of shares is now zero and delete the entry if it is
 		const updatedInvestment = await this.db
 			.selectFrom("investments")
@@ -209,6 +286,10 @@ class PortfolioDatabase {
 			.where("stock_symbol", "=", stock_symbol)
 			.executeTakeFirst();
 
+        /**
+         * delete from investments
+         * where owner = owner and portfolio_name = portfolio_name and stock_symbol = stock_symbol;
+         */
 		if (updatedInvestment && updatedInvestment.num_shares === 0) {
 			await this.db
 				.deleteFrom("investments")
@@ -224,6 +305,11 @@ class PortfolioDatabase {
 		portfolio_name: string,
 		amount: number,
 	): Promise<void> {
+        /**
+         * update portfolios
+         * set cash = cash + amount
+         * where owner = owner and portfolio_name = portfolio_name;
+         */
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
@@ -285,6 +371,11 @@ class PortfolioDatabase {
 		receiving_portfolio: string,
 		amount: number,
 	) {
+        /**
+         * update portfolios
+         * set cash = cash - amount
+         * where owner = owner and portfolio_name = sending_portfolio;
+         */
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
@@ -294,6 +385,12 @@ class PortfolioDatabase {
 			.where("portfolio_name", "=", sending_portfolio)
 			.execute();
 
+        /**
+         * update portfolios
+         * set cash = cash + amount
+         * where owner = owner and portfolio_name = receiving_portfolio;
+         */
+        // Update the receiving portfolio
 		await this.db
 			.updateTable("portfolios")
 			.set((eb) => ({
