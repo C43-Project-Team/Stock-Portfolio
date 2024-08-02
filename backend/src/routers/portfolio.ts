@@ -233,6 +233,31 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
+	"/portfolio-beta-range",
+    verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { owner, portfolio_name, startDate, endDate } = req.body;
+		try {
+			const portfolioBeta = await portfolioDatabase.portfolioBetaRange(
+				owner,
+				portfolio_name,
+                startDate,
+                endDate
+			);
+
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			res.json({ portfolio_beta: portfolioBeta });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving portfolio beta" });
+		}
+	},
+);
+
+portfolioRouter.post(
 	"/stock-beta",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {

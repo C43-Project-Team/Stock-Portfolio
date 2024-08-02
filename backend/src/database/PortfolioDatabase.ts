@@ -327,6 +327,13 @@ class PortfolioDatabase {
 			.calculate_portfolio_beta;
 	}
 
+    async portfolioBetaRange(owner: string, portfolio_name: string, startDate: string, endDate: string): Promise<number> {
+        const query = sql`SELECT public.calculate_portfolio_beta(${owner}, ${portfolio_name}, ${startDate}, ${endDate})`;
+        const res = await query.execute(db);
+        return (res.rows[0] as { calculate_portfolio_beta: number })
+            .calculate_portfolio_beta;
+    }        
+
 	async stockBeta(stock_ticker: string): Promise<number> {
 		const query = sql`SELECT public.calculate_stock_beta(${stock_ticker});`;
 		const res = (await query.execute(db)) as unknown as {
