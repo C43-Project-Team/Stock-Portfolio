@@ -148,36 +148,37 @@ class FriendsDatabase {
 		}
 	}
 
-  async searchForNewFriends(username: string, query: string): Promise<User[]> {
-  const results = await this.db
-    .selectFrom('users')
-    .selectAll()
-    .where('username', 'like', `${query}%`)
-    .where((eb) =>
-      eb.not(
-        eb.exists(
-          this.db
-            .selectFrom('friends')
-            .select('requesting_friend')
-            .where((subEb) =>
-              subEb.or([
-                subEb.and([
-                  subEb('requesting_friend', '=', username),
-                  subEb('receiving_friend', '=', eb.ref('users.username')),
-                ]),
-                subEb.and([
-                  subEb('receiving_friend', '=', username),
-                  subEb('requesting_friend', '=', eb.ref('users.username')),
-                ]),
-              ])
-            )
-        )
-      )
-    )
-    .execute();
+	async searchForNewFriends(username: string, query: string): Promise<User[]> {
+		const results = await this.db
+			.selectFrom("users")
+			.selectAll()
+			.where("username", "!=", username)
+			.where("username", "like", `${query}%`)
+			.where((eb) =>
+				eb.not(
+					eb.exists(
+						this.db
+							.selectFrom("friends")
+							.select("requesting_friend")
+							.where((subEb) =>
+								subEb.or([
+									subEb.and([
+										subEb("requesting_friend", "=", username),
+										subEb("receiving_friend", "=", eb.ref("users.username")),
+									]),
+									subEb.and([
+										subEb("receiving_friend", "=", username),
+										subEb("requesting_friend", "=", eb.ref("users.username")),
+									]),
+								]),
+							),
+					),
+				),
+			)
+			.execute();
 
-  return results;
-}
+		return results;
+	}
 
 	async withdrawFriendRequest(
 		requestingFriend: string,

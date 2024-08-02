@@ -262,13 +262,15 @@ class PortfolioDatabase {
 		return rows;
 	}
 
-    async stockCovariance(stock_symbols: string[]): Promise<{stock1: string, stock2: string, covariance: number}[]> {
-        const query = sql`SELECT * FROM public.covariance_matrix(${stock_symbols})`;
+	async stockCovariance(
+		stock_symbols: string[],
+	): Promise<{ stock1: string; stock2: string; covariance: number }[]> {
+		const query = sql`SELECT * FROM public.covariance_matrix(${stock_symbols})`;
 		const { rows } = (await query.execute(this.db)) as {
 			rows: { stock1: string; stock2: string; covariance: number }[];
 		};
 		return rows;
-    }
+	}
 
 	async stockCoffectientOfVariation(stock_symbol: string): Promise<number> {
 		const query = sql`SELECT public.cov(${stock_symbol})`;
@@ -277,7 +279,7 @@ class PortfolioDatabase {
 	}
 
 	// TODO: Transfer money between portfolios - DONE!!!!!!!!!!!
-	async interportfolioCashTransfer(
+	async interPortfolioCashTransfer(
 		owner: string,
 		sending_portfolio: string,
 		receiving_portfolio: string,

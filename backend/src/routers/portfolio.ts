@@ -291,8 +291,7 @@ portfolioRouter.post(
 				portfolio_name,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
-			const stockCovariances =
-				await portfolioDatabase.stockCovariance(stocks);
+			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
 
 			res.json({ stock_covariances: stockCovariances });
 		} catch (error) {
@@ -339,8 +338,14 @@ portfolioRouter.post(
 			return res.status(400).json({ error: "Missing required parameters" });
 		}
 
+		if (from_portfolio_name === to_portfolio_name) {
+			return res
+				.status(400)
+				.json({ error: "Cannot transfer to same portfolio" });
+		}
+
 		try {
-			await portfolioDatabase.interportfolioCashTransfer(
+			await portfolioDatabase.interPortfolioCashTransfer(
 				owner,
 				from_portfolio_name,
 				to_portfolio_name,
