@@ -66,22 +66,28 @@ authRouter.post("/signup", upload, async (req, res) => {
 
 authRouter.post("/signin", async (req, res) => {
 	try {
+		console.log("text 1");
+
 		const { username, password } = req.body;
 		const user = await userDatabase.getUserByUsername(username);
 		if (!user) {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
+		console.log("text 2");
 		const isPasswordCorrect = await bcrypt.compare(
 			password,
 			user.password_hash,
 		);
+		console.log("text 3");
 		if (!isPasswordCorrect) {
 			return res.status(400).json({ error: "Invalid credentials" });
 		}
+		console.log("text 4");
 		const token = jwt.sign(
 			{ username: user.username },
 			process.env.JWT_SECRET || "stockms",
 		);
+		console.log("text 5");
 		return res.json({ username, token });
 	} catch (error) {
 		res.status(500).json({ error: "Error logging in" });
