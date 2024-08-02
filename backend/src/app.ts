@@ -22,6 +22,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // application/json parser
