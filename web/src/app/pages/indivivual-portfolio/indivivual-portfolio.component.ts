@@ -20,6 +20,7 @@ import type { Stock } from "@models/stock";
 import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.component";
 import { Portfolio } from "@models/portfolio";
 import { DropdownModule } from "primeng/dropdown";
+import { AuthService } from "@services/auth.service";
 
 @Component({
 	selector: "app-indivivual-portfolio",
@@ -70,12 +71,14 @@ export class IndivivualPortfolioComponent implements OnInit {
 	covariances: any[] = [];
 	portfolios: Portfolio[] = [];
 	selectedPortfolio: Portfolio | null = null;
+	hasAccess = false;
 
 	constructor(
 		private route: ActivatedRoute,
 		private router: Router,
 		private apiService: ApiService,
 		private messageService: MessageService,
+		private authService: AuthService,
 	) {}
 
 	ngOnInit(): void {
@@ -84,12 +87,19 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.username = params["username"];
 			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.portfolioName = params["portfolio_name"];
-			this.loadPortfolio();
-			this.loadInvestments();
-			this.loadPortfolioBeta();
-			this.loadCorrelationMatrix();
-			this.loadCovarianceMatrix();
-			this.loadUserPortfolios();
+			this.authService.getCredentials().subscribe(async (user) => {
+				if (user.username !== this.username) {
+					this.logError("You do not have access to this portfolio.");
+					return;
+				}
+				this.hasAccess = true;
+				await this.loadPortfolio();
+				this.loadInvestments();
+				this.loadPortfolioBeta();
+				this.loadCorrelationMatrix();
+				this.loadCovarianceMatrix();
+				this.loadUserPortfolios();
+			});
 		});
 	}
 
