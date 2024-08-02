@@ -11,11 +11,20 @@ import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stoc
 import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivivual-portfolio.component";
 import { IndividualStockListComponent } from "@pages/individual-stock-list/individual-stock-list.component";
 import { LandingComponent } from "@pages/landing/landing.component";
+import { authRedirectGuard } from "@guards/auth-redirect.guard";
 
 export const routes: Routes = [
 	{ path: "", component: LandingComponent },
-	{ path: "sign-in", component: SignInComponent },
-	{ path: "sign-up", component: SignUpComponent },
+	{
+		path: "sign-in",
+		component: SignInComponent,
+		canActivate: [authRedirectGuard],
+	},
+	{
+		path: "sign-up",
+		component: SignUpComponent,
+		canActivate: [authRedirectGuard],
+	},
 	{
 		path: "user",
 		component: LayoutComponent,
