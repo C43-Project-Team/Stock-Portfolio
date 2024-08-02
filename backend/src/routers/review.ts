@@ -109,7 +109,7 @@ reviewRouter.delete(
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const reviewer = req.user?.username;
+			const reviewer = req.body.reviewer;
 			const { stock_list_owner, stock_list_name } = req.params;
 
 			if (!reviewer) {

@@ -1,6 +1,6 @@
 import { portfolioDatabase } from "@/database/PortfolioDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
-import { Router, type Response } from "express";
+import e, { Router, type Response } from "express";
 import "dotenv/config";
 
 export const portfolioRouter = Router();
@@ -253,6 +253,25 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
+    "/stock-beta-range",
+    async (req: AuthedRequest, res: Response) => {
+        const { stock_ticker, startDate, endDate } = req.body;
+		try {
+			const stockBeta = await portfolioDatabase.stockBetaRange(stock_ticker, startDate, endDate);
+
+			if (!stock_ticker) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			res.json({ stock_beta: stockBeta });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock beta" });
+		}
+	},
+);
+
+portfolioRouter.post(
 	"/stock-correlations",
 	async (req: AuthedRequest, res: Response) => {
 		try {
@@ -278,6 +297,31 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
+	"/stock-correlations-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, portfolio_name, startDate, endDate } = req.body;
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const investments = await portfolioDatabase.getInvestments(
+				owner,
+				portfolio_name,
+			);
+			const stocks = investments.map((investment) => investment.stock_symbol);
+			const stockCorrelations =
+				await portfolioDatabase.stockCorrelationsRange(stocks, startDate, endDate);
+
+			res.json({ stock_correlations: stockCorrelations });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+portfolioRouter.post(
 	"/stock-covariance",
 	async (req: AuthedRequest, res: Response) => {
 		try {
@@ -291,8 +335,31 @@ portfolioRouter.post(
 				portfolio_name,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
-			const stockCovariances =
-				await portfolioDatabase.stockCovariance(stocks);
+			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+portfolioRouter.post(
+	"/stock-covariance-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, portfolio_name, startDate, endDate } = req.body;
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const investments = await portfolioDatabase.getInvestments(
+				owner,
+				portfolio_name,
+			);
+			const stocks = investments.map((investment) => investment.stock_symbol);
+			const stockCovariances = await portfolioDatabase.stockCovarianceRange(stocks, startDate, endDate);
 
 			res.json({ stock_covariances: stockCovariances });
 		} catch (error) {
@@ -324,6 +391,27 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
+	"/stock-cov-range",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { stock_symbol, startDate, endDate } = req.body;
+		try {
+			const stockCov =
+				await portfolioDatabase.stockCoffectientOfVariationRange(stock_symbol, startDate, endDate);
+
+			if (!stock_symbol) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			res.json({ stock_cov: stockCov });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock cov" });
+		}
+	},
+);
+
+portfolioRouter.post(
 	"/portfolio-cash-transfer",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
@@ -339,8 +427,14 @@ portfolioRouter.post(
 			return res.status(400).json({ error: "Missing required parameters" });
 		}
 
+		if (from_portfolio_name === to_portfolio_name) {
+			return res
+				.status(400)
+				.json({ error: "Cannot transfer to same portfolio" });
+		}
+
 		try {
-			await portfolioDatabase.interportfolioCashTransfer(
+			await portfolioDatabase.interPortfolioCashTransfer(
 				owner,
 				from_portfolio_name,
 				to_portfolio_name,

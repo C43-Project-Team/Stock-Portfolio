@@ -1,12 +1,12 @@
 <p-toast></p-toast>
-<div class="container mx-auto p-4 pt-12">
+<div class="container mx-auto p-4 pt-12" *ngIf="hasAccess">
   <div class="flex items-center mb-4">
     <div>
       <h1 class="text-4xl font-bold">{{ portfolioName }}</h1>
       <h2 class="text-xl">By {{ username }}</h2>
     </div>
     <div class="ml-auto">
-      <p-button label="Deposit Money" icon="pi pi-dollar" class="p-button-success mr-2" (click)="showDepositDialog()"></p-button>
+      <p-button label="Deposit Money" icon="pi pi-dollar" class="p-button-success mr-2" (click)="showDepositOptionsDialog()"></p-button>
       <p-button label="Buy New Stock" icon="pi pi-plus" class="p-button-success" (click)="showBuyNewStockDialog()"></p-button>
     </div>
   </div>
@@ -50,14 +50,25 @@
     <div class="mt-10 pt-3 flex">
         <h3 class="text-xl font-bold mb-4 items-center">Stocks Correlation Matrix</h3>
         <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
-        <app-stock-matrix [data]="correlations"></app-stock-matrix>
+        <app-stock-matrix [data]="correlations" matrixType="correlation"></app-stock-matrix>
     </div>
 
     <div class="mt-10 pt-3 flex">
         <h3 class="text-xl font-bold mb-4 items-center">Stocks Covariance Matrix</h3>
         <!-- <app-stock-matrix [owner_name]="username" [portfolio_name]="portfolioName"></app-stock-matrix> -->
-        <app-stock-matrix [data]="covariances"></app-stock-matrix>
+        <app-stock-matrix [data]="covariances" matrixType="covariance"></app-stock-matrix>
     </div>
+
+  <p-dialog header="Deposit Money" [(visible)]="displayDepositOptionsDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" [style]="{ width: '20rem' }" [baseZIndex]="10000">
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <p-button label="Between Portfolios" class="p-button-info" (click)="showBetweenPortfoliosDialog()"></p-button>
+      </div>
+      <div class="p-field mb-4">
+        <p-button label="External" class="p-button-success" (click)="showDepositDialog()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
 
   <p-dialog header="Deposit Money" [(visible)]="displayDepositDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" [style]="{ width: '20rem' }" [baseZIndex]="10000">
     <div class="p-fluid">
@@ -67,6 +78,30 @@
       </div>
       <div class="text-right">
         <p-button label="Deposit" class="p-button-success" (click)="depositMoney()" [disabled]="!depositAmount"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <p-dialog header="Transfer Between Portfolios" [(visible)]="displayBetweenPortfoliosDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" [style]="{ width: '20rem' }" [baseZIndex]="10000">
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <label for="selectedPortfolio" class="block text-sm font-medium text-gray-700">Select Portfolio</label>
+        <p-dropdown
+          [options]="portfolios"
+          [(ngModel)]="selectedPortfolio"
+          optionLabel="portfolio_name"
+          placeholder="Select a portfolio"
+        ></p-dropdown>
+      </div>
+      <div class="p-field mb-4" *ngIf="selectedPortfolio">
+        <h3 class="text-lg font-semibold">Selected Portfolio Cash: {{ selectedPortfolio.cash | currency }}</h3>
+      </div>
+      <div class="p-field mb-4">
+        <label for="transferAmount" class="block text-sm font-medium text-gray-700">Amount</label>
+        <input id="transferAmount" type="number" pInputText [(ngModel)]="depositAmount" class="mt-1 block w-full" />
+      </div>
+      <div class="text-right">
+        <p-button label="Transfer" class="p-button-info" (click)="transferBetweenPortfolios()" [disabled]="!selectedPortfolio || !depositAmount || depositAmount > selectedPortfolio.cash"></p-button>
       </div>
     </div>
   </p-dialog>

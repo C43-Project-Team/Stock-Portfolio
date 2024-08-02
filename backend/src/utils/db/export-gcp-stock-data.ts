@@ -13,6 +13,7 @@ import { InsertExpression } from "kysely/dist/cjs/parser/insert-values-parser";
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 async function insertDataStock(
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	data: any[] | InsertExpression<Database, "stocks">,
 ) {
 	try {

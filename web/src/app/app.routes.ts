@@ -11,17 +11,30 @@ import { PublicStockListsComponent } from "@pages/public-stock-lists/public-stoc
 import { IndivivualPortfolioComponent } from "@pages/indivivual-portfolio/indivivual-portfolio.component";
 import { IndividualStockListComponent } from "@pages/individual-stock-list/individual-stock-list.component";
 import { LandingComponent } from "@pages/landing/landing.component";
+import { authRedirectGuard } from "@guards/auth-redirect.guard";
+import { PortfoliosComponent } from "@pages/portfolios/portfolios.component";
+import { StockListsMineComponent } from "@pages/stock-lists-mine/stock-lists-mine.component";
+import { StockListsSharedComponent } from "@pages/stock-lists-shared/stock-lists-shared.component";
 
 export const routes: Routes = [
 	{ path: "", component: LandingComponent },
-	{ path: "sign-in", component: SignInComponent },
-	{ path: "sign-up", component: SignUpComponent },
+	{
+		path: "sign-in",
+		component: SignInComponent,
+		canActivate: [authRedirectGuard],
+	},
+	{
+		path: "sign-up",
+		component: SignUpComponent,
+		canActivate: [authRedirectGuard],
+	},
 	{
 		path: "user",
 		component: LayoutComponent,
 		canActivate: [authGuard],
 		children: [
 			{ path: "connections", component: ConnectionsComponent },
+			{ path: "portfolios", component: PortfoliosComponent },
 			{
 				path: "id/:username",
 				children: [
@@ -40,6 +53,8 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 		children: [
 			{ path: "public", component: PublicStockListsComponent },
+			{ path: "mine", component: StockListsMineComponent },
+			{ path: "shared", component: StockListsSharedComponent },
 			{
 				path: "user/:username",
 				children: [

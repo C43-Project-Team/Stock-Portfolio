@@ -9,7 +9,10 @@ import type { Portfolio } from "@models/portfolio";
 import type { Investment } from "@models/investment";
 import { Stock } from "@models/stock";
 import { User } from "@models/user";
-import { StockCorrelationsResponse, StockCovarianceResponse } from "@components/stock-matrix/stock-correlation-covariance.interface";
+import {
+	StockCorrelationsResponse,
+	StockCovarianceResponse,
+} from "@components/stock-matrix/stock-correlation-covariance.interface";
 import { Review } from "@models/review";
 import { SharedUser } from "@models/shared-user";
 
@@ -124,7 +127,7 @@ export class ApiService {
 		return this.post<FriendsTable>("/friends/withdraw", { friend: username });
 	}
 
-  async searchForPotentialFriends(query: string): Promise<{ users: User[] }> {
+	async searchForPotentialFriends(query: string): Promise<{ users: User[] }> {
 		return this.get<{ users: User[] }>(`/friends/search?query=${query}`);
 	}
 
@@ -154,6 +157,10 @@ export class ApiService {
 		username: string,
 	): Promise<StocksList[]> {
 		return this.get<StocksList[]>(`/stock-list/private-shared/${username}`);
+	}
+
+	async getAllPrivateStockListsSharedWithUser(): Promise<StocksList[]> {
+		return this.get<StocksList[]>("/stock-list/private-shared");
 	}
 
 	async getUserPublicStockLists(username: string): Promise<StocksList[]> {
@@ -355,21 +362,35 @@ export class ApiService {
 		);
 	}
 
-    async StockCovariances(
-        owner: string,
-        portfolio_name: string,
-    ): Promise<StockCovarianceResponse> {
-        return this.post<StockCovarianceResponse>(
-            "/portfolio/stock-covariance",
-            { owner, portfolio_name },
-        );
-    }
+	async StockCovariances(
+		owner: string,
+		portfolio_name: string,
+	): Promise<StockCovarianceResponse> {
+		return this.post<StockCovarianceResponse>("/portfolio/stock-covariance", {
+			owner,
+			portfolio_name,
+		});
+	}
 
 	async getPortfolioStockCOV(
 		stockSymbol: string,
 	): Promise<{ stock_cov: number }> {
 		return this.post<{ stock_cov: number }>("/portfolio/stock-cov", {
 			stock_symbol: stockSymbol,
+		});
+	}
+
+	async depositBetweenPortfolios(
+		owner: string,
+		fromPortfolio: string,
+		toPortfolio: string,
+		amount: number,
+	): Promise<void> {
+		return this.post<void>("/portfolio/portfolio-cash-transfer", {
+			owner,
+			from_portfolio_name: fromPortfolio,
+			to_portfolio_name: toPortfolio,
+			amount,
 		});
 	}
 
@@ -421,10 +442,11 @@ export class ApiService {
 	async deleteReview(
 		stockListOwner: string,
 		stockListName: string,
+		reviewer: string,
 	): Promise<void> {
 		return this.delete<void>(
 			`/stock-list/${stockListOwner}/${stockListName}/reviews`,
-			{},
+			{ reviewer },
 		);
 	}
 }

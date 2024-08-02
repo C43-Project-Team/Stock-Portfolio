@@ -255,6 +255,31 @@ stockListRouter.get(
 );
 
 stockListRouter.get(
+	"/private-shared",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const authenticatedUser = req.user?.username;
+
+			if (!authenticatedUser) {
+				return res.status(400).json({ error: "Authenticated user not found" });
+			}
+
+			const privateStockLists =
+				await stockListDatabase.getAllPrivateStockListsSharedWithUser(
+					authenticatedUser,
+				);
+
+			res.json(privateStockLists);
+		} catch (error) {
+			return res
+				.status(500)
+				.json({ error: "Error retrieving private stock lists" });
+		}
+	},
+);
+
+stockListRouter.get(
 	"/:stock_list_name/search-unshared-friends",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
