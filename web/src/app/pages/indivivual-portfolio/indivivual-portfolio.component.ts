@@ -13,7 +13,7 @@ import { DialogModule } from "primeng/dialog";
 import { InputTextModule } from "primeng/inputtext";
 import { TableModule } from "primeng/table";
 import { ToastModule } from "primeng/toast";
-import { Subject } from "rxjs";
+import { CalendarModule } from "primeng/calendar";
 import { DataViewModule } from "primeng/dataview";
 import { AutoCompleteModule } from "primeng/autocomplete";
 import type { Stock } from "@models/stock";
@@ -21,6 +21,7 @@ import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.comp
 import { Portfolio } from "@models/portfolio";
 import { DropdownModule } from "primeng/dropdown";
 import { AuthService } from "@services/auth.service";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
 
 @Component({
 	selector: "app-indivivual-portfolio",
@@ -37,6 +38,8 @@ import { AuthService } from "@services/auth.service";
 		AutoCompleteModule,
 		StockMatrixComponent,
 		DropdownModule,
+		CalendarModule,
+    ProgressSpinnerModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
@@ -52,8 +55,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	displaySellSharesDialog = false;
 	displayDepositOptionsDialog = false;
 	displayBetweenPortfoliosDialog = false;
+	displayDateFilterDialog = false;
 	depositAmount = 0;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	buyStockSymbol: any = "";
 	buyNumShares = 0;
 	buyPricePerShare = 0;
@@ -65,13 +68,13 @@ export class IndivivualPortfolioComponent implements OnInit {
 	portfolioBeta = 0;
 	hasEnoughFunds = true;
 	filteredStocks: Stock[] = [];
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	correlations: any[] = [];
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	covariances: any[] = [];
 	portfolios: Portfolio[] = [];
 	selectedPortfolio: Portfolio | null = null;
 	hasAccess = false;
+	dateRange: Date[] | null = null;
+  loading = false;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -83,9 +86,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.route.params.subscribe((params) => {
-			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.username = params["username"];
-			// biome-ignore lint/complexity/useLiteralKeys: angular needs it like this
 			this.portfolioName = params["portfolio_name"];
 			this.authService.getCredentials().subscribe(async (user) => {
 				if (user.username !== this.username) {
@@ -93,14 +94,31 @@ export class IndivivualPortfolioComponent implements OnInit {
 					return;
 				}
 				this.hasAccess = true;
-				await this.loadPortfolio();
-				this.loadInvestments();
-				this.loadPortfolioBeta();
-				this.loadCorrelationMatrix();
-				this.loadCovarianceMatrix();
-				this.loadUserPortfolios();
+				this.loadAllData();
 			});
 		});
+	}
+
+  async loadAllData(startDate?: Date, endDate?: Date) {
+		this.loading = true;
+
+		try {
+			await Promise.all([
+				this.loadPortfolio(),
+				this.loadInvestments(startDate, endDate),
+				this.loadPortfolioBeta(),
+				this.loadCorrelationMatrix(startDate, endDate),
+				this.loadCovarianceMatrix(startDate, endDate),
+				this.loadUserPortfolios(),
+			]);
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		} finally {
+			this.loading = false;
+      if (startDate && endDate) {
+        this.logSuccess("Success", "Filter applied successfully");
+      }
+		}
 	}
 
 	async loadUserPortfolios() {
@@ -114,26 +132,45 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
-	async loadCorrelationMatrix() {
+	async loadCorrelationMatrix(startDate?: Date, endDate?: Date) {
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const res = await this.apiService.StockCorrelations(
-				this.username,
-				this.portfolioName,
-			);
+			const res =
+				startDateStr && endDateStr
+					? await this.apiService.getStockCorrelationsDateRange(
+							this.username,
+							this.portfolioName,
+							startDateStr,
+							endDateStr,
+					  )
+					: await this.apiService.getStockCorrelations(
+							this.username,
+							this.portfolioName,
+					  );
 			this.correlations = res.stock_correlations;
 		} catch (error) {
 			console.error("Error fetching stock correlations:", error);
 		}
 	}
 
-	async loadCovarianceMatrix() {
+	async loadCovarianceMatrix(startDate?: Date, endDate?: Date) {
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const res = await this.apiService.StockCovariances(
-				this.username,
-				this.portfolioName,
-			);
+			const res =
+				startDateStr && endDateStr
+					? await this.apiService.getStockCovariancesDateRange(
+							this.username,
+							this.portfolioName,
+							startDateStr,
+							endDateStr,
+					  )
+					: await this.apiService.getStockCovariances(
+							this.username,
+							this.portfolioName,
+					  );
 			this.covariances = res.stock_covariances;
-			// console.log(this.covariances);
 		} catch (error) {
 			console.error("Error fetching stock covariances:", error);
 		}
@@ -148,21 +185,35 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
-	async loadInvestments() {
+	async loadInvestments(startDate?: Date, endDate?: Date) {
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
 			this.investments = await this.apiService.getPortfolioInvestments(
 				this.portfolioName,
 			);
 
 			for (const investment of this.investments) {
-				const stockBeta = await this.apiService.getPortfolioStocksBeta(
-					investment.stock_symbol,
-				);
+				const stockBeta =
+					startDateStr && endDateStr
+						? await this.apiService.getPortfoliosStockBetaDateRange(
+								investment.stock_symbol,
+								startDateStr,
+								endDateStr,
+						  )
+						: await this.apiService.getPortfolioStocksBeta(
+								investment.stock_symbol,
+						  );
 				investment.stock_beta = Math.round(stockBeta.stock_beta * 1000) / 1000;
 
-				const stockCOV = await this.apiService.getPortfolioStockCOV(
-					investment.stock_symbol,
-				);
+				const stockCOV =
+					startDateStr && endDateStr
+						? await this.apiService.getPortfolioStockCOVDateRange(
+								investment.stock_symbol,
+								startDateStr,
+								endDateStr,
+						  )
+						: await this.apiService.getPortfolioStockCOV(investment.stock_symbol);
 				investment.stock_cov = Math.round(stockCOV.stock_cov * 1000) / 1000;
 			}
 		} catch (error) {
@@ -183,18 +234,15 @@ export class IndivivualPortfolioComponent implements OnInit {
 	}
 
 	showDepositOptionsDialog() {
-		// New
 		this.displayDepositOptionsDialog = true;
 	}
 
 	showDepositDialog() {
-		// Updated
 		this.displayDepositDialog = true;
 		this.displayDepositOptionsDialog = false;
 	}
 
 	showBetweenPortfoliosDialog() {
-		// New
 		this.displayBetweenPortfoliosDialog = true;
 		this.displayDepositOptionsDialog = false;
 	}
@@ -218,6 +266,23 @@ export class IndivivualPortfolioComponent implements OnInit {
 		this.sellStockSymbol = stockSymbol;
 		this.sellNumShares = 0;
 		this.totalGain = 0;
+	}
+
+	showDateFilterDialog() {
+		this.displayDateFilterDialog = true;
+	}
+
+	async applyDateFilter() {
+		if (!this.dateRange || this.dateRange.length !== 2) {
+			this.logError("Please select a valid date range.");
+			return;
+		}
+
+		const [startDate, endDate] = this.dateRange;
+
+    this.displayDateFilterDialog = false;
+
+		this.loadAllData(startDate, endDate);
 	}
 
 	async depositMoney() {

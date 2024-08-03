@@ -352,7 +352,13 @@ export class ApiService {
 		});
 	}
 
-	async StockCorrelations(
+  async getPortfoliosStockBetaDateRange(stockTicker: string, startDate: string, endDate: string): Promise<{ stock_beta: number }> {
+    return this.post<{ stock_beta: number }>("/portfolio/stock-beta-date-range", {
+      stockTicker, startDate, endDate
+    });
+  }
+
+	async getStockCorrelations(
 		owner: string,
 		portfolio_name: string,
 	): Promise<StockCorrelationsResponse> {
@@ -362,7 +368,18 @@ export class ApiService {
 		);
 	}
 
-	async StockCovariances(
+  async getStockCorrelationsDateRange(
+    owner: string,
+    portfolioName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<StockCorrelationsResponse> {
+    return this.post<StockCorrelationsResponse>("/portfolio/stock-correlations-date-range", {
+      owner, portfolioName, startDate, endDate
+    });
+  }
+
+	async getStockCovariances(
 		owner: string,
 		portfolio_name: string,
 	): Promise<StockCovarianceResponse> {
@@ -372,6 +389,17 @@ export class ApiService {
 		});
 	}
 
+  async getStockCovariancesDateRange(
+    owner: string,
+    portfolioName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<StockCovarianceResponse> {
+    return this.post<StockCovarianceResponse>("/portfolio/stock-covariance-date-range", {
+      owner, portfolioName, startDate, endDate
+    });
+  }
+
 	async getPortfolioStockCOV(
 		stockSymbol: string,
 	): Promise<{ stock_cov: number }> {
@@ -379,6 +407,16 @@ export class ApiService {
 			stock_symbol: stockSymbol,
 		});
 	}
+
+  async getPortfolioStockCOVDateRange(
+    stockSymbol: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<{ stock_cov: number }> {
+    return this.post<{ stock_cov: number }>("/portfolio/stock-cov-date-range", {
+      stockSymbol, startDate, endDate
+    });
+  }
 
 	async depositBetweenPortfolios(
 		owner: string,
