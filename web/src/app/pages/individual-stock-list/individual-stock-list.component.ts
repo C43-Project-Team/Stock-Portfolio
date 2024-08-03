@@ -363,7 +363,8 @@ export class IndividualStockListComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Stock added successfully");
 			this.displayAddStockDialog = false;
-			this.loadStockList();
+      const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -387,7 +388,8 @@ export class IndividualStockListComponent implements OnInit {
 				num_shares,
 			);
 			this.logSuccess("Success", "Shares removed successfully");
-			this.loadStockList();
+			const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -400,7 +402,8 @@ export class IndividualStockListComponent implements OnInit {
 				stock_symbol,
 			);
 			this.logSuccess("Success", "Stock deleted successfully");
-			this.loadStockList();
+			const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}

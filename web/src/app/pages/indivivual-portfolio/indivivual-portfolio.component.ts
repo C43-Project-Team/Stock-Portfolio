@@ -333,10 +333,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Shares bought successfully");
 			this.displayBuySharesDialog = false;
-			this.loadPortfolio();
-			this.loadInvestments();
-            this.loadCorrelationMatrix();
-            this.loadCovarianceMatrix();
+      const [startDate, endDate] = this.dateRange || [];
+      this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -351,10 +349,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Shares sold successfully");
 			this.displaySellSharesDialog = false;
-			this.loadPortfolio();
-			this.loadInvestments();
-            this.loadCorrelationMatrix();
-            this.loadCovarianceMatrix();
+			const [startDate, endDate] = this.dateRange || [];
+      this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
