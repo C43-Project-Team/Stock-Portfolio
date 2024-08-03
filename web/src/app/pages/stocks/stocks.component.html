@@ -1,4 +1,5 @@
- <div>
+<p-progressSpinner *ngIf="loading" styleClass="absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"></p-progressSpinner>
+<div>
     <app-layout></app-layout>
 
     <div class="p-4 max-w-4xl mx-auto">
@@ -8,6 +9,14 @@
     <div *ngIf="stockCompany?.description" class="p-4 max-w-4xl mx-auto">
         <p class="text-lg">{{ stockCompany.description }}</p>
     </div>
+
+    <div class="p-4 max-w-4xl mx-auto mt-8">
+    <h2 class="text-3xl font-semibold mb-4 text-center">Statistics for {{ ticker }}</h2>
+    <div class="flex flex-col items-center">
+      <div class="text-xl font-medium mb-2">Beta: {{ beta }}</div>
+      <div class="text-xl font-medium">Coefficient of Variation (COV): {{ cov }}</div>
+    </div>
+  </div>
 
     <div class="p-4 max-w-4xl mx-auto">
         <h2 class="text-3xl font-semibold mb-4 text-center">Historic Data for {{ ticker }}</h2>

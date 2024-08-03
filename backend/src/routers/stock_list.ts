@@ -3,6 +3,8 @@ import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import { re } from "mathjs";
 import { reviewRouter } from "./review";
+import { portfolioDatabase } from "@/database/PortfolioDatabase";
+import { deleteKey, getObject, setObject } from "@/utils/redis/controller";
 
 export const stockListRouter = Router();
 
@@ -129,6 +131,9 @@ stockListRouter.get(
 			const limit = Number.parseInt(req.query.limit as string) || 10;
 			const page = Number.parseInt(req.query.page as string) || 1;
 			const offset = (page - 1) * limit;
+
+      console.log("limit", limit);
+      console.log("offset", offset);
 
 			const publicStockLists = await stockListDatabase.getPublicStockLists(
 				limit,
@@ -358,6 +363,9 @@ stockListRouter.post(
 				stock_symbol,
 				num_shares,
 			);
+
+      await deleteKey(`stockList-${owner}-${stock_list_name}`);
+      
 			return res.json({ message: "Stock added to list successfully" });
 		} catch (error) {
 			console.log(error);
@@ -386,6 +394,8 @@ stockListRouter.post(
 				stock_symbol,
 				num_shares,
 			);
+        
+        await deleteKey(`stockList-${owner}-${stock_list_name}`);
 			return res.json({
 				message: "Shares removed from stock in list successfully",
 			});
@@ -419,6 +429,8 @@ stockListRouter.post(
 				stock_list_name,
 				stock_symbol,
 			);
+
+      await deleteKey(`stockList-${owner}-${stock_list_name}`);
 			return res.json({ message: "Stock deleted from list successfully" });
 		} catch (error) {
 			return res.status(500).json({ error: "Error deleting stock from list" });
@@ -510,16 +522,25 @@ stockListRouter.post(
 	"/stockList-beta",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name } = req.body;
+		const { owner, stockListName } = req.body;
 		try {
-			if (!owner || !stockList_name) {
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
+      const cachedKey = `stockList-${owner}-${stockListName}`;
+      const cachedData = await getObject(cachedKey);
+
+      if (cachedData?.beta) {
+        return res.json({ stock_list_beta: cachedData.beta });
+      }
+
 			const stockListBeta = await stockListDatabase.stockListBeta(
 				owner,
-				stockList_name,
+				stockListName,
 			);
+
+      await setObject(cachedKey, {beta: stockListBeta, ...cachedData});
 
 			res.json({ stock_list_beta: stockListBeta });
 		} catch (error) {
@@ -530,19 +551,19 @@ stockListRouter.post(
 );
 
 stockListRouter.post(
-	"/stockList-beta-range",
+	"/stockList-beta-date-range",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name, startDate, endDate } = req.body;
+		const { owner, stockListName, startDate, endDate } = req.body;
 		try {
 			const stockListBeta = await stockListDatabase.stockListBetaRange(
 				owner,
-				stockList_name,
+				stockListName,
 				startDate,
 				endDate,
 			);
 
-			if (!owner || !stockList_name) {
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
@@ -560,4 +581,130 @@ stockListRouter.use(
 		next();
 	},
 	reviewRouter,
+);
+
+
+stockListRouter.post(
+	"/stock-covariance",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stockListName } = req.body;
+			if (!owner || !stockListName) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+      const cachedKey = `stockList-${owner}-${stockListName}`;
+      const cachedData = await getObject(cachedKey);
+
+      if (cachedData?.cov) {
+        return res.json({ stock_covariances: cachedData.cov });
+      }
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stockListName,
+			);
+
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
+
+      await setObject(cachedKey, {cov: stockCovariances, ...cachedData});
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-covariance-date-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stockListName, startDate, endDate } = req.body;
+			if (!owner || !stockListName) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stockListName,
+			);
+
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCovariances = await portfolioDatabase.stockCovarianceRange(
+				stocks,
+				startDate,
+				endDate,
+			);
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-correlations",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stockListName } = req.body;
+			if (!owner || !stockListName) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+      const cachedKey = `stockList-${owner}-${stockListName}`;
+      const cachedData = await getObject(cachedKey);
+
+      if (cachedData?.correlations) {
+        return res.json({ stock_correlations: cachedData.correlations });
+      }
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stockListName,
+			);
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCorrelations =
+				await portfolioDatabase.stockCorrelations(stocks);
+
+      await setObject(cachedKey, {correlations: stockCorrelations, ...cachedData});
+
+			res.json({ stock_correlations: stockCorrelations });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-correlations-date-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stockListName, startDate, endDate } = req.body;
+			if (!owner || !stockListName) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stockListName,
+			);
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCorrelations = await portfolioDatabase.stockCorrelationsRange(
+				stocks,
+				startDate,
+				endDate,
+			);
+
+			res.json({ stock_correlations: stockCorrelations });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
 );

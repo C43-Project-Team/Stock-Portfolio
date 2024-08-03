@@ -693,6 +693,19 @@ class StockListDatabase {
 			.execute();
 	}
 
+    /**
+     * select * from contains
+     * where stock_list_owner = owner and stock_list_name = stock_list_name;
+     */
+    async getStockListContains(owner: string, stock_list_name: string): Promise<Contains[]> {
+        return await this.db
+            .selectFrom("contains")
+            .selectAll()
+            .where("stock_list_owner", "=", owner)
+            .where("stock_list_name", "=", stock_list_name)
+            .execute();
+    }
+
     async stockListBeta(owner: string, stockList_name: string): Promise<number> {
 		const query = sql`SELECT public.calculate_stocklist_beta(${owner}, ${stockList_name})`;
 		const res = await query.execute(db);

@@ -19,6 +19,7 @@ import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ToastModule } from "primeng/toast";
 import type { Portfolio } from "@models/portfolio";
 import environment from "@environment";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
 
 @Component({
 	selector: "app-user",
@@ -33,6 +34,7 @@ import environment from "@environment";
 		InputTextModule,
 		ConfirmDialogModule,
 		ToastModule,
+    ProgressSpinnerModule
 	],
 	providers: [MessageService, ConfirmationService],
 	templateUrl: "./user.component.html",
@@ -53,6 +55,7 @@ export class UserComponent implements OnInit {
 	initialDeposit = 0;
 	isPrivate = false;
 	profilePictureUrl = "assets/images/default-pfp.png";
+  loading = false;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -78,13 +81,16 @@ export class UserComponent implements OnInit {
 	}
 
 	checkUser() {
+    this.loading = true
 		this.isCurrentUser = this.username === this.myUsername;
 		if (this.isCurrentUser) {
-			this.loadStockLists();
-			this.loadPortfolios();
+      Promise.all([this.loadStockLists(), this.loadPortfolios()]).then(() => {
+        this.loading = false;
+      });
 		} else {
-			this.loadPrivateStockListsSharedWithUser();
-			this.loadPublicStockLists();
+      Promise.all([this.loadPrivateStockListsSharedWithUser(), this.loadPublicStockLists()]).then(() => {
+        this.loading = false;
+      });
 		}
 	}
 

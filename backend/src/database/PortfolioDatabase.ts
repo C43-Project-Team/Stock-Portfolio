@@ -408,13 +408,13 @@ class PortfolioDatabase {
 		return rows;
 	}
 
-	async stockCoffectientOfVariation(stock_symbol: string): Promise<number> {
+	async stockCoefficient(stock_symbol: string): Promise<number> {
 		const query = sql`SELECT public.cov(${stock_symbol})`;
 		const res = await query.execute(this.db);
 		return (res.rows[0] as { cov: number }).cov;
 	}
 
-	async stockCoffectientOfVariationRange(
+	async stockCoefficientRange(
 		stock_symbol: string,
 		startDate: string,
 		endDate: string,

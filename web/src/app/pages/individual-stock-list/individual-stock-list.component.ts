@@ -5,7 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { ApiService } from "@services/api.service";
-import { MessageService } from "primeng/api";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
 import { InputTextModule } from "primeng/inputtext";
@@ -18,10 +18,16 @@ import type { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "@services/auth.service";
 import { ToggleButtonModule } from "primeng/togglebutton";
 import type { User } from "@models/user";
-import { Review } from "@models/review";
+import type { Review } from "@models/review";
 import { RatingModule } from "primeng/rating";
-import { SharedUser } from "@models/shared-user";
+import type { SharedUser } from "@models/shared-user";
 import { InputTextareaModule } from "primeng/inputtextarea";
+import type { StockListEntry } from "@models/stock-list-entry";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
+import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.component";
+import { CalendarModule } from "primeng/calendar";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
+
 
 @Component({
 	selector: "app-individual-stock-list",
@@ -38,21 +44,26 @@ import { InputTextareaModule } from "primeng/inputtextarea";
 		ToggleButtonModule,
 		RatingModule,
 		InputTextareaModule,
+    ProgressSpinnerModule,
+    StockMatrixComponent,
+    CalendarModule,
+    ConfirmDialogModule,
 	],
-	providers: [MessageService],
+	providers: [MessageService, ConfirmationService],
 	templateUrl: "./individual-stock-list.component.html",
 	styles: "",
 })
 export class IndividualStockListComponent implements OnInit {
 	username = "";
 	stockListName = "";
-	stocks: Stock[] = [];
+	stocks: StockListEntry[] = [];
 	displayAddStockDialog = false;
 	displayShareStockListDialog = false;
 	displayAddReviewDialog = false;
+  displayDateFilterDialog = false;
 	buyStockSymbol: Stock = { stock_symbol: "", company: "", description: "" };
 	buyNumShares = 0;
-	filteredStocks: Stock[] = [];
+	filteredStocks: StockListEntry[] = [];
 	isPrivate = false;
 	isOwner = false;
 	authenticatedUser = "";
@@ -73,6 +84,11 @@ export class IndividualStockListComponent implements OnInit {
 	displayEditReviewDialog = false;
 	reviewToEdit: Review | null = null;
 	hasAccess = true;
+  stockListBeta = 0;
+	correlations: any[] = [];
+	covariances: any[] = [];
+	dateRange: Date[] | null = null;
+	loading = false;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -97,7 +113,7 @@ export class IndividualStockListComponent implements OnInit {
 				);
 				console.log(this.hasAccess);
 				if (this.hasAccess) {
-					this.loadStockList().then(() => {
+					this.loadAllData().then(() => {
 						if (this.isOwner && this.isPrivate) {
 							this.loadSharedUsers();
 						}
@@ -110,9 +126,30 @@ export class IndividualStockListComponent implements OnInit {
 		});
 	}
 
-	async loadStockList() {
+  async loadAllData(startDate?: Date, endDate?: Date) {
+		this.loading = true;
+
 		try {
-			// Load the stocks in the list and the privacy status
+			await Promise.all([
+				this.loadStockList(startDate, endDate),
+				this.loadStockListBeta(startDate, endDate),
+				this.loadCorrelationMatrix(startDate, endDate),
+				this.loadCovarianceMatrix(startDate, endDate),
+			]);
+			if (startDate && endDate) {
+				this.logSuccess("Success", "Filter applied successfully");
+			}
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		} finally {
+			this.loading = false;
+		}
+	}
+
+	async loadStockList(startDate?: Date, endDate?: Date) {
+    const startDateStr = startDate?.toISOString().split("T")[0];
+    const endDateStr = endDate?.toISOString().split("T")[0];
+		try {
 			this.stocks = await this.apiService.getStocksInList(
 				this.username,
 				this.stockListName,
@@ -121,10 +158,110 @@ export class IndividualStockListComponent implements OnInit {
 				this.username,
 				this.stockListName,
 			);
+
+      for (const stockListEntry of this.stocks) {
+				const stockBeta =
+					startDateStr && endDateStr
+						? await this.apiService.getPortfoliosStockBetaDateRange(
+								stockListEntry.stock_symbol,
+								startDateStr,
+								endDateStr,
+						  )
+						: await this.apiService.getPortfolioStocksBeta(
+								stockListEntry.stock_symbol,
+						  );
+				stockListEntry.stock_beta = Math.round(stockBeta.stock_beta * 1000) / 1000;
+
+				const stockCOV =
+					startDateStr && endDateStr
+						? await this.apiService.getPortfolioStockCOVDateRange(
+								stockListEntry.stock_symbol,
+								startDateStr,
+								endDateStr,
+						  )
+						: await this.apiService.getPortfolioStockCOV(stockListEntry.stock_symbol);
+				stockListEntry.stock_cov = Math.round(stockCOV.stock_cov * 1000) / 1000;
+			}
+      
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
+
+	async loadStockListBeta(startDate?: Date, endDate?: Date) {
+    const startDateStr = startDate?.toISOString().split("T")[0];
+    const endDateStr = endDate?.toISOString().split("T")[0];
+		try {
+			const response = (startDateStr && endDateStr) ? await this.apiService.getStockListBetaDateRange(this.username, this.stockListName, startDateStr, endDateStr) : await this.apiService.getStockListBeta(
+				this.username,
+				this.stockListName,
+			);
+			this.stockListBeta = Math.round(response.stock_list_beta * 1000) / 1000;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
+	async loadCorrelationMatrix(startDate?: Date, endDate?: Date) {
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
+		try {
+			const res =
+				startDateStr && endDateStr
+					? await this.apiService.getStockListStockCorrelationsDateRange(
+							this.username,
+							this.stockListName,
+							startDateStr,
+							endDateStr,
+					  )
+					: await this.apiService.getStockListStockCorrelations(
+							this.username,
+							this.stockListName,
+					  );
+			this.correlations = res.stock_correlations;
+		} catch (error) {
+			console.error("Error fetching stock list correlations:", error);
+		}
+	}
+
+	async loadCovarianceMatrix(startDate?: Date, endDate?: Date) {
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
+		try {
+			const res =
+				startDateStr && endDateStr
+					? await this.apiService.getStockListStockCovariancesDateRange(
+							this.username,
+							this.stockListName,
+							startDateStr,
+							endDateStr,
+					  )
+					: await this.apiService.getStockListStockCovariances(
+							this.username,
+							this.stockListName,
+					  );
+			this.covariances = res.stock_covariances;
+		} catch (error) {
+			console.error("Error fetching stock list covariances:", error);
+		}
+	}
+
+  async applyDateFilter() {
+    if (!this.dateRange || this.dateRange.length !== 2) {
+        this.logError("Please select a valid date range.");
+        return;
+    }
+
+    const [startDate, endDate] = this.dateRange;
+
+    this.displayDateFilterDialog = false;
+
+    this.loadAllData(startDate, endDate);
+}
+
+  showDateFilterDialog() {
+    this.displayDateFilterDialog = true;
+}
 
 	showEditReviewDialog(review: Review) {
 		this.reviewToEdit = { ...review };
@@ -228,7 +365,8 @@ export class IndividualStockListComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Stock added successfully");
 			this.displayAddStockDialog = false;
-			this.loadStockList();
+      const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -252,7 +390,8 @@ export class IndividualStockListComponent implements OnInit {
 				num_shares,
 			);
 			this.logSuccess("Success", "Shares removed successfully");
-			this.loadStockList();
+			const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -265,7 +404,8 @@ export class IndividualStockListComponent implements OnInit {
 				stock_symbol,
 			);
 			this.logSuccess("Success", "Stock deleted successfully");
-			this.loadStockList();
+			const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -290,6 +430,7 @@ export class IndividualStockListComponent implements OnInit {
 	async searchStocks(event: any) {
 		try {
 			const results = await this.apiService.searchStocks(event.query);
+      // @ts-ignore
 			this.filteredStocks = results.company;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
