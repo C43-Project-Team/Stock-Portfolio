@@ -30,7 +30,7 @@ export class PublicStockListsComponent implements OnInit {
 	publicStockLists: StocksList[] = [];
 	totalRecords = 0;
 	loading = false;
-	rowsPerPage = 10;
+	rowsPerPage = 5;
 	page = 0;
 
 	constructor(
@@ -72,7 +72,9 @@ export class PublicStockListsComponent implements OnInit {
 	}
 
 	onPageChange(event: any) {
+    console.log(event)
 		this.page = event.page;
+
 		this.loadPublicStockLists();
 	}
 
