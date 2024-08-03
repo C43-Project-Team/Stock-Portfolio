@@ -332,7 +332,21 @@ class PortfolioDatabase {
         const res = await query.execute(db);
         return (res.rows[0] as { calculate_portfolio_beta: number })
             .calculate_portfolio_beta;
-    }        
+    }
+    
+    async stockListBeta(owner: string, stockList_name: string): Promise<number> {
+		const query = sql`SELECT public.calculate_stocklist_beta(${owner}, ${stockList_name})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { calculate_stocklist_beta: number })
+			.calculate_stocklist_beta;
+	}
+
+    async stockListBetaRange(owner: string, stockList_name: string, startDate: string, endDate: string): Promise<number> {
+		const query = sql`SELECT public.calculate_stocklist_beta(${owner}, ${stockList_name}, ${startDate}, ${endDate})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { calculate_stocklist_beta: number })
+			.calculate_stocklist_beta;
+	}
 
 	async stockBeta(stock_ticker: string): Promise<number> {
 		const query = sql`SELECT public.calculate_stock_beta(${stock_ticker});`;

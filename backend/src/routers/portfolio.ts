@@ -2,6 +2,7 @@ import { portfolioDatabase } from "@/database/PortfolioDatabase";
 import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import e, { Router, type Response } from "express";
 import "dotenv/config";
+import { start } from "node:repl";
 
 export const portfolioRouter = Router();
 
@@ -215,14 +216,14 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, portfolio_name } = req.body;
 		try {
+            if (!owner || !portfolio_name) {
+                return res.status(400).json({ error: "Missing required parameters" });
+            }
+
 			const portfolioBeta = await portfolioDatabase.portfolioBeta(
 				owner,
 				portfolio_name,
 			);
-
-			if (!owner || !portfolio_name) {
-				return res.status(400).json({ error: "Missing required parameters" });
-			}
 
 			res.json({ portfolio_beta: portfolioBeta });
 		} catch (error) {
@@ -238,6 +239,10 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, portfolio_name, startDate, endDate } = req.body;
 		try {
+            if (!owner || !portfolio_name) {
+                return res.status(400).json({ error: "Missing required parameters" });
+            }
+
 			const portfolioBeta = await portfolioDatabase.portfolioBetaRange(
 				owner,
 				portfolio_name,
@@ -245,11 +250,55 @@ portfolioRouter.post(
                 endDate
 			);
 
-			if (!owner || !portfolio_name) {
+			res.json({ portfolio_beta: portfolioBeta });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving portfolio beta" });
+		}
+	},
+);
+
+portfolioRouter.post(
+	"/stockList-beta",
+    verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { owner, stockList_name } = req.body;
+		try {
+            if (!owner || !stockList_name) {
+                return res.status(400).json({ error: "Missing required parameters" });
+            }
+
+			const stockListBeta = await portfolioDatabase.stockListBeta(
+				owner,
+				stockList_name,
+			);
+
+			res.json({ stock_list_beta: stockListBeta });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving portfolio beta" });
+		}
+	},
+);
+
+portfolioRouter.post(
+	"/stockList-beta-range",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { owner, stockList_name, startDate, endDate } = req.body;
+		try {
+			const stockListBeta = await portfolioDatabase.stockListBetaRange(
+				owner,
+				stockList_name,
+                startDate,
+                endDate
+			);
+
+			if (!owner || !stockList_name) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-			res.json({ portfolio_beta: portfolioBeta });
+			res.json({ stock_list_beta: stockListBeta });
 		} catch (error) {
 			console.log(error);
 			res.status(500).json({ error: "Error retrieving portfolio beta" });
