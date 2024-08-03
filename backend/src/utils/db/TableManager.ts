@@ -14,15 +14,15 @@ export class TableManager {
 
 	// biome-ignore lint/suspicious/noExplicitAny: Kysely needs to be passed the "any" type here
 	async createDBTables(db: Kysely<any>): Promise<void> {
-        /**
-         * create table users (
-         *      username varchar(20) primary key,
-         *      password_hash varchar(255),
-         *      full_name varchar(40),
-         *      profile_picture varchar(255),
-         *      user_created_at timestamp not null default now()
-         * );
-         */
+		/**
+		 * create table users (
+		 *      username varchar(20) primary key,
+		 *      password_hash varchar(255),
+		 *      full_name varchar(40),
+		 *      profile_picture varchar(255),
+		 *      user_created_at timestamp not null default now()
+		 * );
+		 */
 		const createUsersTable = db.schema
 			.createTable("users")
 			.addColumn("username", "varchar(20)", (col) => col.primaryKey())
@@ -34,15 +34,15 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table portfolios (
-         *      owner varchar(20) not null references users(username) on delete cascade,
-         *      portfolio_name varchar(30) not null,
-         *      cash decimal(18, 2),
-         *      portfolio_created_at timestamp not null default now(),
-         *      primary key (owner, portfolio_name)
-         * );
-         */
+		/**
+		 * create table portfolios (
+		 *      owner varchar(20) not null references users(username) on delete cascade,
+		 *      portfolio_name varchar(30) not null,
+		 *      cash decimal(18, 2),
+		 *      portfolio_created_at timestamp not null default now(),
+		 *      primary key (owner, portfolio_name)
+		 * );
+		 */
 		const createPortfoliosTable = db.schema
 			.createTable("portfolios")
 			.addColumn("owner", "varchar(20)", (col) =>
@@ -56,15 +56,15 @@ export class TableManager {
 			.addPrimaryKeyConstraint("portfolios_pkey", ["owner", "portfolio_name"])
 			.execute();
 
-        /**
-         * create table stocks_list (
-         *      owner varchar(20),
-         *      stock_list_name varchar(30),
-         *      private boolean,
-         *      primary key (owner, stock_list_name),
-         *      foreign key (owner) references users(username)
-         * );
-         */
+		/**
+		 * create table stocks_list (
+		 *      owner varchar(20),
+		 *      stock_list_name varchar(30),
+		 *      private boolean,
+		 *      primary key (owner, stock_list_name),
+		 *      foreign key (owner) references users(username)
+		 * );
+		 */
 		const createStocksListTable = db.schema
 			.createTable("stocks_list")
 			.addColumn("owner", "varchar(20)")
@@ -79,13 +79,13 @@ export class TableManager {
 			])
 			.execute();
 
-        /**
-         * create table stocks (
-         *      stock_symbol varchar(10) primary key,
-         *      company varchar(200),
-         *      description varchar(5000)
-         * );
-         */
+		/**
+		 * create table stocks (
+		 *      stock_symbol varchar(10) primary key,
+		 *      company varchar(200),
+		 *      description varchar(5000)
+		 * );
+		 */
 		const createStocksTable = db.schema
 			.createTable("stocks")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.primaryKey())
@@ -100,20 +100,20 @@ export class TableManager {
 			createStocksTable,
 		]);
 
-        /**
-         * create table stocks_daily (
-         *     stock_symbol varchar(10) not null,
-         *     stock_date date not null,
-         *     open_price decimal(18, 2) not null,
-         *     close_price decimal(18, 2) not null,
-         *     low decimal(18, 2) not null,
-         *     high decimal(18, 2) not null,
-         *     volume bigint not null,
-         *     return decimal(18, 2),
-         *     primary key (stock_symbol, stock_date),
-         *     foreign key (stock_symbol) references stocks(stock_symbol)
-         * );
-         */
+		/**
+		 * create table stocks_daily (
+		 *     stock_symbol varchar(10) not null,
+		 *     stock_date date not null,
+		 *     open_price decimal(18, 2) not null,
+		 *     close_price decimal(18, 2) not null,
+		 *     low decimal(18, 2) not null,
+		 *     high decimal(18, 2) not null,
+		 *     volume bigint not null,
+		 *     return decimal(18, 2),
+		 *     primary key (stock_symbol, stock_date),
+		 *     foreign key (stock_symbol) references stocks(stock_symbol)
+		 * );
+		 */
 		const createStocksDailyTable = db.schema
 			.createTable("stocks_daily")
 			.addColumn("stock_symbol", "varchar(10)", (col) => col.notNull())
@@ -136,18 +136,18 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table market_index_daily (
-         *     stock_date date not null,
-         *     open_price decimal(18, 2) not null,
-         *     close_price decimal(18, 2) not null,
-         *     low decimal(18, 2) not null,
-         *     high decimal(18, 2) not null,
-         *     volume bigint not null,
-         *     return decimal(18, 2),
-         *     primary key (stock_date)
-         * );
-         */
+		/**
+		 * create table market_index_daily (
+		 *     stock_date date not null,
+		 *     open_price decimal(18, 2) not null,
+		 *     close_price decimal(18, 2) not null,
+		 *     low decimal(18, 2) not null,
+		 *     high decimal(18, 2) not null,
+		 *     volume bigint not null,
+		 *     return decimal(18, 2),
+		 *     primary key (stock_date)
+		 * );
+		 */
 		const createMarketIndexTable = db.schema
 			.createTable("market_index_daily")
 			.addColumn("stock_date", "date", (col) => col.notNull())
@@ -160,19 +160,19 @@ export class TableManager {
 			.addPrimaryKeyConstraint("market_index_daily_pk", ["stock_date"])
 			.execute();
 
-        /**
-         * create table reviews (
-         *     reviewer varchar(20),
-         *     stock_list_owner varchar(20),
-         *     stock_list_name varchar(30),
-         *     content varchar(200),
-         *     rating numeric(2, 1),
-         *     review_creation_time timestamp not null default now(),
-         *     review_last_updated timestamp,
-         *     primary key (reviewer, stock_list_owner, stock_list_name),
-         *     foreign key (reviewer) references users(username),
-         *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name)
-         */
+		/**
+		 * create table reviews (
+		 *     reviewer varchar(20),
+		 *     stock_list_owner varchar(20),
+		 *     stock_list_name varchar(30),
+		 *     content varchar(200),
+		 *     rating numeric(2, 1),
+		 *     review_creation_time timestamp not null default now(),
+		 *     review_last_updated timestamp,
+		 *     primary key (reviewer, stock_list_owner, stock_list_name),
+		 *     foreign key (reviewer) references users(username),
+		 *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name)
+		 */
 		const createReviewsTable = db.schema
 			.createTable("reviews")
 			.addColumn("reviewer", "varchar(20)")
@@ -200,16 +200,16 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table friends (
-         *     requesting_friend varchar(20),
-         *     receiving_friend varchar(20),
-         *     pending boolean,
-         *     primary key (requesting_friend, receiving_friend),
-         *     foreign key (requesting_friend) references users(username),
-         *     foreign key (receiving_friend) references users(username)
-         * );
-         */
+		/**
+		 * create table friends (
+		 *     requesting_friend varchar(20),
+		 *     receiving_friend varchar(20),
+		 *     pending boolean,
+		 *     primary key (requesting_friend, receiving_friend),
+		 *     foreign key (requesting_friend) references users(username),
+		 *     foreign key (receiving_friend) references users(username)
+		 * );
+		 */
 		const createFriendsTable = db.schema
 			.createTable("friends")
 			.addColumn("requesting_friend", "varchar(20)")
@@ -234,15 +234,15 @@ export class TableManager {
 			.execute();
 
 		/**
-         * create table request_timeout (
-         *     request_user varchar(20),
-         *     receive_user varchar(20),
-         *     expiry_time timestamp,
-         *     primary key (request_user, receive_user),
-         *     foreign key (request_user) references users(username),
-         *     foreign key (receive_user) references users(username)
-         * );
-         */
+		 * create table request_timeout (
+		 *     request_user varchar(20),
+		 *     receive_user varchar(20),
+		 *     expiry_time timestamp,
+		 *     primary key (request_user, receive_user),
+		 *     foreign key (request_user) references users(username),
+		 *     foreign key (receive_user) references users(username)
+		 * );
+		 */
 		const createRequestTimeoutTable = db.schema
 			.createTable("request_timeout")
 			.addColumn("request_user", "varchar(20)")
@@ -266,17 +266,17 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table investments (
-         *     owner varchar(20),
-         *     portfolio_name varchar(30),
-         *     stock_symbol varchar(10),
-         *     num_shares integer,
-         *     primary key (owner, portfolio_name, stock_symbol),
-         *     foreign key (owner, portfolio_name) references portfolios(owner, portfolio_name),
-         *     foreign key (stock_symbol) references stocks(stock_symbol)
-         * );
-         */
+		/**
+		 * create table investments (
+		 *     owner varchar(20),
+		 *     portfolio_name varchar(30),
+		 *     stock_symbol varchar(10),
+		 *     num_shares integer,
+		 *     primary key (owner, portfolio_name, stock_symbol),
+		 *     foreign key (owner, portfolio_name) references portfolios(owner, portfolio_name),
+		 *     foreign key (stock_symbol) references stocks(stock_symbol)
+		 * );
+		 */
 		const createInvestmentsTable = db.schema
 			.createTable("investments")
 			.addColumn("owner", "varchar(20)")
@@ -302,16 +302,16 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table private_access (
-         *     user varchar(20),
-         *     stock_list_owner varchar(20),
-         *     stock_list_name varchar(30),
-         *     primary key (user, stock_list_owner, stock_list_name),
-         *     foreign key (user) references users(username),
-         *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name)
-         * );
-         */
+		/**
+		 * create table private_access (
+		 *     user varchar(20),
+		 *     stock_list_owner varchar(20),
+		 *     stock_list_name varchar(30),
+		 *     primary key (user, stock_list_owner, stock_list_name),
+		 *     foreign key (user) references users(username),
+		 *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name)
+		 * );
+		 */
 		const createPrivateAccessTable = db.schema
 			.createTable("private_access")
 			.addColumn("user", "varchar(20)")
@@ -333,17 +333,17 @@ export class TableManager {
 			)
 			.execute();
 
-        /**
-         * create table contains (
-         *     stock_list_owner varchar(20),
-         *     stock_list_name varchar(30),
-         *     stock_symbol varchar(10),
-         *     num_shares integer default 0,
-         *     primary key (stock_list_owner, stock_list_name, stock_symbol),
-         *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name),
-         *     foreign key (stock_symbol) references stocks(stock_symbol)
-         * );
-         */
+		/**
+		 * create table contains (
+		 *     stock_list_owner varchar(20),
+		 *     stock_list_name varchar(30),
+		 *     stock_symbol varchar(10),
+		 *     num_shares integer default 0,
+		 *     primary key (stock_list_owner, stock_list_name, stock_symbol),
+		 *     foreign key (stock_list_owner, stock_list_name) references stocks_list(owner, stock_list_name),
+		 *     foreign key (stock_symbol) references stocks(stock_symbol)
+		 * );
+		 */
 		const createContainsTable = db.schema
 			.createTable("contains")
 			.addColumn("stock_list_owner", "varchar(20)")
@@ -430,30 +430,30 @@ export class TableManager {
 
 	// biome-ignore lint/suspicious/noExplicitAny: necessary for kysely
 	async createIndexes(db: Kysely<any>) {
-        /**
-         * create index idx_username
-         * on users (username);
-         */
+		/**
+		 * create index idx_username
+		 * on users (username);
+		 */
 		await db.schema
 			.createIndex("idx_username")
 			.on("users")
 			.column("username")
 			.execute();
 
-        /**
-         * create index idx_requesting_friend
-         * on friends (requesting_friend);
-         */
+		/**
+		 * create index idx_requesting_friend
+		 * on friends (requesting_friend);
+		 */
 		await db.schema
 			.createIndex("idx_requesting_friend")
 			.on("friends")
 			.column("requesting_friend")
 			.execute();
 
-        /**
-         * create index idx_receiving_friend
-         * on friends (receiving_friend);
-         */
+		/**
+		 * create index idx_receiving_friend
+		 * on friends (receiving_friend);
+		 */
 		await db.schema
 			.createIndex("idx_receiving_friend")
 			.on("friends")

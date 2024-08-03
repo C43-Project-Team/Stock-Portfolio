@@ -10,8 +10,8 @@ import { CommonModule } from "@angular/common";
 import {
 	StockCorrelation,
 	StockCorrelationsResponse,
-    StockCovariance,
-    StockCovarianceResponse
+	StockCovariance,
+	StockCovarianceResponse,
 } from "./stock-correlation-covariance.interface";
 
 @Component({
@@ -22,11 +22,11 @@ import {
 	styles: "",
 })
 export class StockMatrixComponent implements OnInit, OnChanges {
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-[x: string]: any;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	[x: string]: any;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	@Input() data: any;
-	@Input() matrixType: 'correlation' | 'covariance' = 'correlation';
+	@Input() matrixType: "correlation" | "covariance" = "correlation";
 	stockNames: string[] = [];
 	matrix: string[][] = [];
 
@@ -76,7 +76,10 @@ export class StockMatrixComponent implements OnInit, OnChanges {
 				const i = this.stockNames.indexOf(item.stock1);
 				const j = this.stockNames.indexOf(item.stock2);
 				if (i !== -1 && j !== -1) {
-					const value = this.matrixType === 'correlation' ? item.correlation ?? 0 : item.covariance ?? 0;
+					const value =
+						this.matrixType === "correlation"
+							? item.correlation ?? 0
+							: item.covariance ?? 0;
 					this.matrix[i][j] = value.toFixed(5);
 				}
 			},
@@ -84,25 +87,25 @@ export class StockMatrixComponent implements OnInit, OnChanges {
 	}
 
 	getCellColor(inp: string): string {
-        const value = Number.parseFloat(inp)
-		if (this.matrixType === 'correlation') {
+		const value = Number.parseFloat(inp);
+		if (this.matrixType === "correlation") {
 			if (value >= 0.7) {
 				return "bg-green-500 text-white";
-			// biome-ignore lint/style/noUselessElse: <explanation>
+				// biome-ignore lint/style/noUselessElse: <explanation>
 			} else if (value >= 0.4) {
 				return "bg-yellow-500 text-black";
-			// biome-ignore lint/style/noUselessElse: <explanation>
+				// biome-ignore lint/style/noUselessElse: <explanation>
 			} else {
 				return "bg-red-500 text-white";
 			}
-		// biome-ignore lint/style/noUselessElse: <explanation>
+			// biome-ignore lint/style/noUselessElse: <explanation>
 		} else {
 			if (value >= 0.0001) {
 				return "bg-green-500 text-white";
-			// biome-ignore lint/style/noUselessElse: <explanation>
+				// biome-ignore lint/style/noUselessElse: <explanation>
 			} else if (value >= 0.00001) {
 				return "bg-yellow-500 text-black";
-			// biome-ignore lint/style/noUselessElse: <explanation>
+				// biome-ignore lint/style/noUselessElse: <explanation>
 			} else {
 				return "bg-red-500 text-white";
 			}

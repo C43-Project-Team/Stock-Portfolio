@@ -9,11 +9,11 @@ export interface StockCorrelationsResponse {
 }
 
 export interface StockCovariance {
-    stock1: string;
-    stock2: string;
-    covariance: number;
+	stock1: string;
+	stock2: string;
+	covariance: number;
 }
 
 export interface StockCovarianceResponse {
-    stock_covariances: StockCovariance[];
+	stock_covariances: StockCovariance[];
 }

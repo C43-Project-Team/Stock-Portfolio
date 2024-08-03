@@ -216,9 +216,9 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, portfolio_name } = req.body;
 		try {
-            if (!owner || !portfolio_name) {
-                return res.status(400).json({ error: "Missing required parameters" });
-            }
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
 
 			const portfolioBeta = await portfolioDatabase.portfolioBeta(
 				owner,
@@ -235,19 +235,19 @@ portfolioRouter.post(
 
 portfolioRouter.post(
 	"/portfolio-beta-range",
-    verifyToken,
+	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, portfolio_name, startDate, endDate } = req.body;
 		try {
-            if (!owner || !portfolio_name) {
-                return res.status(400).json({ error: "Missing required parameters" });
-            }
+			if (!owner || !portfolio_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
 
 			const portfolioBeta = await portfolioDatabase.portfolioBetaRange(
 				owner,
 				portfolio_name,
-                startDate,
-                endDate
+				startDate,
+				endDate,
 			);
 
 			res.json({ portfolio_beta: portfolioBeta });
@@ -260,13 +260,13 @@ portfolioRouter.post(
 
 portfolioRouter.post(
 	"/stockList-beta",
-    verifyToken,
+	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, stockList_name } = req.body;
 		try {
-            if (!owner || !stockList_name) {
-                return res.status(400).json({ error: "Missing required parameters" });
-            }
+			if (!owner || !stockList_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
 
 			const stockListBeta = await portfolioDatabase.stockListBeta(
 				owner,
@@ -290,8 +290,8 @@ portfolioRouter.post(
 			const stockListBeta = await portfolioDatabase.stockListBetaRange(
 				owner,
 				stockList_name,
-                startDate,
-                endDate
+				startDate,
+				endDate,
 			);
 
 			if (!owner || !stockList_name) {
@@ -327,11 +327,15 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-    "/stock-beta-range",
-    async (req: AuthedRequest, res: Response) => {
-        const { stock_ticker, startDate, endDate } = req.body;
+	"/stock-beta-range",
+	async (req: AuthedRequest, res: Response) => {
+		const { stock_ticker, startDate, endDate } = req.body;
 		try {
-			const stockBeta = await portfolioDatabase.stockBetaRange(stock_ticker, startDate, endDate);
+			const stockBeta = await portfolioDatabase.stockBetaRange(
+				stock_ticker,
+				startDate,
+				endDate,
+			);
 
 			if (!stock_ticker) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -384,8 +388,11 @@ portfolioRouter.post(
 				portfolio_name,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
-			const stockCorrelations =
-				await portfolioDatabase.stockCorrelationsRange(stocks, startDate, endDate);
+			const stockCorrelations = await portfolioDatabase.stockCorrelationsRange(
+				stocks,
+				startDate,
+				endDate,
+			);
 
 			res.json({ stock_correlations: stockCorrelations });
 		} catch (error) {
@@ -433,7 +440,11 @@ portfolioRouter.post(
 				portfolio_name,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
-			const stockCovariances = await portfolioDatabase.stockCovarianceRange(stocks, startDate, endDate);
+			const stockCovariances = await portfolioDatabase.stockCovarianceRange(
+				stocks,
+				startDate,
+				endDate,
+			);
 
 			res.json({ stock_covariances: stockCovariances });
 		} catch (error) {
@@ -470,8 +481,11 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { stock_symbol, startDate, endDate } = req.body;
 		try {
-			const stockCov =
-				await portfolioDatabase.stockCoffectientOfVariationRange(stock_symbol, startDate, endDate);
+			const stockCov = await portfolioDatabase.stockCoffectientOfVariationRange(
+				stock_symbol,
+				startDate,
+				endDate,
+			);
 
 			if (!stock_symbol) {
 				return res.status(400).json({ error: "Missing required parameters" });
