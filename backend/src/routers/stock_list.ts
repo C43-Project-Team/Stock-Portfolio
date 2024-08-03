@@ -132,8 +132,8 @@ stockListRouter.get(
 			const page = Number.parseInt(req.query.page as string) || 1;
 			const offset = (page - 1) * limit;
 
-      console.log("limit", limit);
-      console.log("offset", offset);
+			console.log("limit", limit);
+			console.log("offset", offset);
 
 			const publicStockLists = await stockListDatabase.getPublicStockLists(
 				limit,
@@ -364,8 +364,8 @@ stockListRouter.post(
 				num_shares,
 			);
 
-      await deleteKey(`stockList-${owner}-${stock_list_name}`);
-      
+			await deleteKey(`stockList-${owner}-${stock_list_name}`);
+
 			return res.json({ message: "Stock added to list successfully" });
 		} catch (error) {
 			console.log(error);
@@ -394,8 +394,8 @@ stockListRouter.post(
 				stock_symbol,
 				num_shares,
 			);
-        
-        await deleteKey(`stockList-${owner}-${stock_list_name}`);
+
+			await deleteKey(`stockList-${owner}-${stock_list_name}`);
 			return res.json({
 				message: "Shares removed from stock in list successfully",
 			});
@@ -430,7 +430,7 @@ stockListRouter.post(
 				stock_symbol,
 			);
 
-      await deleteKey(`stockList-${owner}-${stock_list_name}`);
+			await deleteKey(`stockList-${owner}-${stock_list_name}`);
 			return res.json({ message: "Stock deleted from list successfully" });
 		} catch (error) {
 			return res.status(500).json({ error: "Error deleting stock from list" });
@@ -528,19 +528,19 @@ stockListRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cachedKey = `stockList-${owner}-${stockListName}`;
-      const cachedData = await getObject(cachedKey);
+			const cachedKey = `stockList-${owner}-${stockListName}`;
+			const cachedData = await getObject(cachedKey);
 
-      if (cachedData?.beta) {
-        return res.json({ stock_list_beta: cachedData.beta });
-      }
+			if (cachedData?.beta) {
+				return res.json({ stock_list_beta: cachedData.beta });
+			}
 
 			const stockListBeta = await stockListDatabase.stockListBeta(
 				owner,
 				stockListName,
 			);
 
-      await setObject(cachedKey, {beta: stockListBeta, ...cachedData});
+			await setObject(cachedKey, { beta: stockListBeta, ...cachedData });
 
 			res.json({ stock_list_beta: stockListBeta });
 		} catch (error) {
@@ -583,7 +583,6 @@ stockListRouter.use(
 	reviewRouter,
 );
 
-
 stockListRouter.post(
 	"/stock-covariance",
 	async (req: AuthedRequest, res: Response) => {
@@ -593,12 +592,12 @@ stockListRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cachedKey = `stockList-${owner}-${stockListName}`;
-      const cachedData = await getObject(cachedKey);
+			const cachedKey = `stockList-${owner}-${stockListName}`;
+			const cachedData = await getObject(cachedKey);
 
-      if (cachedData?.cov) {
-        return res.json({ stock_covariances: cachedData.cov });
-      }
+			if (cachedData?.cov) {
+				return res.json({ stock_covariances: cachedData.cov });
+			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
@@ -608,7 +607,7 @@ stockListRouter.post(
 			const stocks = lists.map((list) => list.stock_symbol);
 			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
 
-      await setObject(cachedKey, {cov: stockCovariances, ...cachedData});
+			await setObject(cachedKey, { cov: stockCovariances, ...cachedData });
 
 			res.json({ stock_covariances: stockCovariances });
 		} catch (error) {
@@ -656,12 +655,12 @@ stockListRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cachedKey = `stockList-${owner}-${stockListName}`;
-      const cachedData = await getObject(cachedKey);
+			const cachedKey = `stockList-${owner}-${stockListName}`;
+			const cachedData = await getObject(cachedKey);
 
-      if (cachedData?.correlations) {
-        return res.json({ stock_correlations: cachedData.correlations });
-      }
+			if (cachedData?.correlations) {
+				return res.json({ stock_correlations: cachedData.correlations });
+			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
@@ -671,7 +670,10 @@ stockListRouter.post(
 			const stockCorrelations =
 				await portfolioDatabase.stockCorrelations(stocks);
 
-      await setObject(cachedKey, {correlations: stockCorrelations, ...cachedData});
+			await setObject(cachedKey, {
+				correlations: stockCorrelations,
+				...cachedData,
+			});
 
 			res.json({ stock_correlations: stockCorrelations });
 		} catch (error) {

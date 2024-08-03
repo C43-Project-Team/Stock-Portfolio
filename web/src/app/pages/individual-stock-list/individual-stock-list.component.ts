@@ -28,7 +28,6 @@ import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.comp
 import { CalendarModule } from "primeng/calendar";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 
-
 @Component({
 	selector: "app-individual-stock-list",
 	standalone: true,
@@ -44,10 +43,10 @@ import { ConfirmDialogModule } from "primeng/confirmdialog";
 		ToggleButtonModule,
 		RatingModule,
 		InputTextareaModule,
-    ProgressSpinnerModule,
-    StockMatrixComponent,
-    CalendarModule,
-    ConfirmDialogModule,
+		ProgressSpinnerModule,
+		StockMatrixComponent,
+		CalendarModule,
+		ConfirmDialogModule,
 	],
 	providers: [MessageService, ConfirmationService],
 	templateUrl: "./individual-stock-list.component.html",
@@ -60,7 +59,7 @@ export class IndividualStockListComponent implements OnInit {
 	displayAddStockDialog = false;
 	displayShareStockListDialog = false;
 	displayAddReviewDialog = false;
-  displayDateFilterDialog = false;
+	displayDateFilterDialog = false;
 	buyStockSymbol: Stock = { stock_symbol: "", company: "", description: "" };
 	buyNumShares = 0;
 	filteredStocks: StockListEntry[] = [];
@@ -84,7 +83,7 @@ export class IndividualStockListComponent implements OnInit {
 	displayEditReviewDialog = false;
 	reviewToEdit: Review | null = null;
 	hasAccess = true;
-  stockListBeta = 0;
+	stockListBeta = 0;
 	correlations: any[] = [];
 	covariances: any[] = [];
 	dateRange: Date[] | null = null;
@@ -126,7 +125,7 @@ export class IndividualStockListComponent implements OnInit {
 		});
 	}
 
-  async loadAllData(startDate?: Date, endDate?: Date) {
+	async loadAllData(startDate?: Date, endDate?: Date) {
 		this.loading = true;
 
 		try {
@@ -147,8 +146,8 @@ export class IndividualStockListComponent implements OnInit {
 	}
 
 	async loadStockList(startDate?: Date, endDate?: Date) {
-    const startDateStr = startDate?.toISOString().split("T")[0];
-    const endDateStr = endDate?.toISOString().split("T")[0];
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
 			this.stocks = await this.apiService.getStocksInList(
 				this.username,
@@ -159,18 +158,19 @@ export class IndividualStockListComponent implements OnInit {
 				this.stockListName,
 			);
 
-      for (const stockListEntry of this.stocks) {
+			for (const stockListEntry of this.stocks) {
 				const stockBeta =
 					startDateStr && endDateStr
 						? await this.apiService.getPortfoliosStockBetaDateRange(
 								stockListEntry.stock_symbol,
 								startDateStr,
 								endDateStr,
-						  )
+							)
 						: await this.apiService.getPortfolioStocksBeta(
 								stockListEntry.stock_symbol,
-						  );
-				stockListEntry.stock_beta = Math.round(stockBeta.stock_beta * 1000) / 1000;
+							);
+				stockListEntry.stock_beta =
+					Math.round(stockBeta.stock_beta * 1000) / 1000;
 
 				const stockCOV =
 					startDateStr && endDateStr
@@ -178,24 +178,33 @@ export class IndividualStockListComponent implements OnInit {
 								stockListEntry.stock_symbol,
 								startDateStr,
 								endDateStr,
-						  )
-						: await this.apiService.getPortfolioStockCOV(stockListEntry.stock_symbol);
+							)
+						: await this.apiService.getPortfolioStockCOV(
+								stockListEntry.stock_symbol,
+							);
 				stockListEntry.stock_cov = Math.round(stockCOV.stock_cov * 1000) / 1000;
 			}
-      
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
 	}
 
 	async loadStockListBeta(startDate?: Date, endDate?: Date) {
-    const startDateStr = startDate?.toISOString().split("T")[0];
-    const endDateStr = endDate?.toISOString().split("T")[0];
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const response = (startDateStr && endDateStr) ? await this.apiService.getStockListBetaDateRange(this.username, this.stockListName, startDateStr, endDateStr) : await this.apiService.getStockListBeta(
-				this.username,
-				this.stockListName,
-			);
+			const response =
+				startDateStr && endDateStr
+					? await this.apiService.getStockListBetaDateRange(
+							this.username,
+							this.stockListName,
+							startDateStr,
+							endDateStr,
+						)
+					: await this.apiService.getStockListBeta(
+							this.username,
+							this.stockListName,
+						);
 			this.stockListBeta = Math.round(response.stock_list_beta * 1000) / 1000;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
@@ -213,11 +222,11 @@ export class IndividualStockListComponent implements OnInit {
 							this.stockListName,
 							startDateStr,
 							endDateStr,
-					  )
+						)
 					: await this.apiService.getStockListStockCorrelations(
 							this.username,
 							this.stockListName,
-					  );
+						);
 			this.correlations = res.stock_correlations;
 		} catch (error) {
 			console.error("Error fetching stock list correlations:", error);
@@ -235,33 +244,33 @@ export class IndividualStockListComponent implements OnInit {
 							this.stockListName,
 							startDateStr,
 							endDateStr,
-					  )
+						)
 					: await this.apiService.getStockListStockCovariances(
 							this.username,
 							this.stockListName,
-					  );
+						);
 			this.covariances = res.stock_covariances;
 		} catch (error) {
 			console.error("Error fetching stock list covariances:", error);
 		}
 	}
 
-  async applyDateFilter() {
-    if (!this.dateRange || this.dateRange.length !== 2) {
-        this.logError("Please select a valid date range.");
-        return;
-    }
+	async applyDateFilter() {
+		if (!this.dateRange || this.dateRange.length !== 2) {
+			this.logError("Please select a valid date range.");
+			return;
+		}
 
-    const [startDate, endDate] = this.dateRange;
+		const [startDate, endDate] = this.dateRange;
 
-    this.displayDateFilterDialog = false;
+		this.displayDateFilterDialog = false;
 
-    this.loadAllData(startDate, endDate);
-}
+		this.loadAllData(startDate, endDate);
+	}
 
-  showDateFilterDialog() {
-    this.displayDateFilterDialog = true;
-}
+	showDateFilterDialog() {
+		this.displayDateFilterDialog = true;
+	}
 
 	showEditReviewDialog(review: Review) {
 		this.reviewToEdit = { ...review };
@@ -365,7 +374,7 @@ export class IndividualStockListComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Stock added successfully");
 			this.displayAddStockDialog = false;
-      const [startDate, endDate] = this.dateRange || [];
+			const [startDate, endDate] = this.dateRange || [];
 			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
@@ -430,7 +439,7 @@ export class IndividualStockListComponent implements OnInit {
 	async searchStocks(event: any) {
 		try {
 			const results = await this.apiService.searchStocks(event.query);
-      // @ts-ignore
+			// @ts-ignore
 			this.filteredStocks = results.company;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
