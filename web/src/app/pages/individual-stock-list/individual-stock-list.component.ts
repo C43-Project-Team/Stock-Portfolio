@@ -5,7 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 // biome-ignore lint/style/useImportType: Angular needs the whole module for elements passed in constructor
 import { ApiService } from "@services/api.service";
-import { MessageService } from "primeng/api";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
 import { DialogModule } from "primeng/dialog";
 import { InputTextModule } from "primeng/inputtext";
@@ -26,6 +26,7 @@ import type { StockListEntry } from "@models/stock-list-entry";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { StockMatrixComponent } from "@components/stock-matrix/stock-matrix.component";
 import { CalendarModule } from "primeng/calendar";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 
 
 @Component({
@@ -45,9 +46,10 @@ import { CalendarModule } from "primeng/calendar";
 		InputTextareaModule,
     ProgressSpinnerModule,
     StockMatrixComponent,
-    CalendarModule
+    CalendarModule,
+    ConfirmDialogModule,
 	],
-	providers: [MessageService],
+	providers: [MessageService, ConfirmationService],
 	templateUrl: "./individual-stock-list.component.html",
 	styles: "",
 })
@@ -190,7 +192,7 @@ export class IndividualStockListComponent implements OnInit {
     const startDateStr = startDate?.toISOString().split("T")[0];
     const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const response = await this.apiService.getStockListBeta(
+			const response = (startDateStr && endDateStr) ? await this.apiService.getStockListBetaDateRange(this.username, this.stockListName, startDateStr, endDateStr) : await this.apiService.getStockListBeta(
 				this.username,
 				this.stockListName,
 			);

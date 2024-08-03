@@ -131,6 +131,9 @@ stockListRouter.get(
 			const page = Number.parseInt(req.query.page as string) || 1;
 			const offset = (page - 1) * limit;
 
+      console.log("limit", limit);
+      console.log("offset", offset);
+
 			const publicStockLists = await stockListDatabase.getPublicStockLists(
 				limit,
 				offset,
@@ -531,7 +534,7 @@ stockListRouter.post(
 );
 
 stockListRouter.post(
-	"/stockList-beta-range",
+	"/stockList-beta-date-range",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
 		const { owner, stockListName, startDate, endDate } = req.body;
