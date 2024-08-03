@@ -214,15 +214,15 @@ portfolioRouter.post(
 	"/portfolio-beta",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, portfolio_name } = req.body;
+		const { owner, portfolioName } = req.body;
 		try {
-			if (!owner || !portfolio_name) {
+			if (!owner || !portfolioName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const portfolioBeta = await portfolioDatabase.portfolioBeta(
 				owner,
-				portfolio_name,
+				portfolioName,
 			);
 
 			res.json({ portfolio_beta: portfolioBeta });
@@ -234,18 +234,18 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/portfolio-beta-range",
+	"/portfolio-beta-date-range",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, portfolio_name, startDate, endDate } = req.body;
+		const { owner, portfolioName, startDate, endDate } = req.body;
 		try {
-			if (!owner || !portfolio_name) {
+			if (!owner || !portfolioName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const portfolioBeta = await portfolioDatabase.portfolioBetaRange(
 				owner,
-				portfolio_name,
+				portfolioName,
 				startDate,
 				endDate,
 			);
@@ -409,7 +409,7 @@ portfolioRouter.post(
 		const { stock_symbol } = req.body;
 		try {
 			const stockCov =
-				await portfolioDatabase.stockCoffectientOfVariation(stock_symbol);
+				await portfolioDatabase.stockCoefficient(stock_symbol);
 
 			if (!stock_symbol) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -430,7 +430,7 @@ portfolioRouter.post(
 		const { stockSymbol, startDate, endDate } = req.body;
 		try {
 			const stockCov =
-				await portfolioDatabase.stockCoffectientOfVariationRange(stockSymbol, startDate, endDate);
+				await portfolioDatabase.stockCoefficientRange(stockSymbol, startDate, endDate);
 
 			if (!stockSymbol) {
 				return res.status(400).json({ error: "Missing required parameters" });

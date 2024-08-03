@@ -15,6 +15,7 @@ import {
 } from "@components/stock-matrix/stock-correlation-covariance.interface";
 import { Review } from "@models/review";
 import { SharedUser } from "@models/shared-user";
+import { StockListEntry } from "@models/stock-list-entry";
 
 @Injectable({
 	providedIn: "root",
@@ -193,8 +194,8 @@ export class ApiService {
 	async getStocksInList(
 		username: string,
 		stockListName: string,
-	): Promise<Stock[]> {
-		return this.get<Stock[]>(`/stock-list/${username}/${stockListName}/stocks`);
+	): Promise<StockListEntry[]> {
+		return this.get<StockListEntry[]>(`/stock-list/${username}/${stockListName}/stocks`);
 	}
 
 	async isStockListPrivate(
@@ -276,6 +277,69 @@ export class ApiService {
 		});
 	}
 
+  async getStockListBeta(
+		owner: string,
+		stockListName: string,
+	): Promise<{ stock_list_beta: number }> {
+		return this.post<{ stock_list_beta: number }>("/stock-list/stockList-beta", {
+			owner,
+			stockListName,
+		});
+	}
+
+  async getStockListBetaDateRange(
+    owner: string,
+    stockListName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<{ stock_list_beta: number }> {
+    return this.post<{ stock_list_beta: number }>("/stock-list/stockList-beta-date-range", {
+      owner, stockListName, startDate, endDate
+    });
+  }
+
+	async getStockListStockCorrelations(
+		owner: string,
+		stockListName: string,
+	): Promise<StockCorrelationsResponse> {
+		return this.post<StockCorrelationsResponse>(
+			"/stock-list/stock-correlations",
+			{ owner, stockListName },
+		);
+	}
+
+  async getStockListStockCorrelationsDateRange(
+    owner: string,
+    stockListName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<StockCorrelationsResponse> {
+    return this.post<StockCorrelationsResponse>("/stock-list/stock-correlations-date-range", {
+      owner, stockListName, startDate, endDate
+    });
+  }
+
+	async getStockListStockCovariances(
+		owner: string,
+		stockListName: string,
+	): Promise<StockCovarianceResponse> {
+		return this.post<StockCovarianceResponse>("/stock-list/stock-covariance", {
+			owner,
+			stockListName,
+		});
+	}
+
+  async getStockListStockCovariancesDateRange(
+    owner: string,
+    stockListName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<StockCovarianceResponse> {
+    return this.post<StockCovarianceResponse>("/stock-list/stock-covariance-date-range", {
+      owner, stockListName, startDate, endDate
+    });
+  }
+
 	/* PORTFOLIO STUFF */
 
 	async getUserPortfolios(): Promise<Portfolio[]> {
@@ -339,10 +403,21 @@ export class ApiService {
 		portfolioName: string,
 	): Promise<{ portfolio_beta: number }> {
 		return this.post<{ portfolio_beta: number }>("/portfolio/portfolio-beta", {
-			owner: owner,
-			portfolio_name: portfolioName,
+			owner,
+			portfolioName,
 		});
 	}
+
+  async getPortfolioBetaDateRange(
+    owner: string,
+    portfolioName: string,
+    startDate: string,
+    endDate: string
+  ) : Promise<{ portfolio_beta: number }> {
+    return this.post<{ portfolio_beta: number }>("/portfolio/portfolio-beta-date-range", {
+      owner, portfolioName, startDate, endDate
+    });
+  }
 
 	async getPortfolioStocksBeta(
 		stockTicker: string,
@@ -358,7 +433,7 @@ export class ApiService {
     });
   }
 
-	async getStockCorrelations(
+	async getPortfolioStockCorrelations(
 		owner: string,
 		portfolio_name: string,
 	): Promise<StockCorrelationsResponse> {
@@ -368,7 +443,7 @@ export class ApiService {
 		);
 	}
 
-  async getStockCorrelationsDateRange(
+  async getPortfolioStockCorrelationsDateRange(
     owner: string,
     portfolioName: string,
     startDate: string,
@@ -379,7 +454,7 @@ export class ApiService {
     });
   }
 
-	async getStockCovariances(
+	async getPortfolioStockCovariances(
 		owner: string,
 		portfolio_name: string,
 	): Promise<StockCovarianceResponse> {
@@ -389,7 +464,7 @@ export class ApiService {
 		});
 	}
 
-  async getStockCovariancesDateRange(
+  async getPortfolioStockCovariancesDateRange(
     owner: string,
     portfolioName: string,
     startDate: string,

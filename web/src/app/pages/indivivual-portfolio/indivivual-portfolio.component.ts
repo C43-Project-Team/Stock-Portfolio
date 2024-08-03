@@ -106,18 +106,18 @@ export class IndivivualPortfolioComponent implements OnInit {
 			await Promise.all([
 				this.loadPortfolio(),
 				this.loadInvestments(startDate, endDate),
-				this.loadPortfolioBeta(),
+				this.loadPortfolioBeta(startDate, endDate),
 				this.loadCorrelationMatrix(startDate, endDate),
 				this.loadCovarianceMatrix(startDate, endDate),
 				this.loadUserPortfolios(),
 			]);
+      if (startDate && endDate) {
+        this.logSuccess("Success", "Filter applied successfully");
+      }
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		} finally {
 			this.loading = false;
-      if (startDate && endDate) {
-        this.logSuccess("Success", "Filter applied successfully");
-      }
 		}
 	}
 
@@ -138,13 +138,13 @@ export class IndivivualPortfolioComponent implements OnInit {
 		try {
 			const res =
 				startDateStr && endDateStr
-					? await this.apiService.getStockCorrelationsDateRange(
+					? await this.apiService.getPortfolioStockCorrelationsDateRange(
 							this.username,
 							this.portfolioName,
 							startDateStr,
 							endDateStr,
 					  )
-					: await this.apiService.getStockCorrelations(
+					: await this.apiService.getPortfolioStockCorrelations(
 							this.username,
 							this.portfolioName,
 					  );
@@ -160,13 +160,13 @@ export class IndivivualPortfolioComponent implements OnInit {
 		try {
 			const res =
 				startDateStr && endDateStr
-					? await this.apiService.getStockCovariancesDateRange(
+					? await this.apiService.getPortfolioStockCovariancesDateRange(
 							this.username,
 							this.portfolioName,
 							startDateStr,
 							endDateStr,
 					  )
-					: await this.apiService.getStockCovariances(
+					: await this.apiService.getPortfolioStockCovariances(
 							this.username,
 							this.portfolioName,
 					  );
@@ -221,9 +221,11 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
-	async loadPortfolioBeta() {
+	async loadPortfolioBeta(startDate?: Date, endDate?: Date) {
+    const startDateStr = startDate?.toISOString().split("T")[0];
+    const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const response = await this.apiService.getPortfolioBeta(
+			const response = (startDateStr && endDateStr) ? await this.apiService.getPortfolioBetaDateRange(this.username, this.portfolioName, startDateStr, endDateStr) : await this.apiService.getPortfolioBeta(
 				this.username,
 				this.portfolioName,
 			);

@@ -511,15 +511,15 @@ stockListRouter.post(
 	"/stockList-beta",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name } = req.body;
+		const { owner, stockListName } = req.body;
 		try {
-			if (!owner || !stockList_name) {
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const stockListBeta = await stockListDatabase.stockListBeta(
 				owner,
-				stockList_name,
+				stockListName,
 			);
 
 			res.json({ stock_list_beta: stockListBeta });
@@ -534,16 +534,16 @@ stockListRouter.post(
 	"/stockList-beta-range",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name, startDate, endDate } = req.body;
+		const { owner, stockListName, startDate, endDate } = req.body;
 		try {
 			const stockListBeta = await stockListDatabase.stockListBetaRange(
 				owner,
-				stockList_name,
+				stockListName,
 				startDate,
 				endDate,
 			);
 
-			if (!owner || !stockList_name) {
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
@@ -568,14 +568,14 @@ stockListRouter.post(
 	"/stock-covariance",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, stock_list } = req.body;
-			if (!owner || !stock_list) {
+			const { owner, stockListName } = req.body;
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
-				stock_list,
+				stockListName,
 			);
 
 			const stocks = lists.map((list) => list.stock_symbol);
@@ -593,14 +593,14 @@ stockListRouter.post(
 	"/stock-covariance-date-range",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, stock_list_name, startDate, endDate } = req.body;
-			if (!owner || !stock_list_name) {
+			const { owner, stockListName, startDate, endDate } = req.body;
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
-				stock_list_name,
+				stockListName,
 			);
 
 			const stocks = lists.map((list) => list.stock_symbol);
@@ -622,14 +622,14 @@ stockListRouter.post(
 	"/stock-correlations",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, stock_list_name } = req.body;
-			if (!owner || !stock_list_name) {
+			const { owner, stockListName } = req.body;
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
-				stock_list_name,
+				stockListName,
 			);
 			const stocks = lists.map((list) => list.stock_symbol);
 			const stockCorrelations =
@@ -647,14 +647,14 @@ stockListRouter.post(
 	"/stock-correlations-date-range",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, stock_list_name, startDate, endDate } = req.body;
-			if (!owner || !stock_list_name) {
+			const { owner, stockListName, startDate, endDate } = req.body;
+			if (!owner || !stockListName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const lists = await stockListDatabase.getStockListContains(
 				owner,
-				stock_list_name,
+				stockListName,
 			);
 			const stocks = lists.map((list) => list.stock_symbol);
 			const stockCorrelations = await portfolioDatabase.stockCorrelationsRange(

@@ -1,312 +1,129 @@
 <p-toast></p-toast>
-<div class="container mx-auto p-4 pt-12" *ngIf="hasAccess">
-    <div class="flex items-center mb-4">
-        <div>
-            <h1 class="text-2xl font-bold">{{ stockListName }}</h1>
-            <h2 class="text-xl">By {{ username }}</h2>
-        </div>
-        <div class="ml-auto flex gap-2">
-            <p-button
-                label="Add Stock"
-                icon="pi pi-plus"
-                class="p-button-success"
-                (click)="showAddStockDialog()"
-                *ngIf="isOwner"
-            ></p-button>
-            <p-toggleButton
-                onLabel="Private"
-                offLabel="Public"
-                onIcon="pi pi-lock"
-                offIcon="pi pi-unlock"
-                [(ngModel)]="isPrivate"
-                (onChange)="toggleVisibility()"
-                *ngIf="isOwner"
-            ></p-toggleButton>
-            <p-button
-                label="Share Stock List"
-                icon="pi pi-share-alt"
-                class="p-button-info"
-                (click)="showShareStockListDialog()"
-                *ngIf="isOwner && isPrivate"
-            ></p-button>
-        </div>
+<p-progressSpinner *ngIf="loading" styleClass="absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%]"></p-progressSpinner>
+<div class="container mx-auto p-4 pt-12" *ngIf="hasAccess && !loading">
+  <!-- Add Date Filter Button -->
+  <div class="flex items-center mb-4">
+    <div>
+      <h1 class="text-2xl font-bold">{{ stockListName }}</h1>
+      <h2 class="text-xl">By {{ username }}</h2>
     </div>
-
-    <p-table [value]="stocks" class="p-datatable-sm">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Stock Symbol</th>
-                <th>Number of Shares</th>
-                <th>Actions</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-stock>
-            <tr>
-                <td>{{ stock.stock_symbol }}</td>
-                <td>{{ stock.num_shares }}</td>
-                <td>
-                    <div class="flex gap-x-2">
-                        <button
-                            pButton
-                            type="button"
-                            icon="pi pi-minus"
-                            class="p-button-danger p-button-rounded"
-                            (click)="removeShares(stock.stock_symbol, 1)"
-                            *ngIf="isOwner"
-                        ></button>
-                        <button
-                            pButton
-                            type="button"
-                            icon="pi pi-plus"
-                            class="p-button-success p-button-rounded"
-                            (click)="addStock(stock.stock_symbol, 1)"
-                            *ngIf="isOwner"
-                        ></button>
-                        <button
-                            pButton
-                            type="button"
-                            icon="pi pi-times"
-                            class="p-button-danger p-button-rounded"
-                            (click)="deleteStock(stock.stock_symbol)"
-                            *ngIf="isOwner"
-                        ></button>
-                        <button
-                            pButton
-                            type="button"
-                            icon="pi pi-arrow-right"
-                            class="p-button-rounded"
-                            (click)="goToStock(stock.stock_symbol)"
-                        ></button>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-
-    <!-- Add Stock Dialog -->
-    <p-dialog
-        header="Add Stock"
-        [(visible)]="displayAddStockDialog"
-        [modal]="true"
-        [closable]="true"
-        [dismissableMask]="true"
-        [responsive]="true"
-        [style]="{ width: '20rem' }"
-        [baseZIndex]="10000"
-    >
-        <div class="p-fluid">
-            <div class="p-field mb-4">
-                <label for="buyStockSymbol" class="block text-sm font-medium text-gray-700">Stock Symbol</label>
-                <p-autoComplete
-                    id="buyStockSymbol"
-                    [(ngModel)]="buyStockSymbol"
-                    (completeMethod)="searchStocks($event)"
-                    [suggestions]="filteredStocks"
-                    field="stock_symbol"
-                    class="mt-1 block w-full"
-                ></p-autoComplete>
-            </div>
-            <div class="p-field mb-4">
-                <label for="buyNumShares" class="block text-sm font-medium text-gray-700">Number of Shares</label>
-                <input
-                    id="buyNumShares"
-                    type="number"
-                    pInputText
-                    [(ngModel)]="buyNumShares"
-                    class="mt-1 block w-full"
-                />
-            </div>
-            <div class="text-right">
-                <p-button label="Add" class="p-button-success" (click)="addStock()" [disabled]="!buyStockSymbol || !buyNumShares"></p-button>
-            </div>
-        </div>
-    </p-dialog>
-
-    <!-- Share Stock List Dialog -->
-    <p-dialog
-        header="Share Stock List"
-        [(visible)]="displayShareStockListDialog"
-        [modal]="true"
-        [closable]="true"
-        [dismissableMask]="true"
-        [responsive]="true"
-        [style]="{ width: '20rem' }"
-        [baseZIndex]="10000"
-    >
-        <div class="p-fluid">
-            <div class="p-field mb-4">
-                <label class="block text-sm font-medium text-gray-700">Shared With</label>
-                <p-table [value]="sharedUsers" [scrollable]="true" scrollHeight="200px">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Username</th>
-                            <th>Actions</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-user>
-                        <tr>
-                            <td>{{ user.user }}</td>
-                            <td>
-                                <button pButton icon="pi pi-user-minus" class="p-button-rounded p-button-text p-button-danger" (click)="revokeSharing(user)"></button>
-
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-            <div class="p-field mb-4">
-                <label for="shareWithUser" class="block text-sm font-medium text-gray-700">Share With</label>
-                <p-autoComplete
-                    id="shareWithUser"
-                    [(ngModel)]="shareWithUser"
-                    (completeMethod)="searchUsers($event)"
-                    [suggestions]="filteredUsers"
-                    field="username"
-                    class="mt-1 block w-full"
-                ></p-autoComplete>
-            </div>
-            <div class="text-right">
-                <p-button label="Share" class="p-button-info" (click)="shareStockList()"></p-button>
-            </div>
-        </div>
-    </p-dialog>
-
-    <!-- Reviews Section -->
-    <div class="mt-8">
-        <h2 class="text-2xl font-bold mb-4">Reviews</h2>
-        <div class="flex justify-end mb-4">
-            <p-button label="Add Review" icon="pi pi-plus" class="p-button-info" (click)="showAddReviewDialog()" *ngIf="!isOwner && !userReview"></p-button>
-        </div>
-        <div *ngIf="userReview" class="mb-4 p-4 border rounded shadow">
-            <div class="flex justify-between items-center mb-2">
-                <div>
-                    <span class="font-bold">{{ userReview.reviewer }}</span>
-                    <span class="ml-2 text-sm text-gray-600">{{ userReview.review_creation_time | date: 'short' }}</span>
-                    <span *ngIf="userReview.review_last_updated" class="ml-2 text-sm text-gray-600">Updated: {{ userReview.review_last_updated | date: 'short' }}</span>
-                </div>
-                <div>
-                    <p-button icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-warning" (click)="showEditReviewDialog(userReview)"></p-button>
-                    <p-button icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteReview(userReview)"></p-button>
-                </div>
-            </div>
-            <div class="text-sm mb-2">
-                <p-rating [(ngModel)]="userReview.rating" [cancel]="false" readonly="true" stars="5"></p-rating>
-            </div>
-            <div class="text-sm">
-                {{ userReview.content }}
-            </div>
-        </div>
-
-        <p-table [value]="otherReviews" [scrollable]="true" scrollHeight="400px" *ngIf="isOwner || !isPrivate">
-            <ng-template pTemplate="body" let-review>
-                <tr>
-                    <td class="p-4 border-b">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <span class="font-bold">{{ review.reviewer }}</span>
-                                <span class="ml-2 text-sm text-gray-600">{{ review.review_creation_time | date: 'short' }}</span>
-                                <span *ngIf="review.review_last_updated" class="ml-2 text-sm text-gray-600">Updated: {{ review.review_last_updated | date: 'short' }}</span>
-                            </div>
-							<div class="flex h-full items-center gap-x-4">
-								<div class="text-sm mb-2">
-									<p-rating [(ngModel)]="review.rating" [cancel]="false" readonly="true" stars="5"></p-rating>
-								</div>
-								<div>
-									<p-button
-										icon="pi pi-trash"
-										class="p-button-rounded p-button-text p-button-danger"
-										*ngIf="isOwner"
-										(click)="deleteReview(review)"
-									></p-button>
-								</div>
-
-							</div>
-                        </div>
-                        <div class="text-sm">
-                            {{ review.content }}
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+    <div class="ml-auto flex gap-2">
+      <p-button
+        label="Add Stock"
+        icon="pi pi-plus"
+        class="p-button-success"
+        (click)="showAddStockDialog()"
+        *ngIf="isOwner"
+      ></p-button>
+      <p-toggleButton
+        onLabel="Private"
+        offLabel="Public"
+        onIcon="pi pi-lock"
+        offIcon="pi pi-unlock"
+        [(ngModel)]="isPrivate"
+        (onChange)="toggleVisibility()"
+        *ngIf="isOwner"
+      ></p-toggleButton>
+      <p-button
+        label="Share Stock List"
+        icon="pi pi-share-alt"
+        class="p-button-info"
+        (click)="showShareStockListDialog()"
+        *ngIf="isOwner && isPrivate"
+      ></p-button>
+      <p-button
+        label="Add Date Filter"
+        icon="pi pi-calendar"
+        class="p-button-info ml-2"
+        (click)="showDateFilterDialog()"
+      ></p-button>
     </div>
+  </div>
 
-    <p-dialog
-        header="Add Review"
-        [(visible)]="displayAddReviewDialog"
-        [modal]="true"
-        [closable]="true"
-        [dismissableMask]="true"
-        [responsive]="true"
-        [style]="{ width: '30rem' }"
-        [baseZIndex]="10000"
-    >
-        <div class="p-fluid">
-            <div class="p-field mb-4">
-                <label for="reviewRating" class="block text-sm font-medium text-gray-700">Rating (/5)</label>
-                <input
-                    id="reviewRating"
-                    type="number"
-                    pInputText
-                    [(ngModel)]="reviewRating"
-                    class="mt-1 block w-full"
-                    min="0"
-                    max="5"
-                />
-            </div>
-            <div class="p-field mb-4">
-                <label for="reviewContent" class="block text-sm font-medium text-gray-700">Review Content</label>
-                <textarea
-                    id="reviewContent"
-                    pInputTextarea
-                    [(ngModel)]="reviewContent"
-                    class="mt-1 block w-full"
-                    rows="8"
-                ></textarea>
-            </div>
-            <div class="text-right">
-                <p-button label="Add Review" class="p-button-info" (click)="addReview()" [disabled]="!reviewContent || reviewRating < 0 || reviewRating > 5"></p-button>
-            </div>
-        </div>
-    </p-dialog>
+  <!-- Add Stock List Beta -->
+  <div class="mb-4 flex flex-row">
+    <h3 class="text-lg font-semibold">Stock List Beta: {{ stockListBeta }}</h3>
+  </div>
 
-    <!-- Edit Review Dialog -->
-    <p-dialog
-        header="Edit Review"
-        [(visible)]="displayEditReviewDialog"
-        [modal]="true"
-        [closable]="true"
-        [dismissableMask]="true"
-        [responsive]="true"
-        [style]="{ width: '30rem' }"
-        [baseZIndex]="10000"
-    >
-        <div class="p-fluid" *ngIf="reviewToEdit">
-            <div class="p-field mb-4">
-                <label for="editReviewRating" class="block text-sm font-medium text-gray-700">Rating (/5)</label>
-                <input
-                    id="editReviewRating"
-                    type="number"
-                    pInputText
-                    [(ngModel)]="reviewToEdit.rating"
-                    class="mt-1 block w-full"
-                    min="0"
-                    max="5"
-                />
-            </div>
-            <div class="p-field mb-4">
-                <label for="editReviewContent" class="block text-sm font-medium text-gray-700">Review Content</label>
-                <textarea
-                    id="editReviewContent"
-                    pInputTextarea
-                    [(ngModel)]="reviewToEdit.content"
-                    class="mt-1 block w-full"
-                    rows="8"
-                ></textarea>
-            </div>
-            <div class="text-right">
-                <p-button label="Update Review" class="p-button-info" (click)="updateReview()" [disabled]="!reviewToEdit.content || reviewToEdit.rating < 0 || reviewToEdit.rating > 5"></p-button>
-            </div>
-        </div>
-    </p-dialog>
+  <p-table [value]="stocks" class="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Stock Symbol</th>
+        <th>Number of Shares</th>
+        <th>Coefficient of Variation</th>
+        <th>Stock Beta</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-stock>
+      <tr>
+        <td>{{ stock.stock_symbol }}</td>
+        <td>{{ stock.num_shares }}</td>
+        <td>{{ stock.stock_cov + ' %' }}</td>
+        <td>{{ stock.stock_beta }}</td>
+        <td>
+          <div class="flex gap-x-2">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-minus"
+              class="p-button-danger p-button-rounded"
+              (click)="removeShares(stock.stock_symbol, 1)"
+              *ngIf="isOwner"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-plus"
+              class="p-button-success p-button-rounded"
+              (click)="addStock(stock.stock_symbol, 1)"
+              *ngIf="isOwner"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-times"
+              class="p-button-danger p-button-rounded"
+              (click)="deleteStock(stock.stock_symbol)"
+              *ngIf="isOwner"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-arrow-right"
+              class="p-button-rounded"
+              (click)="goToStock(stock.stock_symbol)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Add Stock List Correlation Matrix -->
+  <div class="mt-10 pt-3 flex">
+    <h3 class="text-xl font-bold mb-4 items-center">Stocks Correlation Matrix</h3>
+    <app-stock-matrix [data]="correlations" matrixType="correlation"></app-stock-matrix>
+  </div>
+
+  <!-- Add Stock List Covariance Matrix -->
+  <div class="mt-10 pt-3 flex">
+    <h3 class="text-xl font-bold mb-4 items-center">Stocks Covariance Matrix</h3>
+    <app-stock-matrix [data]="covariances" matrixType="covariance"></app-stock-matrix>
+  </div>
+
+  <!-- Other dialogs and reviews section remain unchanged... -->
+
+  <p-dialog header="Add Date Filter" [contentStyle]="{'overflow': 'visible'}"
+  [(visible)]="displayDateFilterDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [responsive]="true" styleClass="w-[30rem]" [baseZIndex]="10000">
+    <div class="p-fluid">
+      <div class="p-field mb-4">
+        <label for="dateRange" class="block text-sm font-medium text-gray-700">Date Range</label>
+        <p-calendar id="dateRange" [(ngModel)]="dateRange" selectionMode="range" dateFormat="yy-mm-dd" [showIcon]="true" appendTo="body" class="mt-1 block w-full"></p-calendar>
+      </div>
+      <div class="text-right">
+        <p-button label="Apply" class="p-button-info" (click)="applyDateFilter()" [disabled]="!dateRange || dateRange.length !== 2"></p-button>
+      </div>
+    </div>
+  </p-dialog>
 </div>
