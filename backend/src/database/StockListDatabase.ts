@@ -7,7 +7,7 @@ import type {
 	StocksList,
 	User,
 } from "../types/db-schema";
-import type { Kysely } from "kysely";
+import { sql, type Kysely } from "kysely";
 
 class StockListDatabase {
 	private db: Kysely<Database>;
@@ -691,6 +691,25 @@ class StockListDatabase {
 			.where("stock_list_owner", "=", stock_list_owner)
 			.where("stock_list_name", "=", stock_list_name)
 			.execute();
+	}
+
+    async stockListBeta(owner: string, stockList_name: string): Promise<number> {
+		const query = sql`SELECT public.calculate_stocklist_beta(${owner}, ${stockList_name})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { calculate_stocklist_beta: number })
+			.calculate_stocklist_beta;
+	}
+
+	async stockListBetaRange(
+		owner: string,
+		stockList_name: string,
+		startDate: string,
+		endDate: string,
+	): Promise<number> {
+		const query = sql`SELECT public.calculate_stocklist_beta(${owner}, ${stockList_name}, ${startDate}, ${endDate})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { calculate_stocklist_beta: number })
+			.calculate_stocklist_beta;
 	}
 
 	async getReview(

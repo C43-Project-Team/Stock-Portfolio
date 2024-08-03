@@ -259,54 +259,6 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/stockList-beta",
-	verifyToken,
-	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name } = req.body;
-		try {
-			if (!owner || !stockList_name) {
-				return res.status(400).json({ error: "Missing required parameters" });
-			}
-
-			const stockListBeta = await portfolioDatabase.stockListBeta(
-				owner,
-				stockList_name,
-			);
-
-			res.json({ stock_list_beta: stockListBeta });
-		} catch (error) {
-			console.log(error);
-			res.status(500).json({ error: "Error retrieving portfolio beta" });
-		}
-	},
-);
-
-portfolioRouter.post(
-	"/stockList-beta-range",
-	verifyToken,
-	async (req: AuthedRequest, res: Response) => {
-		const { owner, stockList_name, startDate, endDate } = req.body;
-		try {
-			const stockListBeta = await portfolioDatabase.stockListBetaRange(
-				owner,
-				stockList_name,
-				startDate,
-				endDate,
-			);
-
-			if (!owner || !stockList_name) {
-				return res.status(400).json({ error: "Missing required parameters" });
-			}
-
-			res.json({ stock_list_beta: stockListBeta });
-		} catch (error) {
-			console.log(error);
-			res.status(500).json({ error: "Error retrieving portfolio beta" });
-		}
-	},
-);
-
-portfolioRouter.post(
 	"/stock-beta",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
