@@ -77,7 +77,11 @@ export class PublicStockListsComponent implements OnInit {
 	}
 
 	goToStockList(stockList: StocksList) {
-		this.router.navigate(["/stock-lists/user", stockList.owner, stockList.stock_list_name]);
+		this.router.navigate([
+			"/stock-lists/user",
+			stockList.owner,
+			stockList.stock_list_name,
+		]);
 	}
 
 	logError(detail: string) {

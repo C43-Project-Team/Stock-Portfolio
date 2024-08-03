@@ -40,7 +40,8 @@ friendsRouter.post(
 		} catch (error) {
 			if (
 				error instanceof Error &&
-				(error.message.includes("Timeout for friend request") || error.message.includes("already"))
+				(error.message.includes("Timeout for friend request") ||
+					error.message.includes("already"))
 			) {
 				return res.status(403).json({ error: error.message });
 			}
@@ -190,10 +191,10 @@ friendsRouter.get(
 			if (!query || typeof query !== "string") {
 				return res.status(400).json({ error: "Query parameter is required" });
 			}
-      const username = req.user?.username;
-      if (!username) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
+			const username = req.user?.username;
+			if (!username) {
+				return res.status(401).json({ error: "Unauthorized" });
+			}
 
 			const users = await friendsDatabase.searchForNewFriends(username, query);
 
