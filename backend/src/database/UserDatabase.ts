@@ -9,11 +9,11 @@ class UserDatabase {
 		this.db = db;
 	}
 
-    /**
-     * select * from users 
-     * where username = username 
-     * limit 1;
-     */
+	/**
+	 * select * from users
+	 * where username = username
+	 * limit 1;
+	 */
 	async getUserByUsername(username: string): Promise<User | null> {
 		const user = await this.db
 			.selectFrom("users")
@@ -24,11 +24,11 @@ class UserDatabase {
 		return user || null;
 	}
 
-    /**
-     * insert into users (username, password_hash, full_name, user_created_at, profile_picture)
-     * values (username, password_hash, full_name, new Date(), profile_picture)
-     * returning username, password_hash, full_name, user_created_at, profile_picture;
-     */
+	/**
+	 * insert into users (username, password_hash, full_name, user_created_at, profile_picture)
+	 * values (username, password_hash, full_name, new Date(), profile_picture)
+	 * returning username, password_hash, full_name, user_created_at, profile_picture;
+	 */
 	async createUser(
 		username: string,
 		password_hash: string,
@@ -56,10 +56,10 @@ class UserDatabase {
 		return user;
 	}
 
-    /**
-     * select * from users
-     * where username like 'query%';
-     */
+	/**
+	 * select * from users
+	 * where username like 'query%';
+	 */
 	async searchUsersByUsername(query: string): Promise<User[]> {
 		return await this.db
 			.selectFrom("users")

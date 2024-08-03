@@ -43,14 +43,14 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 		// 	.slice(stockList.length - 100, stockList.length)
 		// 	.map((stock) => ({ date: stock.stock_date, price: stock.close_price }));
 
-        type StockDate = Date | string;
+		type StockDate = Date | string;
 
-        const monthData = stockList
-        .slice(stockList.length - 100, stockList.length)
-        .map((stock) => {
-            const date: StockDate = stock.stock_date;
-            return { date, price: stock.close_price };
-        });
+		const monthData = stockList
+			.slice(stockList.length - 100, stockList.length)
+			.map((stock) => {
+				const date: StockDate = stock.stock_date;
+				return { date, price: stock.close_price };
+			});
 
 		const predictedData = [...monthData];
 		for (let i = 0; i < predictAmount; i++) {
@@ -60,7 +60,7 @@ stockRouter.post("/prediction/:ticker", async (req, res) => {
 			predictedData.push({
 				// date: new Date(formattedDate) as string,
 				date: formattedDate as unknown as Date,
-                price: predictedPrices[i],
+				price: predictedPrices[i],
 			});
 		}
 

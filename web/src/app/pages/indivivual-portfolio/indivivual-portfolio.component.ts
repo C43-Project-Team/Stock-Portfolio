@@ -333,6 +333,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.displayBuySharesDialog = false;
 			this.loadPortfolio();
 			this.loadInvestments();
+            this.loadCorrelationMatrix();
+            this.loadCovarianceMatrix();
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -349,6 +351,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.displaySellSharesDialog = false;
 			this.loadPortfolio();
 			this.loadInvestments();
+            this.loadCorrelationMatrix();
+            this.loadCovarianceMatrix();
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}

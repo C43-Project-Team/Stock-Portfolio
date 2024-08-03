@@ -9,20 +9,15 @@ import { AuthService } from '@services/auth.service';
 import { ApiService } from '@services/api.service';
 
 @Component({
-  selector: 'app-landing',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    ButtonModule,
-    MenubarModule,
-  ],
-  templateUrl: './landing.component.html',
-  styles: []
+	selector: "app-landing",
+	standalone: true,
+	imports: [CommonModule, RouterModule, ButtonModule, MenubarModule],
+	templateUrl: "./landing.component.html",
+	styles: [],
 })
 export class LandingComponent implements OnInit {
-  isAuthenticated$!: Observable<boolean>;
-  user$!: Observable<any>;
+	isAuthenticated$!: Observable<boolean>;
+	user$!: Observable<any>;
 
   constructor(private authService: AuthService, private router: Router, private apiService: ApiService) {}
 
@@ -36,7 +31,7 @@ export class LandingComponent implements OnInit {
     });
   }
 
-  navigateTo(path: string) {
-    this.router.navigate([path]);
-  }
+	navigateTo(path: string) {
+		this.router.navigate([path]);
+	}
 }
