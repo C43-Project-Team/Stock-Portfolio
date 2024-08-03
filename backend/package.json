@@ -12,7 +12,10 @@
 		"create-tables": "tsx src/utils/db/create-tables.ts",
 		"create-indexes": "tsx src/utils/db/create-indexes.ts",
 		"migrations": "tsx src/utils/db/run-migrations.ts",
-		"export-gcp-stock-data": "tsx src/utils/db/export-gcp-stock-data.ts"
+		"export-gcp-stock-data": "tsx src/utils/db/export-gcp-stock-data.ts",
+    "cache-stock-data": "tsx src/utils/redis/cache-stock-data.ts",
+    "cache-clear": "tsx src/utils/scripts/cache/clear.ts",
+    "cache-show": "tsx src/utils/scripts/cache/show-contents.ts"
 	},
 	"author": "",
 	"license": "ISC",
@@ -23,6 +26,7 @@
 		"@types/cors": "^2.8.17",
 		"@types/dockerode": "^3.3.31",
 		"@types/express": "^4.17.21",
+		"@types/ioredis": "^5.0.0",
 		"@types/jsonwebtoken": "^9.0.6",
 		"@types/multer": "^1.4.11",
 		"@types/node": "^20.14.10",
@@ -44,6 +48,7 @@
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
 		"fs": "^0.0.1-security",
+		"ioredis": "^5.4.1",
 		"jsonwebtoken": "^9.0.2",
 		"kysely": "^0.27.4",
 		"kysely-postgres-js": "^2.0.0",

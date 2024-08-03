@@ -64,7 +64,7 @@
                 'text-green-600': stock.stock_cov < 10,
                 'text-yellow-600': stock.stock_cov >= 10 && stock.stock_cov <= 30,
                 'text-red-600': stock.stock_cov > 30
-            }">{{ stock.stock_cov + ' %'}}</td>
+            }">{{ stock.stock_cov }}</td>
         <td>{{ stock.stock_beta }}</td>
         <td>
           <div class="flex gap-x-2">
