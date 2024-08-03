@@ -279,17 +279,13 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/stock-beta-range",
-	async (req: AuthedRequest, res: Response) => {
-		const { stock_ticker, startDate, endDate } = req.body;
+    "/stock-beta-date-range",
+    async (req: AuthedRequest, res: Response) => {
+        const { stockTicker, startDate, endDate } = req.body;
 		try {
-			const stockBeta = await portfolioDatabase.stockBetaRange(
-				stock_ticker,
-				startDate,
-				endDate,
-			);
+			const stockBeta = await portfolioDatabase.stockBetaRange(stockTicker, startDate, endDate);
 
-			if (!stock_ticker) {
+			if (!stockTicker) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
@@ -327,17 +323,17 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/stock-correlations-range",
+	"/stock-correlations-date-range",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, portfolio_name, startDate, endDate } = req.body;
-			if (!owner || !portfolio_name) {
+			const { owner, portfolioName, startDate, endDate } = req.body;
+			if (!owner || !portfolioName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const investments = await portfolioDatabase.getInvestments(
 				owner,
-				portfolio_name,
+				portfolioName,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
 			const stockCorrelations = await portfolioDatabase.stockCorrelationsRange(
@@ -379,17 +375,17 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/stock-covariance-range",
+	"/stock-covariance-date-range",
 	async (req: AuthedRequest, res: Response) => {
 		try {
-			const { owner, portfolio_name, startDate, endDate } = req.body;
-			if (!owner || !portfolio_name) {
+			const { owner, portfolioName, startDate, endDate } = req.body;
+			if (!owner || !portfolioName) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
 			const investments = await portfolioDatabase.getInvestments(
 				owner,
-				portfolio_name,
+				portfolioName,
 			);
 			const stocks = investments.map((investment) => investment.stock_symbol);
 			const stockCovariances = await portfolioDatabase.stockCovarianceRange(
@@ -428,18 +424,15 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-	"/stock-cov-range",
+	"/stock-cov-date-range",
 	verifyToken,
 	async (req: AuthedRequest, res: Response) => {
-		const { stock_symbol, startDate, endDate } = req.body;
+		const { stockSymbol, startDate, endDate } = req.body;
 		try {
-			const stockCov = await portfolioDatabase.stockCoffectientOfVariationRange(
-				stock_symbol,
-				startDate,
-				endDate,
-			);
+			const stockCov =
+				await portfolioDatabase.stockCoffectientOfVariationRange(stockSymbol, startDate, endDate);
 
-			if (!stock_symbol) {
+			if (!stockSymbol) {
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
