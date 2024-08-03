@@ -5,4 +5,4 @@ Notes For Submission:
 - Relevant information about our database `functions`, `triggers`, and `procedures` can be found in `./documentation/database_reference/`.
 - Our queries can be found in the `backend/src/database` directory. However, we used Kysely, a type-safe query builder that has an (almost) 1-1 mapping to SQL. We recommend checking out `documentation/database_reference/DBQueryReference.md` instead, where we assembled all of our queries (as the raw SQL equivalent).
 - Additions after the demo:
-    - Added portfolio total value using DB functions which is also cashed using redis to display on portfolio page.
+    - Added functionality for retrieving the total value of a portfolio using DB functions. This is also cached using Redis for faster retrieval on the portfolio page.

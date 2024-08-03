@@ -430,34 +430,45 @@ export class TableManager {
 
 	// biome-ignore lint/suspicious/noExplicitAny: necessary for kysely
 	async createIndexes(db: Kysely<any>) {
-		/**
-		 * create index idx_username
-		 * on users (username);
-		 */
-		await db.schema
-			.createIndex("idx_username")
-			.on("users")
-			.column("username")
-			.execute();
+    /**
+     * create index idx_requesting_friend
+     * on friends (requesting_friend);
+     */
+    await db.schema
+        .createIndex("idx_requesting_friend")
+        .on("friends")
+        .column("requesting_friend")
+        .execute();
 
-		/**
-		 * create index idx_requesting_friend
-		 * on friends (requesting_friend);
-		 */
-		await db.schema
-			.createIndex("idx_requesting_friend")
-			.on("friends")
-			.column("requesting_friend")
-			.execute();
+    /**
+     * create index idx_receiving_friend
+     * on friends (receiving_friend);
+     */
+    await db.schema
+        .createIndex("idx_receiving_friend")
+        .on("friends")
+        .column("receiving_friend")
+        .execute();
 
-		/**
-		 * create index idx_receiving_friend
-		 * on friends (receiving_friend);
-		 */
-		await db.schema
-			.createIndex("idx_receiving_friend")
-			.on("friends")
-			.column("receiving_friend")
-			.execute();
-	}
+    /**
+     * create index idx_portfolio_name
+     * on portfolios (portfolio_name);
+     */
+    await db.schema
+        .createIndex("idx_portfolio_name")
+        .on("portfolios")
+        .column("portfolio_name")
+        .execute();
+
+    /**
+     * create index idx_stock_list_name
+     * on stock_lists (stock_list_name);
+     */
+    await db.schema
+        .createIndex("idx_stock_list_name")
+        .on("stock_lists")
+        .column("stock_list_name")
+        .execute();
+}
+
 }
