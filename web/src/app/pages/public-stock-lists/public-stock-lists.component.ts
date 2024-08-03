@@ -72,7 +72,7 @@ export class PublicStockListsComponent implements OnInit {
 	}
 
 	onPageChange(event: any) {
-    console.log(event)
+		console.log(event);
 		this.page = event.page;
 
 		this.loadPublicStockLists();

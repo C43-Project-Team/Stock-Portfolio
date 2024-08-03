@@ -30,7 +30,7 @@ import { ProgressSpinnerModule } from "primeng/progressspinner";
 		DropdownModule,
 		SelectButtonModule,
 		CommonModule,
-    ProgressSpinnerModule
+		ProgressSpinnerModule,
 	],
 	templateUrl: "./stocks.component.html",
 	styles: [],
@@ -79,38 +79,40 @@ export class StocksComponent implements OnInit {
 	historicChartData: ChartData<"line"> = { datasets: [] };
 	predictionChartData: ChartData<"line"> = { datasets: [] };
 
-  loading = false;
+	loading = false;
 
-  beta = 0;
-  cov = 0;
+	beta = 0;
+	cov = 0;
 
 	constructor(
 		private stockService: StockService,
 		private route: ActivatedRoute,
-    private apiService: ApiService
+		private apiService: ApiService,
 	) {}
 
 	ngOnInit(): void {
 		this.route.params.subscribe((params) => {
 			// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 			this.ticker = params["ticker"];
-      this.loading = true;
-			this.fetchStockCompany()
-      this.fetchStats().then(() => {
-        this.loading = false;
-      } );
+			this.loading = true;
+			this.fetchStockCompany();
+			this.fetchStats().then(() => {
+				this.loading = false;
+			});
 			this.fetchHistoricStockData();
 			this.fetchPredictedStockData();
 		});
 	}
 
-  async fetchStats() {
-  const covResponse = await this.apiService.getPortfolioStockCOV(this.ticker);
-  const betaResponse = await this.apiService.getPortfolioStocksBeta(this.ticker);
+	async fetchStats() {
+		const covResponse = await this.apiService.getPortfolioStockCOV(this.ticker);
+		const betaResponse = await this.apiService.getPortfolioStocksBeta(
+			this.ticker,
+		);
 
-  this.cov = Number.parseFloat(covResponse.stock_cov.toFixed(3));
-  this.beta = Number.parseFloat(betaResponse.stock_beta.toFixed(3));
-}
+		this.cov = Number.parseFloat(covResponse.stock_cov.toFixed(3));
+		this.beta = Number.parseFloat(betaResponse.stock_beta.toFixed(3));
+	}
 
 	fetchStockCompany(): void {
 		this.stockService

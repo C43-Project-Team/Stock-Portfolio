@@ -292,3 +292,28 @@ BEGIN
     RETURN stddev_return / mean_return;
 END;
 ```
+
+## Calculate Portfolio Total Value
+
+This function computes the total value of the user's portfolio.\
+Parameters:                   `owner_name: varchar`\
+&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;`portfolio: varchar`
+
+```sql
+DECLARE
+    total_value DOUBLE PRECISION := 0;
+BEGIN
+    SELECT SUM(i.num_shares * sd.close_price)
+    INTO total_value
+    FROM investments i
+    JOIN (
+        SELECT DISTINCT ON (stock_symbol) stock_symbol, close_price
+        FROM stocks_daily
+        ORDER BY stock_symbol, stock_date DESC
+    ) sd ON i.stock_symbol = sd.stock_symbol
+    WHERE i.owner = owner_name
+    AND i.portfolio_name = portfolio;
+
+    RETURN total_value;
+END;
+```

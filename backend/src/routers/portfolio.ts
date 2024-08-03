@@ -146,7 +146,7 @@ portfolioRouter.post(
 				num_shares,
 			);
 
-      await deleteKey(`portfolio-${owner}-${portfolio_name}`);
+			await deleteKey(`portfolio-${owner}-${portfolio_name}`);
 
 			return res.json({ message: "Shares bought successfully" });
 		} catch (error) {
@@ -184,7 +184,7 @@ portfolioRouter.post(
 				num_shares,
 			);
 
-      await deleteKey(`portfolio-${owner}-${portfolio_name}`);
+			await deleteKey(`portfolio-${owner}-${portfolio_name}`);
 
 			return res.json({ message: "Shares sold successfully" });
 		} catch (error) {
@@ -227,21 +227,21 @@ portfolioRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cacheKey = `portfolio-${owner}-${portfolioName}`;
-      const cachedData = await getObject(cacheKey);
+			const cacheKey = `portfolio-${owner}-${portfolioName}`;
+			const cachedData = await getObject(cacheKey);
 
-      if (cachedData?.beta) {
-        console.log("using cached data");
-        return res.json({ portfolio_beta: cachedData.beta });
-      }
+			if (cachedData?.beta) {
+				console.log("using cached data");
+				return res.json({ portfolio_beta: cachedData.beta });
+			}
 
 			const portfolioBeta = await portfolioDatabase.portfolioBeta(
 				owner,
 				portfolioName,
 			);
 
-      console.log("portfolio beta", portfolioBeta);
-      await setObject(cacheKey, { beta: portfolioBeta, ...cachedData });
+			console.log("portfolio beta", portfolioBeta);
+			await setObject(cacheKey, { beta: portfolioBeta, ...cachedData });
 
 			res.json({ portfolio_beta: portfolioBeta });
 		} catch (error) {
@@ -277,42 +277,46 @@ portfolioRouter.post(
 );
 
 portfolioRouter.post(
-  "/stock-beta",
-  verifyToken,
-  async (req: AuthedRequest, res: Response) => {
-    const { stock_ticker } = req.body;
+	"/stock-beta",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { stock_ticker } = req.body;
 
-    if (!stock_ticker) {
-      return res.status(400).json({ error: "Missing required parameters" });
-    }
+		if (!stock_ticker) {
+			return res.status(400).json({ error: "Missing required parameters" });
+		}
 
-    try {
-      const cacheKey = `stock-${stock_ticker}`;
-      const cachedData = await getObject(cacheKey);
+		try {
+			const cacheKey = `stock-${stock_ticker}`;
+			const cachedData = await getObject(cacheKey);
 
-      if (cachedData?.beta) {
-        console.log("using cached data");
-        return res.json({ stock_beta: cachedData.beta });
-      }
+			if (cachedData?.beta) {
+				console.log("using cached data");
+				return res.json({ stock_beta: cachedData.beta });
+			}
 
-      const stockBeta = await portfolioDatabase.stockBeta(stock_ticker);
+			const stockBeta = await portfolioDatabase.stockBeta(stock_ticker);
 
-      await setObject(cacheKey, { beta: stockBeta, cov: cachedData?.cov });
+			await setObject(cacheKey, { beta: stockBeta, cov: cachedData?.cov });
 
-      res.json({ stock_beta: stockBeta });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: "Error retrieving stock beta and cov" });
-    }
-  }
+			res.json({ stock_beta: stockBeta });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock beta and cov" });
+		}
+	},
 );
 
 portfolioRouter.post(
-    "/stock-beta-date-range",
-    async (req: AuthedRequest, res: Response) => {
-        const { stockTicker, startDate, endDate } = req.body;
+	"/stock-beta-date-range",
+	async (req: AuthedRequest, res: Response) => {
+		const { stockTicker, startDate, endDate } = req.body;
 		try {
-			const stockBeta = await portfolioDatabase.stockBetaRange(stockTicker, startDate, endDate);
+			const stockBeta = await portfolioDatabase.stockBetaRange(
+				stockTicker,
+				startDate,
+				endDate,
+			);
 
 			if (!stockTicker) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -335,13 +339,13 @@ portfolioRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cacheKey = `portfolio-${owner}-${portfolio_name}`;
-      const cachedData = await getObject(cacheKey);
+			const cacheKey = `portfolio-${owner}-${portfolio_name}`;
+			const cachedData = await getObject(cacheKey);
 
-      if (cachedData?.correlations) {
-        console.log("using cached data");
-        return res.json({ stock_correlations: cachedData.correlations });
-      }
+			if (cachedData?.correlations) {
+				console.log("using cached data");
+				return res.json({ stock_correlations: cachedData.correlations });
+			}
 
 			const investments = await portfolioDatabase.getInvestments(
 				owner,
@@ -351,7 +355,10 @@ portfolioRouter.post(
 			const stockCorrelations =
 				await portfolioDatabase.stockCorrelations(stocks);
 
-      await setObject(cacheKey, { ...cachedData, correlations: stockCorrelations });
+			await setObject(cacheKey, {
+				...cachedData,
+				correlations: stockCorrelations,
+			});
 
 			res.json({ stock_correlations: stockCorrelations });
 		} catch (error) {
@@ -398,13 +405,13 @@ portfolioRouter.post(
 				return res.status(400).json({ error: "Missing required parameters" });
 			}
 
-      const cacheKey = `portfolio-${owner}-${portfolio_name}`;
-      const cachedData = await getObject(cacheKey);
+			const cacheKey = `portfolio-${owner}-${portfolio_name}`;
+			const cachedData = await getObject(cacheKey);
 
-      if (cachedData?.cov) {
-        console.log("using cached data");
-        return res.json({ stock_covariances: cachedData.cov });
-      }
+			if (cachedData?.cov) {
+				console.log("using cached data");
+				return res.json({ stock_covariances: cachedData.cov });
+			}
 
 			const investments = await portfolioDatabase.getInvestments(
 				owner,
@@ -413,8 +420,8 @@ portfolioRouter.post(
 			const stocks = investments.map((investment) => investment.stock_symbol);
 			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
 
-      await setObject(cacheKey, { ...cachedData, cov: stockCovariances });
-    
+			await setObject(cacheKey, { ...cachedData, cov: stockCovariances });
+
 			res.json({ stock_covariances: stockCovariances });
 		} catch (error) {
 			console.log(error);
@@ -457,18 +464,17 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { stock_symbol } = req.body;
 		try {
-      const cacheKey = `stock-${stock_symbol}`;
-      const cachedData = await getObject(cacheKey);
+			const cacheKey = `stock-${stock_symbol}`;
+			const cachedData = await getObject(cacheKey);
 
-      if (cachedData?.cov) {
-        console.log("using cached data");
-        return res.json({ stock_cov: cachedData.cov });
-      }
+			if (cachedData?.cov) {
+				console.log("using cached data");
+				return res.json({ stock_cov: cachedData.cov });
+			}
 
-			const stockCov =
-				await portfolioDatabase.stockCoefficient(stock_symbol);
+			const stockCov = await portfolioDatabase.stockCoefficient(stock_symbol);
 
-      await setObject(cacheKey, { beta: cachedData?.beta, cov: stockCov });
+			await setObject(cacheKey, { beta: cachedData?.beta, cov: stockCov });
 
 			if (!stock_symbol) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -488,8 +494,11 @@ portfolioRouter.post(
 	async (req: AuthedRequest, res: Response) => {
 		const { stockSymbol, startDate, endDate } = req.body;
 		try {
-			const stockCov =
-				await portfolioDatabase.stockCoefficientRange(stockSymbol, startDate, endDate);
+			const stockCov = await portfolioDatabase.stockCoefficientRange(
+				stockSymbol,
+				startDate,
+				endDate,
+			);
 
 			if (!stockSymbol) {
 				return res.status(400).json({ error: "Missing required parameters" });
@@ -499,6 +508,38 @@ portfolioRouter.post(
 		} catch (error) {
 			console.log(error);
 			res.status(500).json({ error: "Error retrieving stock cov" });
+		}
+	},
+);
+
+portfolioRouter.get(
+	"/:owner/:portfolioName/portfolio-total",
+	verifyToken,
+	async (req: AuthedRequest, res: Response) => {
+		const { owner, portfolioName } = req.params;
+		try {
+			if (!owner || !portfolioName) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const cacheKey = `portfolio-${owner}-${portfolioName}`;
+			const cachedData = await getObject(cacheKey);
+
+			if (cachedData?.total_value) {
+				console.log("using cached data");
+				return res.json({ total_value: cachedData.total_value });
+			}
+
+			const portfolioTotal = await portfolioDatabase.portfolioTotalValue(
+				owner,
+				portfolioName,
+			);
+
+			await setObject(cacheKey, { total_value: portfolioTotal, ...cachedData });
+
+			res.json({ portfolio_total: portfolioTotal });
+		} catch (error) {
+			return res.status(500).json({ error: "Error retrieving total" });
 		}
 	},
 );

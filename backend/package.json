@@ -13,9 +13,9 @@
 		"create-indexes": "tsx src/utils/db/create-indexes.ts",
 		"migrations": "tsx src/utils/db/run-migrations.ts",
 		"export-gcp-stock-data": "tsx src/utils/db/export-gcp-stock-data.ts",
-    "cache-stock-data": "tsx src/utils/redis/cache-stock-data.ts",
-    "cache-clear": "tsx src/utils/scripts/cache/clear.ts",
-    "cache-show": "tsx src/utils/scripts/cache/show-contents.ts"
+		"cache-stock-data": "tsx src/utils/redis/cache-stock-data.ts",
+		"cache-clear": "tsx src/utils/scripts/cache/clear.ts",
+		"cache-show": "tsx src/utils/scripts/cache/show-contents.ts"
 	},
 	"author": "",
 	"license": "ISC",

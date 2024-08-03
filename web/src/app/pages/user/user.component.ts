@@ -34,7 +34,7 @@ import { ProgressSpinnerModule } from "primeng/progressspinner";
 		InputTextModule,
 		ConfirmDialogModule,
 		ToastModule,
-    ProgressSpinnerModule
+		ProgressSpinnerModule,
 	],
 	providers: [MessageService, ConfirmationService],
 	templateUrl: "./user.component.html",
@@ -55,7 +55,7 @@ export class UserComponent implements OnInit {
 	initialDeposit = 0;
 	isPrivate = false;
 	profilePictureUrl = "assets/images/default-pfp.png";
-  loading = false;
+	loading = false;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -81,16 +81,19 @@ export class UserComponent implements OnInit {
 	}
 
 	checkUser() {
-    this.loading = true
+		this.loading = true;
 		this.isCurrentUser = this.username === this.myUsername;
 		if (this.isCurrentUser) {
-      Promise.all([this.loadStockLists(), this.loadPortfolios()]).then(() => {
-        this.loading = false;
-      });
+			Promise.all([this.loadStockLists(), this.loadPortfolios()]).then(() => {
+				this.loading = false;
+			});
 		} else {
-      Promise.all([this.loadPrivateStockListsSharedWithUser(), this.loadPublicStockLists()]).then(() => {
-        this.loading = false;
-      });
+			Promise.all([
+				this.loadPrivateStockListsSharedWithUser(),
+				this.loadPublicStockLists(),
+			]).then(() => {
+				this.loading = false;
+			});
 		}
 	}
 

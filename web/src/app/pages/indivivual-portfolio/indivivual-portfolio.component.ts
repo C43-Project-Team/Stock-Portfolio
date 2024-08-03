@@ -39,7 +39,7 @@ import { ProgressSpinnerModule } from "primeng/progressspinner";
 		StockMatrixComponent,
 		DropdownModule,
 		CalendarModule,
-    ProgressSpinnerModule,
+		ProgressSpinnerModule,
 	],
 	providers: [MessageService],
 	templateUrl: "./indivivual-portfolio.component.html",
@@ -74,7 +74,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 	selectedPortfolio: Portfolio | null = null;
 	hasAccess = false;
 	dateRange: Date[] | null = null;
-  loading = false;
+	loading = false;
+	portfolioTotalValue = 0;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -99,7 +100,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 		});
 	}
 
-  async loadAllData(startDate?: Date, endDate?: Date) {
+	async loadAllData(startDate?: Date, endDate?: Date) {
 		this.loading = true;
 
 		try {
@@ -107,13 +108,14 @@ export class IndivivualPortfolioComponent implements OnInit {
 				this.loadPortfolio(),
 				this.loadInvestments(startDate, endDate),
 				this.loadPortfolioBeta(startDate, endDate),
+				this.loadPortfolioTotalValue(),
 				this.loadCorrelationMatrix(startDate, endDate),
 				this.loadCovarianceMatrix(startDate, endDate),
 				this.loadUserPortfolios(),
 			]);
-      if (startDate && endDate) {
-        this.logSuccess("Success", "Filter applied successfully");
-      }
+			if (startDate && endDate) {
+				this.logSuccess("Success", "Filter applied successfully");
+			}
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		} finally {
@@ -132,6 +134,18 @@ export class IndivivualPortfolioComponent implements OnInit {
 		}
 	}
 
+	async loadPortfolioTotalValue() {
+		try {
+			const response = await this.apiService.getPortfolioTotal(
+				this.username,
+				this.portfolioName,
+			);
+			this.portfolioTotalValue = response.portfolio_total;
+		} catch (error) {
+			this.logError((error as HttpErrorResponse).error.error);
+		}
+	}
+
 	async loadCorrelationMatrix(startDate?: Date, endDate?: Date) {
 		const startDateStr = startDate?.toISOString().split("T")[0];
 		const endDateStr = endDate?.toISOString().split("T")[0];
@@ -143,11 +157,11 @@ export class IndivivualPortfolioComponent implements OnInit {
 							this.portfolioName,
 							startDateStr,
 							endDateStr,
-					  )
+						)
 					: await this.apiService.getPortfolioStockCorrelations(
 							this.username,
 							this.portfolioName,
-					  );
+						);
 			this.correlations = res.stock_correlations;
 		} catch (error) {
 			console.error("Error fetching stock correlations:", error);
@@ -165,11 +179,11 @@ export class IndivivualPortfolioComponent implements OnInit {
 							this.portfolioName,
 							startDateStr,
 							endDateStr,
-					  )
+						)
 					: await this.apiService.getPortfolioStockCovariances(
 							this.username,
 							this.portfolioName,
-					  );
+						);
 			this.covariances = res.stock_covariances;
 		} catch (error) {
 			console.error("Error fetching stock covariances:", error);
@@ -200,10 +214,10 @@ export class IndivivualPortfolioComponent implements OnInit {
 								investment.stock_symbol,
 								startDateStr,
 								endDateStr,
-						  )
+							)
 						: await this.apiService.getPortfolioStocksBeta(
 								investment.stock_symbol,
-						  );
+							);
 				investment.stock_beta = Math.round(stockBeta.stock_beta * 1000) / 1000;
 
 				const stockCOV =
@@ -212,8 +226,10 @@ export class IndivivualPortfolioComponent implements OnInit {
 								investment.stock_symbol,
 								startDateStr,
 								endDateStr,
-						  )
-						: await this.apiService.getPortfolioStockCOV(investment.stock_symbol);
+							)
+						: await this.apiService.getPortfolioStockCOV(
+								investment.stock_symbol,
+							);
 				investment.stock_cov = Math.round(stockCOV.stock_cov * 1000) / 1000;
 			}
 		} catch (error) {
@@ -222,13 +238,21 @@ export class IndivivualPortfolioComponent implements OnInit {
 	}
 
 	async loadPortfolioBeta(startDate?: Date, endDate?: Date) {
-    const startDateStr = startDate?.toISOString().split("T")[0];
-    const endDateStr = endDate?.toISOString().split("T")[0];
+		const startDateStr = startDate?.toISOString().split("T")[0];
+		const endDateStr = endDate?.toISOString().split("T")[0];
 		try {
-			const response = (startDateStr && endDateStr) ? await this.apiService.getPortfolioBetaDateRange(this.username, this.portfolioName, startDateStr, endDateStr) : await this.apiService.getPortfolioBeta(
-				this.username,
-				this.portfolioName,
-			);
+			const response =
+				startDateStr && endDateStr
+					? await this.apiService.getPortfolioBetaDateRange(
+							this.username,
+							this.portfolioName,
+							startDateStr,
+							endDateStr,
+						)
+					: await this.apiService.getPortfolioBeta(
+							this.username,
+							this.portfolioName,
+						);
 			this.portfolioBeta = Math.round(response.portfolio_beta * 1000) / 1000;
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
@@ -282,7 +306,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 
 		const [startDate, endDate] = this.dateRange;
 
-    this.displayDateFilterDialog = false;
+		this.displayDateFilterDialog = false;
 
 		this.loadAllData(startDate, endDate);
 	}
@@ -333,8 +357,8 @@ export class IndivivualPortfolioComponent implements OnInit {
 			);
 			this.logSuccess("Success", "Shares bought successfully");
 			this.displayBuySharesDialog = false;
-      const [startDate, endDate] = this.dateRange || [];
-      this.loadAllData(startDate, endDate);
+			const [startDate, endDate] = this.dateRange || [];
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}
@@ -350,7 +374,7 @@ export class IndivivualPortfolioComponent implements OnInit {
 			this.logSuccess("Success", "Shares sold successfully");
 			this.displaySellSharesDialog = false;
 			const [startDate, endDate] = this.dateRange || [];
-      this.loadAllData(startDate, endDate);
+			this.loadAllData(startDate, endDate);
 		} catch (error) {
 			this.logError((error as HttpErrorResponse).error.error);
 		}

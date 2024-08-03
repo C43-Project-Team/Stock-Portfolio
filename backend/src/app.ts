@@ -20,18 +20,19 @@ console.log("FRONTEND_URL: ", FRONTEND_URL);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors({
-  origin: FRONTEND_URL,
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+	cors({
+		origin: FRONTEND_URL,
+		credentials: true,
+		allowedHeaders: ["Content-Type", "Authorization"],
+	}),
+);
 
 // application/json parser
 app.use(bodyParser.json());
 
 // application/x-www-form-urlencoded parser
 app.use(bodyParser.urlencoded({ extended: false }));
-
 
 app.use("/api/auth", authRouter);
 app.use("/api/stock", stockRouter);
@@ -43,8 +44,8 @@ app.use("/api/stock-list", stockListRouter);
 app.use("/api/uploads", express.static(path.join(__dirname, "./uploads")));
 
 app.get("/api/test", async (req: Request, res: Response) => {
-  const user = await userDatabase.getUserByUsername("murphylee10")
-  return res.json(user);
+	const user = await userDatabase.getUserByUsername("murphylee10");
+	return res.json(user);
 });
 
 app.listen(PORT, () => {

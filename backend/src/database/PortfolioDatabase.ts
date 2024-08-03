@@ -1,6 +1,7 @@
 import { db } from "@utils/db/db-controller";
 import type { Database, Portfolio, Investments } from "../types/db-schema";
 import { sql, type Kysely } from "kysely";
+import { re } from "mathjs";
 
 class PortfolioDatabase {
 	private db: Kysely<Database>;
@@ -317,6 +318,16 @@ class PortfolioDatabase {
 			.where("owner", "=", owner)
 			.where("portfolio_name", "=", portfolio_name)
 			.execute();
+	}
+
+	async portfolioTotalValue(
+		owner: string,
+		portfolioName: string,
+	): Promise<number> {
+		const query = sql`SELECT public.portfolio_total_value(${owner}, ${portfolioName})`;
+		const res = await query.execute(db);
+		return (res.rows[0] as { portfolio_total_value: number })
+			.portfolio_total_value;
 	}
 
 	async portfolioBeta(owner: string, portfolio_name: string): Promise<number> {
