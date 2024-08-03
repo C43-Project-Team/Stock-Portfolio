@@ -3,6 +3,7 @@ import { type AuthedRequest, verifyToken } from "@/middleware/auth";
 import { Router, type Response } from "express";
 import { re } from "mathjs";
 import { reviewRouter } from "./review";
+import { portfolioDatabase } from "@/database/PortfolioDatabase";
 
 export const stockListRouter = Router();
 
@@ -560,4 +561,112 @@ stockListRouter.use(
 		next();
 	},
 	reviewRouter,
+);
+
+
+stockListRouter.post(
+	"/stock-covariance",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stock_list } = req.body;
+			if (!owner || !stock_list) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stock_list,
+			);
+
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCovariances = await portfolioDatabase.stockCovariance(stocks);
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-covariance-date-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stock_list_name, startDate, endDate } = req.body;
+			if (!owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stock_list_name,
+			);
+
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCovariances = await portfolioDatabase.stockCovarianceRange(
+				stocks,
+				startDate,
+				endDate,
+			);
+
+			res.json({ stock_covariances: stockCovariances });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-correlations",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stock_list_name } = req.body;
+			if (!owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stock_list_name,
+			);
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCorrelations =
+				await portfolioDatabase.stockCorrelations(stocks);
+
+			res.json({ stock_correlations: stockCorrelations });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
+);
+
+stockListRouter.post(
+	"/stock-correlations-date-range",
+	async (req: AuthedRequest, res: Response) => {
+		try {
+			const { owner, stock_list_name, startDate, endDate } = req.body;
+			if (!owner || !stock_list_name) {
+				return res.status(400).json({ error: "Missing required parameters" });
+			}
+
+			const lists = await stockListDatabase.getStockListContains(
+				owner,
+				stock_list_name,
+			);
+			const stocks = lists.map((list) => list.stock_symbol);
+			const stockCorrelations = await portfolioDatabase.stockCorrelationsRange(
+				stocks,
+				startDate,
+				endDate,
+			);
+
+			res.json({ stock_correlations: stockCorrelations });
+		} catch (error) {
+			console.log(error);
+			res.status(500).json({ error: "Error retrieving stock correlations" });
+		}
+	},
 );
